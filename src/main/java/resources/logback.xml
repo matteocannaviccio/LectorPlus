@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<timestamp key="byDay" datePattern="yyyyMMdd-HHmmss" />
+
+	<!-- Send debug messages to System.out -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>./logs/log-${byDay}.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>./logs/log-${byDay}.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="it.uniroma3.lectorplus" level="WARN" additivity="false">
+		<appender-ref ref="FILE" />
+	</logger>
+
+	<root level="${log:-INFO}">
+		<appender-ref ref="STDOUT" />
+	</root>
+
+</configuration>
+
