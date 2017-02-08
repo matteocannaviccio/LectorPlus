@@ -1,73 +1,94 @@
 package it.uniroma3.lectorplus;
 
 import java.util.List;
+import java.util.Map;
 
+import com.google.gson.Gson;
 /**
  * 
  * @author matteo
  *
  */
 public class WikiArticle {
-    
+
     private String wikid;
     private String id;
-    private String content;
+    private String namespace;
+    private String title;
+    private String url;
+
     private List<String> aliases;
-    private String firstSentence;
-    
+    private ArticleType type;
+    private String disambiguation;
+
+    // for the italian language
+    private String bio;
+
+    // article composite structures
+    private Map<String, List<String>> text;
+    private transient Map<String, List<String>> tables;
+    private transient Map<String, List<String>> lists;
+
+    private static transient Gson gson = new Gson();
+
+    public enum ArticleType {
+	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, UNKNOWN, MAIN, LIST, PROJECT, PORTAL, FILE, HELP
+    };
+
     /**
      * 
      * @param wikid
      * @param id
-     * @param content
+     * @param text
      */
-    public WikiArticle(String wikid, String id, String content) {
+    public WikiArticle(String wikid, String id, String title, String namespace, WikiLanguage lang) {
 	this.wikid = wikid;
 	this.id = id;
-	this.content = content;
+	this.title = title;
+	this.namespace = namespace;
+	this.url = "http://" + lang.toString() + ".wikipedia.org/wiki/" + wikid;
     }
 
     /**
      * @return the wikid
      */
-    protected String getWikid() {
-        return wikid;
+    public String getWikid() {
+	return wikid;
     }
 
     /**
      * @param wikid the wikid to set
      */
-    protected void setWikid(String wikid) {
-        this.wikid = wikid;
+    public void setWikid(String wikid) {
+	this.wikid = wikid;
     }
 
     /**
      * @return the id
      */
-    protected String getId() {
-        return id;
+    public String getId() {
+	return id;
     }
 
     /**
      * @param id the id to set
      */
-    protected void setId(String id) {
-        this.id = id;
+    public void setId(String id) {
+	this.id = id;
     }
 
     /**
      * @return the content
      */
-    protected String getContent() {
-        return content;
+    public Map<String, List<String>> getContent() {
+	return text;
     }
 
     /**
      * @param content the content to set
      */
-    protected void setContent(String content) {
-        this.content = content;
-        this.firstSentence = content.split("\\.")[0];
+    public void setContent(Map<String, List<String>> content) {
+	this.text = content;
     }
 
     /* (non-Javadoc)
@@ -110,15 +131,15 @@ public class WikiArticle {
     /**
      * @return the aliases
      */
-    protected List<String> getAliases() {
-        return aliases;
+    public List<String> getAliases() {
+	return aliases;
     }
 
     /**
      * @param aliases the aliases to set
      */
-    protected void setAliases(List<String> aliases) {
-        this.aliases = aliases;
+    public void setAliases(List<String> aliases) {
+	this.aliases = aliases;
     }
 
     /* (non-Javadoc)
@@ -127,17 +148,143 @@ public class WikiArticle {
     @Override
     public String toString() {
 	return "WikiArticle \n"
-		+ "[wikid=" + wikid + ",\n"
-		+ " id=" + id + ",\n"
-		+ " aliases=" + aliases + ",\n"
-		+ " first sentence= " + firstSentence + "]";
+		+ "[wikid=" + this.wikid + ",\n"
+		+ " url=" + this.url + ",\n"
+		+ " title=" + this.title + ",\n"
+		+ " id=" + this.id + ",\n"
+		+ " namespace=" + this.namespace + ",\n"
+		+ " aliases=" + this.aliases + ",\n"
+		+ " type= " + this.type + ",\n"
+		+ " disambiguation= " + this.disambiguation + ",\n"
+		+ " bio= " + this.bio + ",\n"
+		//+ " table= " + getTables() + ",\n"
+		//+ " list= " + getLists() + ",\n"
+		+ " text= " + "\n" + getText() + "]";
+    }
+
+    /**
+     * 
+     * @return
+     */
+    private String getText(){
+	StringBuffer sb = new StringBuffer();
+	for(Map.Entry<String, List<String>> paragraph : this.text.entrySet()){
+	    for(String sentence : paragraph.getValue()){
+		sb.append(paragraph.getKey() + "\t" + sentence + "\n");
+	    }
+	}
+	return sb.toString();
     }
 
  
+    /**
+     * @return the type
+     */
+    public ArticleType getType() {
+	return type;
+    }
 
-   
-    
-    
-    
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(ArticleType type) {
+	this.type = type;
+    }
+
+
+    /**
+     * @return the namespace
+     */
+    public String getNamespace() {
+	return namespace;
+    }
+
+
+    /**
+     * @param namespace the namespace to set
+     */
+    public void setNamespace(String namespace) {
+	this.namespace = namespace;
+    }
+
+
+    /**
+     * @return the disambiguation
+     */
+    public String getDisambiguation() {
+	return disambiguation;
+    }
+
+
+    /**
+     * @param disambiguation the disambiguation to set
+     */
+    public void setDisambiguation(String disambiguation) {
+	this.disambiguation = disambiguation;
+    }
+
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+	return title;
+    }
+
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+	this.title = title;
+    }
+
+    /**
+     * @return the bio
+     */
+    public String getBio() {
+	return bio;
+    }
+
+    /**
+     * @param bio the bio to set
+     */
+    public void setBio(String bio) {
+	this.bio = bio;
+    }
+
+    /**
+     * @param tables the tables to set
+     */
+    public void setTables(Map<String, List<String>> tables) {
+	this.tables = tables;
+    }
+
+
+    /**
+     * @param lists the lists to set
+     */
+    public void setLists(Map<String, List<String>> lists) {
+	this.lists = lists;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String toJson() {
+	return gson.toJson(this);
+    }
+
+    /**
+     * 
+     * @param json
+     * @return
+     */
+    public static WikiArticle fromJson(String json) {
+	return gson.fromJson(json, WikiArticle.class);
+
+    }
 
 }
