@@ -9,17 +9,9 @@
 			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
 		</encoder>
 	</appender>
-
-	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>./logs/log-${byDay}.log</file>
-		<append>true</append>
-		<encoder>
-			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
-		</encoder>
-	</appender>
 	
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>./logs/log-${byDay}.log</file>
+		<file>./logs/report.log</file>
 		<append>true</append>
 		<encoder>
 			<pattern>%date %-4r [%t] %-5p %c - %m%n</pattern>
