@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.lectorplus.WikiLanguage;
+import it.uniroma3.model.WikiLanguage;
 
 public class MarkupParser {
 

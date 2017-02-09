@@ -1,4 +1,4 @@
-package it.uniroma3.lectorplus;
+package it.uniroma3.model;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class WikiLanguage {
 	properties = new Properties();
 	this.langId = langId;
 	try {
-	    properties.load(new FileInputStream("/Users/matteo/Work/Repository/ualberta/lectorplus/src/main/java/resources/" + langId + ".properties"));
+	    properties.load(new FileInputStream("/Users/matteo/Work/Repository/ualberta/lectorplus/src/main/java/resources/languages/" + langId + ".properties"));
 	} catch (IOException e) {
 	    logger.error("reading the locale for language {} ({})", langId, e.toString());
 	    System.exit(-1);

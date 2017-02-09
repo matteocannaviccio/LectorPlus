@@ -1,7 +1,8 @@
-package it.uniroma3.lectorplus;
+package it.uniroma3.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 /**
@@ -16,17 +17,19 @@ public class WikiArticle {
     private String namespace;
     private String title;
     private String url;
-
+    
+    // Primary entity concepts
     private List<String> aliases;
     private ArticleType type;
     private String disambiguation;
+    private String bio;// for the italian language
+    
+    // Secondary entities concepts 
+    private Map<String, Set<String>> wikilinks;
 
-    // for the italian language
-    private String bio;
-
-    // article composite structures
+    // Article composite structures
     private Map<String, List<String>> text;
-    private transient Map<String, List<String>> tables;
+    private Map<String, List<String>> tables;
     private transient Map<String, List<String>> lists;
 
     private static transient Gson gson = new Gson();
@@ -285,6 +288,27 @@ public class WikiArticle {
     public static WikiArticle fromJson(String json) {
 	return gson.fromJson(json, WikiArticle.class);
 
+    }
+
+    /**
+     * @return the wikilinks
+     */
+    public Map<String, Set<String>> getWikilinks() {
+        return wikilinks;
+    }
+
+    /**
+     * @param wikilinks the wikilinks to set
+     */
+    public void setWikilinks(Map<String, Set<String>> wikilinks) {
+        this.wikilinks = wikilinks;
+    }
+
+    /**
+     * @return the tables
+     */
+    public Map<String, List<String>> getTables() {
+        return tables;
     }
 
 }

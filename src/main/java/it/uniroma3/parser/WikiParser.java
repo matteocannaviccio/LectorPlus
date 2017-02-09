@@ -1,17 +1,20 @@
 package it.uniroma3.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import it.uniroma3.lectorplus.WikiArticle;
-import it.uniroma3.lectorplus.WikiArticle.ArticleType;
-import it.uniroma3.lectorplus.WikiLanguage;
+import it.uniroma3.model.WikiArticle;
+import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.model.WikiArticle.ArticleType;
 /**
  * 
  * 
@@ -32,25 +35,32 @@ public class WikiParser {
 	this.lang = lang;
 	this.cleaner = new Cleaner(lang);
     }
-    
+
     /**
      * 
      * @param page
      * @return
      */
     public WikiArticle createArticleFromXml(String page){
-	String wikid = XMLParser.getFieldFromXml(page, "title").replaceAll(" ", "_");
-	String title = getCleanTitle(wikid);
-	String id = XMLParser.getFieldFromXml(page, "id");
-	String namespace = XMLParser.getFieldFromXml(page, "ns");
 
+	/*
+	 * Obtain the title of the article and create a WikiArticle.
+	 */
+	String wikid = XMLParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
+	String title = clean(wikid);
+	String id = XMLParser.getFieldFromXmlPage(page, "id");
+	String namespace = XMLParser.getFieldFromXmlPage(page, "ns");
 	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang);
 
 	/* ************************************************************************ */
 
+	/*
+	 * Check if it is an article that we can skip. 
+	 */
+
 	/* Filter to capture WIKIPEDIA portal articles */
 	for (String portalHook : lang.getPortalIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(portalHook + ":")){
+	    if (clean(wikid).startsWith(portalHook + ":")){
 		article.setType(ArticleType.PORTAL);
 		return article;
 	    }
@@ -58,15 +68,15 @@ public class WikiParser {
 
 	/* Filter to capture FILE articles */
 	for (String fileHook : lang.getFileIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(fileHook + ":")){
+	    if (clean(wikid).startsWith(fileHook + ":")){
 		article.setType(ArticleType.FILE);
 		return article;
 	    }
 	}
-	
+
 	/* Filter to capture HELP articles */
 	for (String helpHook : lang.getHelpIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(helpHook + ":")){
+	    if (clean(wikid).startsWith(helpHook + ":")){
 		article.setType(ArticleType.HELP);
 		return article;
 	    }
@@ -74,7 +84,7 @@ public class WikiParser {
 
 	/* Filter to capture CATEGORY articles */
 	for (String categoryHook : lang.getCategoryIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(categoryHook + ":")){
+	    if (clean(wikid).startsWith(categoryHook + ":")){
 		article.setType(ArticleType.CATEGORY);
 		return article;
 	    }
@@ -82,7 +92,7 @@ public class WikiParser {
 
 	/* Filter to capture TEMPLATE articles */
 	for (String templateHook : lang.getTemplateIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(templateHook + ":")){
+	    if (clean(wikid).startsWith(templateHook + ":")){
 		article.setType(ArticleType.TEMPLATE);
 		return article;
 	    }
@@ -90,7 +100,7 @@ public class WikiParser {
 
 	/* Filter to capture DISCUSSION articles */
 	for (String discussionHook : lang.getDiscussionIdentifiers()){
-	    if (getCleanTitle(wikid).startsWith(discussionHook + ":")){
+	    if (clean(wikid).startsWith(discussionHook + ":")){
 		article.setType(ArticleType.DISCUSSION);
 		return article;
 	    }
@@ -106,7 +116,11 @@ public class WikiParser {
 
 	/* ************************************************************************ */
 
-	// get all the sentences from the article
+	/*
+	 * If not, get the content and use the first sentence to check if it is a redirect.
+	 */
+
+	// get all the sentences from the article -- large processing here!
 	Map<String, List<String>> content = getContentFromXml(page);
 	article.setContent(content);
 
@@ -122,6 +136,9 @@ public class WikiParser {
 
 	/* ************************************************************************ */
 
+	/*
+	 * Check if it is a disambiguation article.
+	 */	
 	article.setDisambiguation(getDisambiguation(wikid));
 
 	/* Filter to capture DISAMBIGUATION articles */
@@ -145,7 +162,9 @@ public class WikiParser {
 
 	/* ************************************************************************ */
 
-	/* if it is not of all of this... it is an article! :)  */
+	/*
+	 * if it is not of all of this... it is an article! :) 
+	 */
 	article.setType(ArticleType.ARTICLE);
 	if(content.containsKey("#Abstract"))
 	    article.setAliases(getAlias(content.get("#Abstract")));
@@ -154,6 +173,7 @@ public class WikiParser {
 	article.setContent(removeEmphasis(content));
 	article.setTables(MarkupParser.getTablesFromXml(page, lang, cleaner));
 	article.setLists(MarkupParser.getListsFromXml(page, lang));
+	article.setWikilinks(getWikilinks(article.getContent()));
 
 	return article;
     }
@@ -194,6 +214,7 @@ public class WikiParser {
 
 	    /*
 	     * split each block in sentences
+	     * (here we deal with wiki-links!)
 	     * name section --> sentence1, sentence2, ...
 	     */
 	    sentences = MarkupParser.fragmentParagraph(blocks, cleaner, lang);
@@ -203,7 +224,7 @@ public class WikiParser {
 	     * name section (desired) --> sentence1, sentence2, ...
 	     */
 	    sentences = MarkupParser.removeUndesiredBlocks(sentences, lang);
-	    
+
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -214,8 +235,45 @@ public class WikiParser {
 
 	return sentences;
     }
-    
 
+
+    /**
+     * }}}}}}}}}}}}}}}}}}}}
+     * 
+     * @param s
+     * @return
+     */
+    protected Map<String, Set<String>> getWikilinks(Map<String, List<String>> sentences) {
+	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
+	Pattern LINKS1 = Pattern.compile("(?<=\\[\\[)([^\\]]+)\\|([^\\]]+)(?=\\]\\])");
+	Pattern LINKS2 = Pattern.compile("(?<=\\[\\[)([^\\]\\|]+)(?=\\]\\])");
+
+	for(Map.Entry<String, List<String>> section : sentences.entrySet()){
+	    for(String sentence : section.getValue()){
+		
+		// composite wikilinks, e.g. [[Barack_Obama|Obama]]
+		Matcher m = LINKS1.matcher(sentence);
+		while(m.find()){
+		    String rendered = m.group(1).replaceAll("_", " ");
+		    String wikid = m.group(2);
+		    if (!wikilinks.containsKey(rendered))
+			wikilinks.put(rendered, new TreeSet<String>());
+		    wikilinks.get(rendered).add(wikid);
+		}
+		
+		// simple wikilinks, e.g. [[Barack_Obama]]
+		m = LINKS2.matcher(sentence);
+		while(m.find()){
+		    String wikid = m.group(1);
+		    String rendered = m.group(1).replaceAll("_", " ");
+		    if (!wikilinks.containsKey(wikid))
+			wikilinks.put(wikid, new TreeSet<String>());
+		    wikilinks.get(wikid).add(rendered);
+		}
+	    }
+	}
+	return wikilinks;
+    }
 
 
     /**
@@ -275,7 +333,7 @@ public class WikiParser {
      * 
      * @param title
      */
-    protected String getCleanTitle(String wikid){
+    protected String clean(String wikid){
 	String title = wikid;
 	Pattern DISAMBIGATION = Pattern.compile("^.+(?=_\\(.*\\))");
 	Matcher m = DISAMBIGATION.matcher(wikid);
@@ -284,8 +342,8 @@ public class WikiParser {
 	}
 	return title.replaceAll("_", " ").trim();
     }
-    
-    
+
+
 
 
 }

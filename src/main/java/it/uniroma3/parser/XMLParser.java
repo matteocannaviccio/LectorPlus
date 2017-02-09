@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.uniroma3.lectorplus.WikiLanguage;
+import it.uniroma3.model.WikiLanguage;
 
 public class XMLParser {
     
@@ -18,7 +18,7 @@ public class XMLParser {
      * @param field
      * @return
      */
-    public static String getFieldFromXml(String content, String field){
+    public static String getFieldFromXmlPage(String content, String field){
 	String XML_START_TAG_FIELD = "<" + field + ">";
 	String XML_END_TAG_FIELD = "</" + field + ">";
 	int start = content.indexOf(XML_START_TAG_FIELD);
