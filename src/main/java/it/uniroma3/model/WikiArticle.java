@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
+
+import it.uniroma3.parser.MarkupParser;
 /**
  * 
  * @author matteo
@@ -309,6 +311,20 @@ public class WikiArticle {
      */
     public Map<String, List<String>> getTables() {
         return tables;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getFirstSentence(){
+	String firstSentence = "-";
+	if(this.getContent().containsKey("#Abstract"))
+	    firstSentence = this.getContent().get("#Abstract").get(0);
+	if(firstSentence.startsWith("is ") || 
+		firstSentence.startsWith("was "))
+	    firstSentence = this.title + " " + firstSentence;
+	return MarkupParser.removeWikilinks(firstSentence);
     }
 
 }

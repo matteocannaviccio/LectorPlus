@@ -105,7 +105,7 @@ public class MarkupParser {
      * @param s
      * @return
      */
-    private static String removeWikilinks(String s) {
+    public static String removeWikilinks(String s) {
 	/*
 	 * detect entities with pipes, and transform them in normal entities 
 	 * e.g. [[multinational corporation|multinational]] -> [[multinational]]
@@ -118,6 +118,8 @@ public class MarkupParser {
 	 */
 	Pattern LINKS3 = Pattern.compile("\\[\\[([^\\]\\|]+)\\]\\]");
 	s = LINKS3.matcher(s).replaceAll("$1");
+	
+	s = s.replaceAll("_", " ");
 
 	return s;
     }
@@ -151,9 +153,9 @@ public class MarkupParser {
      * @return
      */ 
     public static String removeRefs(String s) {
-	Pattern BR = Pattern.compile("&lt;br */&gt;");
-	Pattern REF1 = Pattern.compile("&lt;ref[^/]+/&gt;", Pattern.DOTALL);
-	Pattern REF2 = Pattern.compile("&lt;ref.*?&lt;/ref&gt;", Pattern.DOTALL);
+	Pattern BR = Pattern.compile("(<|&lt;|&#60;)br */(>|&gt;|&#62;)");
+	Pattern REF1 = Pattern.compile("(<|&lt;|&#60;)ref[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
+	Pattern REF2 = Pattern.compile("(<|&lt;|&#60;)ref.*?(<|&lt;|&#60;)/ref(>|&gt;|&#62;)", Pattern.DOTALL);
 	s = BR.matcher(s).replaceAll(""); // See test case for why we do this.
 	s = REF1.matcher(s).replaceAll("");
 	s = REF2.matcher(s).replaceAll("");
@@ -298,8 +300,10 @@ public class MarkupParser {
 
 	    /* REMOVE LISTS!! */
 	    cleanContent = removeLists(cleanContent);
-
+	    
 	    List<String> sentences = splitSentences(cleanContent);
+	    
+
 
 	    // add only if there is some textual content
 	    if (!sentences.isEmpty() && !sentences.get(0).isEmpty())
@@ -359,13 +363,22 @@ public class MarkupParser {
     }
     
     /**
+     * Removes double spaces between tokens, removes all the parenthesis, and fix spaces before commas.
      * 
      * @param content
      * @return
      */
     public static String cleanAndNormalizeContent(String content){
-	content = removeParenthesis(content);
-	return content.replaceAll("\\s{2,}", " ").trim();
+	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?(\\([^\\(]*?\\))");	// remove parenthesis
+	Matcher m = PARENTHESIS.matcher(content);
+	while(m.find()){
+	    content = m.replaceAll("");
+	    m = PARENTHESIS.matcher(content);
+	}
+	content = content.replaceAll("\\s{2,}", " ");				// remove double spaces
+	content = content.replaceAll("\\s,\\s", ", ");				// remove space before commma
+	return content.trim();
+	
     }
 
 
@@ -483,16 +496,6 @@ public class MarkupParser {
 
 	return tablesContent;
     }
-    
-    /**
-     * 
-     * @param blocks
-     * @return
-     */
-    public static String removeParenthesis(String block){
-	return block.replaceAll("\\(.*\\)", "");
-    }
-
 
     /**
      * 
