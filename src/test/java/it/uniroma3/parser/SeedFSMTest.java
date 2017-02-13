@@ -6,11 +6,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import it.uniroma3.entitydetection.SeedFSM;
 import it.uniroma3.util.ExpertNLP;
-
+/**
+ * 
+ * @author matteo
+ *
+ */
 public class SeedFSMTest {
     
     /**
@@ -23,7 +26,11 @@ public class SeedFSMTest {
 	BufferedReader br = new BufferedReader(new FileReader(new File(path)));
 	String line;
 	while((line = br.readLine()) != null){
+	    try{
 	    sentences.put(line.split("\t")[0], line.split("\t")[1]);
+	    }catch(Exception e){
+		System.out.println(line);
+	    }
 	}
 	br.close();
 	return sentences;
@@ -32,11 +39,11 @@ public class SeedFSMTest {
     
     
     public static void main(String[] args) throws IOException {
-	Map<String, String> sentences = getSentencesFromFile("/Users/matteo/Work/wikipedia-parsing/output/en.tsv");
+	Map<String, String> sentences = getSentencesFromFile("/Users/matteo/Work/Repository/ualberta/lectorplus/groundtruths/first_sentence/en_person.tsv");
 	SeedFSM fsm = new SeedFSM(new ExpertNLP());
-	
+
 	for (Map.Entry<String, String> sentence : sentences.entrySet()){
-	    System.out.println(fsm.findSeed(sentence.getValue()) + "\t" + sentence.getKey() + "\t" + sentence.getValue() + "\n");
+	    System.out.println(fsm.findSeed(sentence.getValue()) + "\t" + sentence.getValue());
 	}
  
    	

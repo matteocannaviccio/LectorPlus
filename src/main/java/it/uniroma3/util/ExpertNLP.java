@@ -3,9 +3,11 @@ package it.uniroma3.util;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
@@ -18,10 +20,12 @@ public class ExpertNLP {
 
     private static String token_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-token.bin";
     private static String sentences_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-sent.bin";
+    private static String lemmatizer_dictonary_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-lemmatizer.dict";
     private static String postagger_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-pos-maxent.bin";
 
     private POSTagger posTagger;
     private Tokenizer tokenizer;
+    private DictionaryLemmatizer lemmatizer;
 
     
     /**
@@ -32,6 +36,7 @@ public class ExpertNLP {
 	try {
 	    posTagger = obtainPOSTagger();
 	    tokenizer = obtainTokenizer();
+	    lemmatizer = obtainLemmatizer();
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -53,6 +58,15 @@ public class ExpertNLP {
 	}
 	return tagSequence;
     }
+    
+    
+    /**
+     * 
+     * @return
+     */
+    public synchronized String getSingular(String word, String postag){
+	return lemmatizer.apply(word, postag);
+    }
 
 
     /**
@@ -68,6 +82,18 @@ public class ExpertNLP {
 	return sdetector;
     }
 
+    /**
+     * 
+     * @return
+     * @throws InvalidFormatException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static DictionaryLemmatizer obtainLemmatizer() throws InvalidFormatException, FileNotFoundException, IOException{
+	InputStream model = new FileInputStream(lemmatizer_dictonary_path);
+	DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(model);
+	return lemmatizer;
+    }
 
     /**
      * 

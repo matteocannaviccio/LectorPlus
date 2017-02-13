@@ -6,7 +6,7 @@ import it.uniroma3.reader.XMLReader;
 
 public class ParserTest {
     
-    public static String input_file = "/Users/matteo/Work/wikipedia-parsing/dump/test/brave_new_world.xml.bz2";
+    public static String input_file = "/Users/matteo/Work/Repository/ualberta/lectorplus/src/main/java/resources/testing/wrongFirst_Test.xml.bz2";
     public static String language = "en";
     
     public static void main(String[] args) {

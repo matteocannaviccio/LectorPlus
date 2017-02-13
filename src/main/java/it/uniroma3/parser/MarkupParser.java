@@ -118,7 +118,7 @@ public class MarkupParser {
 	 */
 	Pattern LINKS3 = Pattern.compile("\\[\\[([^\\]\\|]+)\\]\\]");
 	s = LINKS3.matcher(s).replaceAll("$1");
-	
+
 	s = s.replaceAll("_", " ");
 
 	return s;
@@ -244,7 +244,8 @@ public class MarkupParser {
     }
 
     /**
-     * Removes NOTOC.
+     * Removes NOTOC tag.
+     * It is used to denote article that do not have table of content.
      * 
      * @param s
      * @return
@@ -256,13 +257,17 @@ public class MarkupParser {
 
     /**
      * Removes indentations.
+     * This includes a regex to remove sentences that should be included in template but
+     * for errors in wikimarkup they are in free text.
+     * e.g. look at the initial distinguish in "https://en.wikipedia.org/wiki/Catullus"
      * 
      * @param s
      * @return
      */
-    public static String removeIndentation(String s) {
+    public static String removeIndentation(String text) {
+	text = text.replaceAll("(?m)^\\:''[^\\.']+\\.''", "");
 	Pattern INDENTATION = Pattern.compile("[\\n\\r]:\\s*");
-	return INDENTATION.matcher(s).replaceAll("\n");
+	return INDENTATION.matcher(text).replaceAll("\n");
     }
 
     /**
@@ -300,9 +305,9 @@ public class MarkupParser {
 
 	    /* REMOVE LISTS!! */
 	    cleanContent = removeLists(cleanContent);
-	    
+
 	    List<String> sentences = splitSentences(cleanContent);
-	    
+
 
 
 	    // add only if there is some textual content
@@ -312,7 +317,7 @@ public class MarkupParser {
 
 	return textContent;
     }
-    
+
     /**
      * Splits the paragraphs in sentences.
      * 
@@ -321,7 +326,7 @@ public class MarkupParser {
      */
     public static List<String> splitSentences(String text){
 	List<String> sentences = new LinkedList<String>();
-	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|\\r\\n)(?=\\\"?(\\[\\[)?[A-Z])";
+	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
 	for(String sent : text.split(regex)){
 	    sentences.add(cleanAndNormalizeContent(sent));
 	}
@@ -361,7 +366,7 @@ public class MarkupParser {
 
 	return s;
     }
-    
+
     /**
      * Removes double spaces between tokens, removes all the parenthesis, and fix spaces before commas.
      * 
@@ -378,7 +383,7 @@ public class MarkupParser {
 	content = content.replaceAll("\\s{2,}", " ");				// remove double spaces
 	content = content.replaceAll("\\s,\\s", ", ");				// remove space before commma
 	return content.trim();
-	
+
     }
 
 
@@ -440,7 +445,7 @@ public class MarkupParser {
 	Map<String, String> blocks = fragmentArticle(content);
 	return removeUndesiredBlocks(retrieveTables(blocks, cleaner), lang);
     }
-    
+
 
     /**
      * Remove undesired blocks (from the lang file!).
@@ -451,13 +456,13 @@ public class MarkupParser {
     public static Map<String, List<String>> removeUndesiredBlocks(Map<String, List<String>> sentences, WikiLanguage lang) {
 	List<String> sectionToDelete = lang.getFooterIdentifiers();
 	Map<String, List<String>> filteredSections = sentences;
-	
+
 	// remove undesired sections (notes, references, etc.)
 	for(String undesiredSection : sectionToDelete){
 	    String normUndesiredSection = "#" + undesiredSection.replace(" ", "_");
 	    filteredSections.remove(normUndesiredSection); // we need to change it!
 	}
-	
+
 	// remove empty contents
 	for(Map.Entry<String, List<String>> entry : filteredSections.entrySet()){
 	    if(entry.getValue().isEmpty())

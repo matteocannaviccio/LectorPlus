@@ -1,9 +1,10 @@
 package it.uniroma3.entitydetection;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
+
+import org.apache.commons.collections.map.MultiValueMap;
 /**
  * 
  * @author matteo
@@ -13,7 +14,7 @@ public class FSM{
     
     public final String START = "-";
     public final String ACCEPT = "*1";
-    public Map<String, String> transitions;
+    public MultiValueMap transitions; // this is a map that allows for repeated keys
     public Set<String> states;
 
     /**
@@ -21,7 +22,7 @@ public class FSM{
      * 
      */
     public FSM(){
-	transitions = new TreeMap<String, String>();
+	transitions = new MultiValueMap();
 	states = new TreeSet<String>();
 	reset();
     }
@@ -52,7 +53,10 @@ public class FSM{
      * @return
      */
     public boolean accepts(){
-	return states.contains(ACCEPT);
+	boolean isInAcceptanceState = states.contains(ACCEPT);
+	if(isInAcceptanceState)
+	    states.remove(ACCEPT);
+	return isInAcceptanceState;
     }
 
     /**
@@ -63,9 +67,10 @@ public class FSM{
     public void transition(String symbol){
 	Set<String> newState = new TreeSet<String>();
 	for (String s1 : states){
-	    String t = transitions.get(s1+" + "+symbol);
+	    @SuppressWarnings("unchecked")
+	    List<String> t = (List<String>) transitions.get(s1+" + "+symbol);
 	    if (t != null)
-		newState.add(t);
+		newState.addAll(t);
 	}
 	states = newState;
     }

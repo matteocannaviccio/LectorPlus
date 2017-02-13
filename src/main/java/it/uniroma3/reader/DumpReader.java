@@ -40,7 +40,7 @@ public class DumpReader {
     /*
      * 
      */
-    public static String external_filter_path = "/Users/matteo/Work/Lector-agiw/interlanguages/en_gt_complete.tsv";
+    public static String external_filter_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/groundtruths/first_sentence/en_person.tsv";
 
     /**
      * 
@@ -68,7 +68,7 @@ public class DumpReader {
 	long start_time = System.currentTimeMillis();
 
 
-	/* ------ PIPELINE COMPONENTS ------ */
+	/* ------------------------------------ PIPELINE COMPONENTS ------------------------------------ */
 	// reader
 	XMLReader reader = new XMLReader(dump_path, chunk);
 
@@ -78,11 +78,11 @@ public class DumpReader {
 	// writer
 	PrintStream out = new PrintStream(
 		new FileOutputStream("/Users/matteo/Work/wikipedia-parsing/output/" 
-			+ language + ".tsv"), false, "UTF-8");
+			+ language + "_person.tsv"), false, "UTF-8");
 
 	Set<String> filterEntities = getEntitiesFromFile(external_filter_path);
 
-	/* ------ EXECUTION ------ */
+	/* ------------------------------------------ EXECUTION ------------------------------------------ */
 	List<String> lines = reader.nextArticles();
 
 	lines.parallelStream()		
