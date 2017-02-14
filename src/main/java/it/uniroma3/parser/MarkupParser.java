@@ -9,7 +9,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.model.WikiLanguage;
-
+/**
+ * 
+ * 
+ * 
+ * 
+ * @author matteo
+ *
+ */
 public class MarkupParser {
 
     /**
@@ -87,7 +94,8 @@ public class MarkupParser {
 	    subsections_count+=1;
 
 	    // get the title of the section (removing possible wikilinks) and normalize it (adapting for the urls)
-	    String title_block = removeWikilinks(m_sec.group(0).replaceAll("=", "").trim().replaceAll(" ", "_"));
+	    String title_block = removeWikilinks(m_sec.group(0).replaceAll("=", "").trim()).replaceAll(" ", "_");
+
 	    String header = separator + title_block;
 
 	    // insert the other sections
@@ -118,9 +126,9 @@ public class MarkupParser {
 	 */
 	Pattern LINKS3 = Pattern.compile("\\[\\[([^\\]\\|]+)\\]\\]");
 	s = LINKS3.matcher(s).replaceAll("$1");
-
+	
 	s = s.replaceAll("_", " ");
-
+	
 	return s;
     }
 
@@ -135,7 +143,6 @@ public class MarkupParser {
 	Pattern INTER_WIKI_LINKS = Pattern.compile("\\[\\[[a-z\\-]+:[^|\\]]+\\]\\]");
 	Pattern EXTERNAL_LINKS = Pattern.compile("\\[http[^\\s]+\\]");
 	Pattern EXTERNAL_LINKS_WITH_TEXT = Pattern.compile("\\[http[^\\s]+((\\s)[^\\]]+)?\\]");
-
 	s = INTER_WIKI_LINKS.matcher(s).replaceAll(" ");
 	s = EXTERNAL_LINKS.matcher(s).replaceAll("");
 	s = EXTERNAL_LINKS_WITH_TEXT.matcher(s).replaceAll("$1");
@@ -187,20 +194,6 @@ public class MarkupParser {
     public static String removeHtmlComments(String s) {
 	Pattern HTML_COMMENT = Pattern.compile("(<|&lt;|&#60;)!--.*?--(>|&gt;|&#62;)", Pattern.DOTALL);
 	s = HTML_COMMENT.matcher(s).replaceAll("");
-	return s;
-    }
-
-    /**
-     * Compress multiple lines.
-     * 
-     * @param s
-     * @return
-     */
-    public static String compressMultipleNewlines(String s) {
-	Pattern START_NEWLINES = Pattern.compile("^[\\n\\r]+");
-	Pattern MULTIPLE_NEWLINES = Pattern.compile("[\\n\\r][\\n\\r]+");
-	s = MULTIPLE_NEWLINES.matcher(s).replaceAll("\n");
-	s = START_NEWLINES.matcher(s).replaceAll("");
 	return s;
     }
 
@@ -283,40 +276,50 @@ public class MarkupParser {
 	return MATH.matcher(s).replaceAll("");
     }
 
+
     /**
-     * Check each block of the article and remove composite structures such as template, tables, etc.
-     * Then, remove the common-sense wiki-links (we are not interested in them) and normalize them.
-     * Then, split the content in sentences and return the final content.
      * 
      * @param blocks
+     * @param cleaner
+     * @param lang
      * @return
      */
-    public static Map<String, List<String>> fragmentParagraph(Map<String, String> blocks, Cleaner cleaner, WikiLanguage lang){
-	Map<String, List<String>> textContent = new LinkedHashMap<String, List<String>>();
+    public static Map<String, String> cleanBlocks(Map<String, String> blocks, Cleaner cleaner, WikiLanguage lang){
+	Map<String, String> cleanedBlocks = new LinkedHashMap<String, String>();
 
 	for(Map.Entry<String, String> block : blocks.entrySet()){
 	    String cleanContent = cleaner.cleanBlockOfContent(block.getValue(), "{{", "}}");			// removes templates
 	    cleanContent = cleaner.cleanBlockOfContentFromSpecific(cleanContent, "[[", "image", "]]"); 		// removes media
 	    cleanContent = cleaner.cleanBlockOfContent(cleanContent, "{|", "|}"); 				// removes tables
+	    cleanContent = removeLists(cleanContent);								// remove lists
 
 	    // before to split in sentences, clean and normalize important wiki-links!
 	    cleanContent = removeCommonsenseWikilinks(cleanContent, lang);
 	    cleanContent = normalizeWikilinks(cleanContent);
 
-	    /* REMOVE LISTS!! */
-	    cleanContent = removeLists(cleanContent);
+	    /* remove spaces, parenthesis */
+	    cleanContent = cleanAndNormalizeContent(cleanContent);
 
-	    List<String> sentences = splitSentences(cleanContent);
-
-
-
-	    // add only if there is some textual content
-	    if (!sentences.isEmpty() && !sentences.get(0).isEmpty())
-		textContent.put(block.getKey(), sentences);
+	    if (!cleanContent.isEmpty())
+		cleanedBlocks.put(block.getKey(), cleanContent);
 	}
-
-	return textContent;
+	return cleanedBlocks;
     }
+    
+    /**
+     * 
+     * @param blocks
+     * @param cleaner
+     * @param lang
+     * @return
+     */
+    public static Map<String, String> removeEmphasis(Map<String, String> blocks){
+	for(Map.Entry<String, String> block : blocks.entrySet()){
+	    blocks.put(block.getKey(), removeEmphasis(block.getValue()));
+	}
+	return blocks;
+    }
+    
 
     /**
      * Splits the paragraphs in sentences.
@@ -328,7 +331,7 @@ public class MarkupParser {
 	List<String> sentences = new LinkedList<String>();
 	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
 	for(String sent : text.split(regex)){
-	    sentences.add(cleanAndNormalizeContent(sent));
+	    sentences.add(sent);
 	}
 	return sentences;
     }
@@ -368,7 +371,8 @@ public class MarkupParser {
     }
 
     /**
-     * Removes double spaces between tokens, removes all the parenthesis, and fix spaces before commas.
+     * Removes double spaces between tokens, deouble new lines, and 
+     * removes all the parenthesis, fixing spaces before commas.
      * 
      * @param content
      * @return
@@ -380,10 +384,28 @@ public class MarkupParser {
 	    content = m.replaceAll("");
 	    m = PARENTHESIS.matcher(content);
 	}
-	content = content.replaceAll("\\s{2,}", " ");				// remove double spaces
-	content = content.replaceAll("\\s,\\s", ", ");				// remove space before commma
+	/*
+	 * this is a conseguence of removing parenthesis. For example, 
+	 * if we remove parenthesis in a text such as: Jack ''(elb)'' is the man 
+	 * --> we would end up with --> Jack '''' is the man 
+	 */
+	content = content.replaceAll("''''", "");
+	
+	
+	content = content.replaceAll(" {2,}", " ");				// remove double spaces
+	content = content.replaceAll("\n{2,}", "\n");				// remove double new lines
+	content = content.replaceAll(" , ", ", ");				// remove space before commma
 	return content.trim();
+    }
 
+    /**
+     * 
+     * @param content
+     * @return
+     */
+    private static String removeEmphasis(String block) {
+	Pattern EMPHASIS = Pattern.compile("('''|'')");
+	return EMPHASIS.matcher(block).replaceAll("");
     }
 
 
@@ -443,7 +465,7 @@ public class MarkupParser {
     public static Map<String, List<String>> getTablesFromXml(String page, WikiLanguage lang, Cleaner cleaner){
 	String content = XMLParser.getWikiMarkup(page);
 	Map<String, String> blocks = fragmentArticle(content);
-	return removeUndesiredBlocks(retrieveTables(blocks, cleaner), lang);
+	return retrieveTables(blocks, cleaner);
     }
 
 
@@ -453,22 +475,22 @@ public class MarkupParser {
      * @param sentences
      * @return
      */
-    public static Map<String, List<String>> removeUndesiredBlocks(Map<String, List<String>> sentences, WikiLanguage lang) {
+    public static Map<String, String> removeUndesiredBlocks(Map<String, String> blocks, WikiLanguage lang) {
 	List<String> sectionToDelete = lang.getFooterIdentifiers();
-	Map<String, List<String>> filteredSections = sentences;
+	Map<String, String> filteredBlocks = blocks;
 
 	// remove undesired sections (notes, references, etc.)
 	for(String undesiredSection : sectionToDelete){
 	    String normUndesiredSection = "#" + undesiredSection.replace(" ", "_");
-	    filteredSections.remove(normUndesiredSection); // we need to change it!
+	    filteredBlocks.remove(normUndesiredSection); // we need to change it!
 	}
 
 	// remove empty contents
-	for(Map.Entry<String, List<String>> entry : filteredSections.entrySet()){
+	for(Map.Entry<String, String> entry : filteredBlocks.entrySet()){
 	    if(entry.getValue().isEmpty())
-		filteredSections.remove(entry.getKey());
+		filteredBlocks.remove(entry.getKey());
 	}
-	return filteredSections;
+	return filteredBlocks;
     }
 
 
@@ -481,7 +503,7 @@ public class MarkupParser {
     public static Map<String, List<String>> getListsFromXml(String page, WikiLanguage lang){
 	String content = XMLParser.getWikiMarkup(page);
 	Map<String, String> blocks = fragmentArticle(content);
-	return removeUndesiredBlocks(retrieveLists(blocks), lang);
+	return retrieveLists(blocks);
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import it.uniroma3.entitydetection.EntityAugmenter;
 import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
@@ -35,12 +36,12 @@ public class DumpReader {
     /*
      * Chunk of articles to read
      */
-    public static int chunk = 5000;
+    public static int chunkSize = 1000;
 
     /*
      * 
      */
-    public static String external_filter_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/groundtruths/first_sentence/en_person.tsv";
+    public static String external_filter_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/groundtruths/first_sentence/en_complete.tsv";
 
     /**
      * 
@@ -70,31 +71,43 @@ public class DumpReader {
 
 	/* ------------------------------------ PIPELINE COMPONENTS ------------------------------------ */
 	// reader
-	XMLReader reader = new XMLReader(dump_path, chunk);
+	XMLReader reader = new XMLReader(dump_path, true);
 
 	// parser
 	WikiParser parser = new WikiParser(new WikiLanguage(language));
 
-	// writer
-	PrintStream out = new PrintStream(
-		new FileOutputStream("/Users/matteo/Work/wikipedia-parsing/output/" 
-			+ language + "_person.tsv"), false, "UTF-8");
+	// entities augmenter
+	EntityAugmenter augmenter = new EntityAugmenter();
 
-	Set<String> filterEntities = getEntitiesFromFile(external_filter_path);
+	// writer json
+	PrintStream out_json = new PrintStream(
+		new FileOutputStream("/Users/matteo/Work/wikipedia-parsing/output/" 
+			+ language + ".json"), false, "UTF-8");
+
+	//Set<String> filterEntities = getEntitiesFromFile(external_filter_path);
 
 	/* ------------------------------------------ EXECUTION ------------------------------------------ */
-	List<String> lines = reader.nextArticles();
 
-	lines.parallelStream()		
-	.map(s -> parser.createArticleFromXml(s))
-	.filter(s -> s.getType() == ArticleType.ARTICLE)
-	.filter(s -> filterEntities.contains(s.getWikid()))
-	.forEach(s -> out.println(s.getWikid() + "\t" + s.getFirstSentence()));
-	
-	//lines.parallelStream().filter(s -> s.contains("Brave New")).forEach(System.out::println);
+	List<String> lines;
+	while((lines = reader.nextChunk(chunkSize)) != null){
+	    
+	    System.out.println("Working on next: " + lines.size() + " articles.");
+
+	    lines.parallelStream()		
+	    .map(s -> parser.createArticleFromXml(s))
+	    .filter(s -> s.getType() == ArticleType.ARTICLE)
+	    .map(s -> EntityAugmenter.findPrimaryEntitiesHooks(s))
+	    .map(s -> EntityAugmenter.augmentEntities(s))
+	    .forEach(s -> out_json.println(s.toJson()));
+	    
+	    lines.clear();
+	    System.out.println("Reading for next batch.");
+	}
+
+	reader.closeBuffer();
+	out_json.close();
 
 	long end_time = System.currentTimeMillis();
-	out.close();
 
 	System.out.println("Time: " + (end_time - start_time) + " ms.");
     }

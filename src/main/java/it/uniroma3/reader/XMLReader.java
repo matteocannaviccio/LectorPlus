@@ -1,7 +1,9 @@
 package it.uniroma3.reader;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -15,24 +17,35 @@ import org.apache.tools.bzip2.CBZip2InputStream;
  */
 public class XMLReader {
     private BufferedReader br;
-    private int chunk = 10;
 
     /**
      * Creates an input stream for reading Wikipedia articles from a bz2-compressed dump file.
      * @param file
      */
-    public XMLReader(String file) {
-	this.br = getReader(file);
+    public XMLReader(String file, boolean isBzip2) {
+	if(isBzip2)
+	    this.br = getReaderBZip2(file);
+	else
+	    this.br = getReaderXML(file);
     }
 
+
     /**
-     * Creates an input stream for reading Wikipedia articles from a bz2-compressed dump file
-     * and initialize a value for chunk.
-     * @param file
+     * 
+     * @param path
+     * @return
      */
-    public XMLReader(String file, int chunk) {
-	this.br = getReader(file);
-	this.chunk = chunk;
+    public BufferedReader getReaderBZip2(String path){
+	BufferedReader br = null;
+	try {
+	    FileInputStream fis = new FileInputStream(path);
+	    byte[] ignoreBytes = new byte[2];
+	    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
+	    br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis), "UTF8"));
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return br;
     }
 
     /**
@@ -40,13 +53,10 @@ public class XMLReader {
      * @param path
      * @return
      */
-    public BufferedReader getReader(String path){
+    public BufferedReader getReaderXML(String path){
 	BufferedReader br = null;
 	try {
-	    FileInputStream fis = new FileInputStream(path);
-	    byte[] ignoreBytes = new byte[2];
-	    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-	    br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis), "UTF8"));
+	    br = new BufferedReader(new FileReader(new File(path)));
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
@@ -68,7 +78,7 @@ public class XMLReader {
 		if (line.endsWith("<page>"))
 		    break;
 	    }
-	    
+
 	    // no articles found in the dump
 	    if (line == null) {
 		br.close();
@@ -85,7 +95,7 @@ public class XMLReader {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	
+
 	return sb.toString();
     }
 
@@ -96,12 +106,11 @@ public class XMLReader {
      * 
      * @return
      */
-    public List<String> nextArticles(){
+    public List<String> nextChunk(int chunk){
 	List<String> s = new ArrayList<String>(chunk);
-	StringBuffer sb;
 
 	while(chunk > 0){
-	    sb = new StringBuffer();
+	    StringBuffer sb = new StringBuffer();
 	    String line;
 
 	    try {
@@ -111,12 +120,14 @@ public class XMLReader {
 		    if (line.endsWith("<page>"))
 			break;
 		}
+
 		// no articles found in the dump
 		if (line == null) {
-		    br.close();
 		    return null;
+
 		}else{ // extract an article
 		    sb.append(line + "\n");
+
 		    while ((line = br.readLine()) != null) {
 			sb.append(line + "\n");
 			if (line.endsWith("</page>"))
@@ -127,11 +138,23 @@ public class XMLReader {
 	    } catch (IOException e) {
 		e.printStackTrace();
 	    }
-	    
+
 	    s.add(sb.toString());
 	    chunk-=1;
 	}
 
 	return s;
+    }
+
+    /**
+     * 
+     */
+    public void closeBuffer(){
+	try {
+	    this.br.close();
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
     }
 }

@@ -134,9 +134,7 @@ public class SeedFSM {
     public List<String> findSeed(String sentence){
 	this.finiteStateMachine.reset();
 	List<String> seeds = new LinkedList<String>();
-	
 	List<Pair<String, String>> tags = cutOutFirstPart(expert.tagSentence(sentence));
-	System.out.println(tags);
 	String tmpToken = "-";
 	
 	for(Pair<String, String> tag : tags){

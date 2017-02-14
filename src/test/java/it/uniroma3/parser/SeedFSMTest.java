@@ -40,6 +40,7 @@ public class SeedFSMTest {
     
     public static void main(String[] args) throws IOException {
 	Map<String, String> sentences = getSentencesFromFile("/Users/matteo/Work/Repository/ualberta/lectorplus/groundtruths/first_sentence/en_person.tsv");
+	
 	SeedFSM fsm = new SeedFSM(new ExpertNLP());
 
 	for (Map.Entry<String, String> sentence : sentences.entrySet()){

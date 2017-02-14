@@ -2,17 +2,11 @@ package it.uniroma3.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import it.uniroma3.model.WikiLanguage;
-import it.uniroma3.model.WikiArticle.ArticleType;
-import it.uniroma3.parser.WikiParser;
 
 public class DumpSearcher {
     
@@ -35,12 +29,12 @@ public class DumpSearcher {
     /*
      * Chunk of articles to read
      */
-    public static int chunk = 5000;
+    public static int chunkSize = 5000;
 
     /*
      * 
      */
-    public static String entities_to_search = "Gaius Valerius Catullus";
+    public static String entities_to_search = "Contraction mapping";
 
     /**
      * 
@@ -70,17 +64,15 @@ public class DumpSearcher {
 
 	/* ------ PIPELINE COMPONENTS ------ */
 	// reader
-	XMLReader reader = new XMLReader(dump_path, chunk);
-
-	// parser
-	WikiParser parser = new WikiParser(new WikiLanguage(language));
+	XMLReader reader = new XMLReader(dump_path, true);
 
 
 	/* ------ EXECUTION ------ */
-	List<String> lines = reader.nextArticles();
-	
-	lines.parallelStream().filter(s -> s.contains(entities_to_search)).forEach(System.out::println);
-
+	List<String> lines;
+	while((lines = reader.nextChunk(chunkSize)) != null){
+	    lines.parallelStream().filter(s -> s.contains(entities_to_search)).forEach(System.out::println);
+	}
+	reader.closeBuffer();
 	long end_time = System.currentTimeMillis();
 
 	System.out.println("Time: " + (end_time - start_time) + " ms.");

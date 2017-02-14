@@ -47,7 +47,7 @@ public class ExpertNLP {
      * 
      * @return
      */
-    public synchronized List<Pair<String, String>> tagSentence(String sentece){
+    public List<Pair<String, String>> tagSentence(String sentece){
 	String[] tokens = this.tokenizer.tokenize(sentece);
 	String[] tags = this.posTagger.tag(tokens);
 	List<Pair<String, String>> tagSequence = new ArrayList<Pair<String, String>>(tokens.length);

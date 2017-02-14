@@ -1,6 +1,7 @@
 package it.uniroma3.parser;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,6 @@ import it.uniroma3.model.WikiLanguage;
  *
  */
 public class WikiParser {
-    //private static final Logger logger = LoggerFactory.getLogger(WikiLanguage.class);
     protected WikiLanguage lang;
     protected Cleaner cleaner;
 
@@ -115,16 +115,16 @@ public class WikiParser {
 
 	/* ************************************************************************ */
 
-	/*
-	 * If not, get the content and use the first sentence (100 characters, if tere are) 
-	 * to check if there is a redirect, or a disambiguation sentence.
-	 */
-	String rawContent = getContent(page);
-	String toCheck = (rawContent.length() >= 100) ? rawContent.substring(0, 100) : rawContent.substring(0, rawContent.length());
+	// split the article in blocks - using all the ## headings ##
+	Map<String, String> blocks = MarkupParser.cleanBlocks(getBlocksOfContentFromXml(page), cleaner, lang);
+
+	String abstractSection = "-";
+	if(blocks.containsKey("#Abstract"))
+	    abstractSection = blocks.get("#Abstract");
 
 	/* Filter to capture REDIRECT articles */
 	for (String redirectHook : lang.getRedirectIdentifiers()){
-	    if (toCheck.matches("^.*#" + redirectHook + "\\b.*")){
+	    if (abstractSection.matches("^.*#" + redirectHook + "\\b.*")){
 		article.setType(ArticleType.REDIRECT);
 		return article;
 	    }
@@ -145,7 +145,7 @@ public class WikiParser {
 
 	/* Filter to capture DISAMBIGUATION articles with text on the abstract */
 	for (String disambiguationHook : lang.getDisambiguationTextIdentifiers()){
-	    if (toCheck.contains(disambiguationHook)){
+	    if (abstractSection.contains(disambiguationHook)){
 		article.setType(ArticleType.DISAMBIGUATION);
 		return article;
 	    }
@@ -153,35 +153,25 @@ public class WikiParser {
 
 	/* ************************************************************************ */
 
+
 	/*
 	 * if it is not of all of this... it is an article! :) 
 	 */
 	article.setType(ArticleType.ARTICLE);
-
-	// split the article in blocks - using all the ## headings ##
-	Map<String, String> blocks = getBlocksOfContentFromXml(page);
-
+		
 	// select the emphasized words in the abstract as aliases for the primary entity
-	if(blocks.containsKey("#Abstract"))
-	    article.setAliases(getAlias(blocks.get("#Abstract")));
+	article.setAliases(getAlias(abstractSection));
 
-	// get all the sentences from the article -- large processing here!
-	article.setContent(splitSentences(blocks));
+	// and now remove the emphasis and assign the blocks to the article
+	article.setBlocks(MarkupParser.removeEmphasis(blocks));
+
+	// and everything else
 	article.setBio(cleaner.retrieveAllWithSpecification(page, "{{", "bio", "}}").get(0));
 	article.setTables(MarkupParser.getTablesFromXml(page, lang, cleaner));
 	article.setLists(MarkupParser.getListsFromXml(page, lang));
-	article.setWikilinks(getWikilinks(article.getContent()));
+	article.setWikilinks(getWikilinks(article.getBlocks()));
 
 	return article;
-    }
-
-    /**
-     * 
-     * @param page
-     * @return
-     */
-    private String getContent(String page){
-	return cleanContent(XMLParser.getWikiMarkup(page));
     }
 
     /**
@@ -206,34 +196,33 @@ public class WikiParser {
 	    blocks.put(block.getKey(), cleanContent(block.getValue()));
 	}
 
+	/*
+	 * filter out undesired blocks
+	 * name section (desired) --> block
+	 */
+	blocks = MarkupParser.removeUndesiredBlocks(blocks, lang);
+
+
 	return blocks;
     }
 
+
     /**
+     * split each block in sentences
+     * (here we deal with wiki-links!)
+     * name section --> sentence1, sentence2, ...
      * 
      * @param blocks
      * @return
      */
     private Map<String, List<String>> splitSentences(Map<String, String> blocks){
-
-	// remove '''emphasis''' from all the blocks
-	for(Map.Entry<String, String> block : blocks.entrySet())
-	    blocks.put(block.getKey(), removeEmphasis(block.getValue()));
-
-	/*
-	 * split each block in sentences
-	 * (here we deal with wiki-links!)
-	 * name section --> sentence1, sentence2, ...
-	 */
-	Map<String, List<String>> sentences = MarkupParser.fragmentParagraph(blocks, cleaner, lang);
-
-	/*
-	 * filter out undesired blocks
-	 * name section (desired) --> sentence1, sentence2, ...
-	 */
-	sentences = MarkupParser.removeUndesiredBlocks(sentences, lang);
-	return sentences;
+	Map<String, List<String>> sectionsAndSentences = new LinkedHashMap<String, List<String>>();
+	for(Map.Entry<String, String> block : blocks.entrySet()){
+	    sectionsAndSentences.put(block.getKey(), MarkupParser.splitSentences(block.getValue()));
+	}
+	return sectionsAndSentences;
     }
+
 
     /**
      * 
@@ -262,35 +251,34 @@ public class WikiParser {
      * @param s
      * @return
      */
-    protected Map<String, Set<String>> getWikilinks(Map<String, List<String>> sentences) {
+    protected Map<String, Set<String>> getWikilinks(Map<String, String> blocks) {
 	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
 	Pattern LINKS1 = Pattern.compile("(?<=\\[\\[)([^\\]]+)\\|([^\\]]+)(?=\\]\\])");
 	Pattern LINKS2 = Pattern.compile("(?<=\\[\\[)([^\\]\\|]+)(?=\\]\\])");
 
-	for(Map.Entry<String, List<String>> section : sentences.entrySet()){
-	    for(String sentence : section.getValue()){
+	for(Map.Entry<String, String> section : blocks.entrySet()){
 
-		// composite wikilinks, e.g. [[Barack_Obama|Obama]]
-		Matcher m = LINKS1.matcher(sentence);
-		while(m.find()){
-		    String rendered = m.group(1).replaceAll("_", " ");
-		    String wikid = m.group(2);
-		    if (!wikilinks.containsKey(rendered))
-			wikilinks.put(rendered, new TreeSet<String>());
-		    wikilinks.get(rendered).add(wikid);
-		}
+	    // composite wikilinks, e.g. [[Barack_Obama|Obama]]
+	    Matcher m = LINKS1.matcher(section.getValue());
+	    while(m.find()){
+		String rendered = m.group(1).replaceAll("_", " ");
+		String wikid = m.group(2);
+		if (!wikilinks.containsKey(rendered))
+		    wikilinks.put(rendered, new TreeSet<String>());
+		wikilinks.get(rendered).add(wikid);
+	    }
 
-		// simple wikilinks, e.g. [[Barack_Obama]]
-		m = LINKS2.matcher(sentence);
-		while(m.find()){
-		    String wikid = m.group(1);
-		    String rendered = m.group(1).replaceAll("_", " ");
-		    if (!wikilinks.containsKey(wikid))
-			wikilinks.put(wikid, new TreeSet<String>());
-		    wikilinks.get(wikid).add(rendered);
-		}
+	    // simple wikilinks, e.g. [[Barack_Obama]]
+	    m = LINKS2.matcher(section.getValue());
+	    while(m.find()){
+		String wikid = m.group(1);
+		String rendered = m.group(1).replaceAll("_", " ");
+		if (!wikilinks.containsKey(wikid))
+		    wikilinks.put(wikid, new TreeSet<String>());
+		wikilinks.get(wikid).add(rendered);
 	    }
 	}
+
 	return wikilinks;
     }
 
@@ -303,7 +291,8 @@ public class WikiParser {
      */
     protected List<String> getAlias(String block) {
 	List<String> aliases = new LinkedList<String>();
-	Pattern ALIASES = Pattern.compile("('''|''''')(.*?)('''|''''')");
+	// we add the constraint of "{" and "}" because we remove {{template}} after this step
+	Pattern ALIASES = Pattern.compile("('''|''''')([^\\{\\}\\(\\)\\+\\*]+?)('''|''''')");
 	Matcher m = ALIASES.matcher(block);
 	while(m.find()){
 	    String alias = m.group(2).replaceAll("(\\[|\\]|'')*", "").replaceAll("^'", "").replaceAll("'$", "").trim();
@@ -311,16 +300,6 @@ public class WikiParser {
 		aliases.add(alias);
 	}
 	return aliases;
-    }
-
-    /**
-     * 
-     * @param content
-     * @return
-     */
-    protected String removeEmphasis(String block) {
-	Pattern EMPHASIS = Pattern.compile("('''|'')");
-	return EMPHASIS.matcher(block).replaceAll("");
     }
 
     /**

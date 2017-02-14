@@ -8,29 +8,38 @@ import com.google.gson.Gson;
 
 import it.uniroma3.parser.MarkupParser;
 /**
+ *
+ * 
  * 
  * @author matteo
  *
  */
 public class WikiArticle {
 
+    // Info about the article (maybe a bit redundant)
     private String wikid;
     private String id;
     private String namespace;
     private String title;
     private String url;
-    
+
     // Primary entity concepts
+    private String pronoun;
     private List<String> aliases;
+    private List<String> seeds;
     private ArticleType type;
     private String disambiguation;
     private String bio;// for the italian language
-    
+
     // Secondary entities concepts 
     private Map<String, Set<String>> wikilinks;
 
+    // Flag for the entity detection
+    private transient boolean augmentedEntities;
+
     // Article composite structures
-    private Map<String, List<String>> text;
+    private Map<String, String> blocks;
+    private Map<String, List<String>> sentences;
     private Map<String, List<String>> tables;
     private transient Map<String, List<String>> lists;
 
@@ -52,6 +61,7 @@ public class WikiArticle {
 	this.title = title;
 	this.namespace = namespace;
 	this.url = "http://" + lang.toString() + ".wikipedia.org/wiki/" + wikid;
+	this.augmentedEntities = false;
     }
 
     /**
@@ -85,15 +95,15 @@ public class WikiArticle {
     /**
      * @return the content
      */
-    public Map<String, List<String>> getContent() {
-	return text;
+    public Map<String, List<String>> getSentences() {
+	return sentences;
     }
 
     /**
      * @param content the content to set
      */
-    public void setContent(Map<String, List<String>> content) {
-	this.text = content;
+    public void setContent(Map<String, List<String>> sentences) {
+	this.sentences = sentences;
     }
 
     /* (non-Javadoc)
@@ -173,15 +183,14 @@ public class WikiArticle {
      */
     private String getText(){
 	StringBuffer sb = new StringBuffer();
-	for(Map.Entry<String, List<String>> paragraph : this.text.entrySet()){
-	    for(String sentence : paragraph.getValue()){
-		sb.append(paragraph.getKey() + "\t" + sentence + "\n");
-	    }
+	for(Map.Entry<String, String> section : this.blocks.entrySet()){
+	    sb.append(section.getKey() + "\t" + section.getValue() + "\n");
 	}
+
 	return sb.toString();
     }
 
- 
+
     /**
      * @return the type
      */
@@ -296,35 +305,100 @@ public class WikiArticle {
      * @return the wikilinks
      */
     public Map<String, Set<String>> getWikilinks() {
-        return wikilinks;
+	return wikilinks;
     }
 
     /**
      * @param wikilinks the wikilinks to set
      */
     public void setWikilinks(Map<String, Set<String>> wikilinks) {
-        this.wikilinks = wikilinks;
+	this.wikilinks = wikilinks;
     }
 
     /**
      * @return the tables
      */
     public Map<String, List<String>> getTables() {
-        return tables;
+	return tables;
     }
-    
+
     /**
+     * @return the lists
+     */
+    public Map<String, List<String>> getLists() {
+	return lists;
+    }
+
+    /**
+     * Returna the first sentence of the article, without the wikilinks!\
      * 
      * @return
      */
-    public String getFirstSentence(){
+    public String getCleanFirstSentence(){
 	String firstSentence = "-";
-	if(this.getContent().containsKey("#Abstract"))
-	    firstSentence = this.getContent().get("#Abstract").get(0);
-	if(firstSentence.startsWith("is ") || 
-		firstSentence.startsWith("was "))
-	    firstSentence = this.title + " " + firstSentence;
+	if(this.getBlocks().containsKey("#Abstract"))
+	    firstSentence = MarkupParser.splitSentences(this.getBlocks().get("#Abstract")).get(0); 
 	return MarkupParser.removeWikilinks(firstSentence);
+    }
+
+    /**
+     * @return the augmentedEntities
+     */
+    public boolean isAugmentedEntities() {
+	return augmentedEntities;
+    }
+
+    /**
+     * @param augmentedEntities the augmentedEntities to set
+     */
+    public void setAugmentedEntities(boolean augmentedEntities) {
+	this.augmentedEntities = augmentedEntities;
+    }
+
+    /**
+     * @return the seeds
+     */
+    public List<String> getSeeds() {
+	return seeds;
+    }
+
+    /**
+     * @param seeds the seeds to set
+     */
+    public void setSeeds(List<String> seeds) {
+	this.seeds = seeds;
+    }
+
+    public String getPrimaryTag(){
+	return "[[###" + this.wikid + "###]]";
+    }
+
+    /**
+     * @return the pronoun
+     */
+    public String getPronoun() {
+	return pronoun;
+    }
+
+    /**
+     * @param pronoun the pronoun to set
+     */
+    public void setPronoun(String pronoun) {
+	this.pronoun = pronoun;
+    }
+
+    /**
+     * @return the blocks
+     */
+    public Map<String, String> getBlocks() {
+	return blocks;
+    }
+
+    /**
+     * @param blocks the blocks to set
+     */
+    public void setBlocks(Map<String, String> blocks) {
+	this.blocks = blocks;
     }
 
 }

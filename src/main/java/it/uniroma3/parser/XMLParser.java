@@ -5,7 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.uniroma3.model.WikiLanguage;
-
+/**
+ * 
+ * 
+ * 
+ * 
+ * @author matteo
+ *
+ */
 public class XMLParser {
     
     private static final Logger logger = LoggerFactory.getLogger(WikiLanguage.class);
