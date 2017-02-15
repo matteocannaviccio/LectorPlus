@@ -19,7 +19,7 @@ import opennlp.tools.util.InvalidFormatException;
 public class ExpertNLP {
 
     private static String token_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-token.bin";
-    private static String sentences_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-sent.bin";
+    //private static String sentences_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-sent.bin";
     private static String lemmatizer_dictonary_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-lemmatizer.dict";
     private static String postagger_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-pos-maxent.bin";
 

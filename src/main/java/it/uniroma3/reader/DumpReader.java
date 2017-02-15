@@ -76,8 +76,6 @@ public class DumpReader {
 	// parser
 	WikiParser parser = new WikiParser(new WikiLanguage(language));
 
-	// entities augmenter
-	EntityAugmenter augmenter = new EntityAugmenter();
 
 	// writer json
 	PrintStream out_json = new PrintStream(

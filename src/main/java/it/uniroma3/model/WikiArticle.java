@@ -40,7 +40,7 @@ public class WikiArticle {
     // Article composite structures
     private Map<String, String> blocks;
     private Map<String, List<String>> sentences;
-    private Map<String, List<String>> tables;
+    private transient Map<String, List<String>> tables;
     private transient Map<String, List<String>> lists;
 
     private static transient Gson gson = new Gson();
