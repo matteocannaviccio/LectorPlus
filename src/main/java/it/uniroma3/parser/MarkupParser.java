@@ -258,6 +258,7 @@ public class MarkupParser {
      * @return
      */
     public static String removeIndentation(String text) {
+	text = text.replaceAll("(?m)^\\;.+\\n", "");
 	text = text.replaceAll("(?m)^\\:''[^\\.']+\\.''", "");
 	Pattern INDENTATION = Pattern.compile("[\\n\\r]:\\s*");
 	return INDENTATION.matcher(text).replaceAll("\n");
