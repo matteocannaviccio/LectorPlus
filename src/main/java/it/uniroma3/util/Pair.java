@@ -6,7 +6,7 @@ package it.uniroma3.util;
  * @param <A>
  * @param <B>
  */
-public final class Pair<A, B> implements Comparable<Pair<A,B>> {
+public final class Pair<A, B> {
     public final A key;
     public final B value;
 
@@ -66,9 +66,4 @@ public final class Pair<A, B> implements Comparable<Pair<A,B>> {
 	return key.toString()+" ; "+value.toString();
     }
 
-    @Override
-    public int compareTo(Pair<A, B> o) {
-	// we can't order pairs, this method returns ZERO if the pairs are identical
-	return (o.hashCode() - this.hashCode());
-    }
 }
