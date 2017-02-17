@@ -22,6 +22,7 @@ public class WikiArticle {
     private String namespace;
     private String title;
     private String url;
+    private String targetPage = "-";
 
     // Primary entity concepts
     private String pronoun;
@@ -170,11 +171,12 @@ public class WikiArticle {
 		+ " namespace=" + this.namespace + ",\n"
 		+ " aliases=" + this.aliases + ",\n"
 		+ " type= " + this.type + ",\n"
+		+ " target= " + this.targetPage + ",\n"
 		+ " disambiguation= " + this.disambiguation + ",\n"
-		+ " bio= " + this.bio + ",\n"
-		//+ " table= " + getTables() + ",\n"
-		//+ " list= " + getLists() + ",\n"
-		+ " text= " + "\n" + getText() + "]";
+		+ " text= " + getText() + ",\n"
+		+ " bio= " + this.bio + "]";
+	//+ " table= " + getTables() + ",\n"
+	//+ " list= " + getLists() + ",\n"
     }
 
     /**
@@ -183,10 +185,12 @@ public class WikiArticle {
      */
     private String getText(){
 	StringBuffer sb = new StringBuffer();
-	for(Map.Entry<String, String> section : this.blocks.entrySet()){
-	    sb.append(section.getKey() + "\t" + section.getValue() + "\n");
-	}
-
+	if (this.blocks != null)
+	    for(Map.Entry<String, String> section : this.blocks.entrySet()){
+		sb.append(section.getKey() + "\t" + section.getValue() + "\n");
+	    }
+	else
+	    sb.append("-");
 	return sb.toString();
     }
 
@@ -400,5 +404,20 @@ public class WikiArticle {
     public void setBlocks(Map<String, String> blocks) {
 	this.blocks = blocks;
     }
+
+    /**
+     * @return the targetPage
+     */
+    public String getTargetPage() {
+	return targetPage;
+    }
+
+    /**
+     * @param targetPage the targetPage to set
+     */
+    public void setTargetPage(String targetPage) {
+	this.targetPage = targetPage;
+    }
+
 
 }
