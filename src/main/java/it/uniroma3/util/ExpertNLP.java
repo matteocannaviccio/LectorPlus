@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.uniroma3.configuration.Configuration;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
@@ -15,13 +16,12 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-
+/**
+ * 
+ * @author matteo
+ *
+ */
 public class ExpertNLP {
-
-    private static String token_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-token.bin";
-    //private static String sentences_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-sent.bin";
-    private static String lemmatizer_dictonary_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-lemmatizer.dict";
-    private static String postagger_model_path = "/Users/matteo/Work/Repository/ualberta/lectorplus/models/en-pos-maxent.bin";
 
     private POSTagger posTagger;
     private Tokenizer tokenizer;
@@ -77,7 +77,7 @@ public class ExpertNLP {
      * @throws IOException
      */
     public static Tokenizer obtainTokenizer() throws InvalidFormatException, FileNotFoundException, IOException{
-	TokenizerModel model = new TokenizerModel(new FileInputStream(token_model_path));
+	TokenizerModel model = new TokenizerModel(new FileInputStream(Configuration.getTokenModel()));
 	Tokenizer sdetector = new TokenizerME(model);
 	return sdetector;
     }
@@ -90,7 +90,7 @@ public class ExpertNLP {
      * @throws IOException
      */
     public static DictionaryLemmatizer obtainLemmatizer() throws InvalidFormatException, FileNotFoundException, IOException{
-	InputStream model = new FileInputStream(lemmatizer_dictonary_path);
+	InputStream model = new FileInputStream(Configuration.getLemmaDictionary());
 	DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(model);
 	return lemmatizer;
     }
@@ -103,7 +103,7 @@ public class ExpertNLP {
      * @throws IOException
      */
     public static POSTagger obtainPOSTagger() throws InvalidFormatException, FileNotFoundException, IOException{
-	POSModel model = new POSModel(new FileInputStream(postagger_model_path));
+	POSModel model = new POSModel(new FileInputStream(Configuration.getPosTagModel()));
 	POSTagger sdetector = new POSTaggerME(model);
 	return sdetector;
     }
