@@ -31,7 +31,7 @@ public class WikiLanguage {
 	properties = new Properties();
 	this.langId = langId;
 	try {
-	    properties.load(new FileInputStream("/Users/matteo/Work/Repository/ualberta/lectorplus/src/main/java/resources/languages/" + langId + ".properties"));
+	    properties.load(new FileInputStream("/Users/matteo/Work/Repository/java/lectorplus/resources/languages/" + langId + ".properties"));
 	} catch (IOException e) {
 	    logger.error("reading the locale for language {} ({})", langId, e.toString());
 	    System.exit(-1);

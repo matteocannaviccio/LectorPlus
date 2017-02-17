@@ -126,6 +126,7 @@ public class WikiParser {
 	for (String redirectHook : lang.getRedirectIdentifiers()){
 	    if (abstractSection.matches("^.*#" + redirectHook + "\\b.*")){
 		article.setType(ArticleType.REDIRECT);
+		article.setTargetPage(getTargetPage(abstractSection));
 		return article;
 	    }
 	}
@@ -158,7 +159,7 @@ public class WikiParser {
 	 * if it is not of all of this... it is an article! :) 
 	 */
 	article.setType(ArticleType.ARTICLE);
-		
+
 	// select the emphasized words in the abstract as aliases for the primary entity
 	article.setAliases(getAlias(abstractSection));
 
@@ -246,39 +247,96 @@ public class WikiParser {
 
 
     /**
-     * }}}}}}}}}}}}}}}}}}}}
+     * For example:
+     * 
+     * [[Byzantine Empire|Byzantines]]
+     * 
+     * we have "Byzantines" in the text that refers to the wikid "Byzantine_Empire".
+     * 
      * 
      * @param s
      * @return
      */
-    protected Map<String, Set<String>> getWikilinks(Map<String, String> blocks) {
+    private Map<String, Set<String>> getWikilinks(Map<String, String> blocks) {
 	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
-	Pattern LINKS1 = Pattern.compile("(?<=\\[\\[)([^\\]]+)\\|([^\\]]+)(?=\\]\\])");
-	Pattern LINKS2 = Pattern.compile("(?<=\\[\\[)([^\\]\\|]+)(?=\\]\\])");
+
+	// composite wikilinks, e.g. [[Barack_Obama|Obama]]
+	Pattern LINKS1 = Pattern.compile("(?<=\\[)?(?<=\\[\\[)([^\\[\\]]+)\\|([^\\]\\[]+)(?=\\]\\])(?=\\])?");
+	// simple wikilinks, e.g. [[Barack_Obama]]
+	Pattern LINKS2 = Pattern.compile("(?<=\\[)?(?<=\\[\\[)([^\\]\\|\\[]+)(?=\\]\\])(?=\\])?");
 
 	for(Map.Entry<String, String> section : blocks.entrySet()){
+	    wikilinks.putAll(harvestCompositeWikilinks(section.getValue(), LINKS1));
+	    wikilinks.putAll(harvestSimpleWikilinks(section.getValue(), LINKS2));
+	}
 
-	    // composite wikilinks, e.g. [[Barack_Obama|Obama]]
-	    Matcher m = LINKS1.matcher(section.getValue());
-	    while(m.find()){
-		String rendered = m.group(1).replaceAll("_", " ");
-		String wikid = m.group(2);
-		if (!wikilinks.containsKey(rendered))
-		    wikilinks.put(rendered, new TreeSet<String>());
-		wikilinks.get(rendered).add(wikid);
-	    }
+	return wikilinks;
+    }
 
-	    // simple wikilinks, e.g. [[Barack_Obama]]
-	    m = LINKS2.matcher(section.getValue());
-	    while(m.find()){
-		String wikid = m.group(1);
-		String rendered = m.group(1).replaceAll("_", " ");
-		if (!wikilinks.containsKey(wikid))
-		    wikilinks.put(wikid, new TreeSet<String>());
-		wikilinks.get(wikid).add(rendered);
+    /**
+     * 
+     * @param sentence
+     * @param regex
+     * @return
+     */
+    public Map<String, Set<String>> harvestCompositeWikilinks(String sentence, Pattern regex){
+	/*
+	 * We need to use some *strong* filtering here to avoid considering strange cases like
+	 * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
+	 */
+	String specialCharacters = "[" + "-/@#!*$%^&.'_+={}()"+ "]+" ;
+
+	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
+	Matcher m = regex.matcher(sentence);
+
+	while(m.find()){
+	    String rendered = m.group(2);
+	    String wikid = m.group(1);
+
+	    /*
+	     * We need to use some *strong* filtering here to avoid considering strange cases like
+	     * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha
+	     * We adopt this heuristic: if the rendered entity has only special characters we skip it.
+	     */
+	    if (wikid != null){
+		if(rendered != null && !rendered.matches(specialCharacters)){
+		    rendered = rendered.replaceAll("_", " ");
+		    if (!wikilinks.containsKey(rendered))
+			wikilinks.put(rendered, new TreeSet<String>());
+		    wikilinks.get(rendered).add(wikid);
+		}else{
+		    rendered = wikid.replaceAll("_", " ");
+		    if (!wikilinks.containsKey(rendered))
+			wikilinks.put(rendered, new TreeSet<String>());
+		    wikilinks.get(rendered).add(wikid);
+		}
 	    }
 	}
 
+
+	return wikilinks;
+    }
+
+    /**
+     * 
+     * @param sentence
+     * @param regex
+     * @return
+     */
+    public Map<String, Set<String>> harvestSimpleWikilinks(String sentence, Pattern regex){
+	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
+	Matcher m = regex.matcher(sentence);
+
+	while(m.find()){
+	    // simple wikilinks, e.g. [[Barack_Obama]]
+	    String wikid = m.group(1);
+	    String rendered = m.group(1).replaceAll("_", " ");
+
+	    if (!wikilinks.containsKey(rendered))
+		wikilinks.put(rendered, new TreeSet<String>());
+	    wikilinks.get(rendered).add(wikid);
+
+	}
 	return wikilinks;
     }
 
@@ -329,6 +387,20 @@ public class WikiParser {
 	    title = m.group(0);
 	}
 	return title.replaceAll("_", " ").trim();
+    }
+
+    /**
+     * 
+     * @param title
+     */
+    protected String getTargetPage(String textRedirect){
+	String target = "-";
+	Pattern TARGET = Pattern.compile("\\#.+?\\[\\[(.+?)\\]\\]");
+	Matcher m = TARGET.matcher(textRedirect);
+	if (m.find()){
+	    target = m.group(1);
+	}
+	return target;
     }
 
 }

@@ -34,7 +34,7 @@ public class DumpSearcher {
     /*
      * 
      */
-    public static String entities_to_search = "Contraction mapping";
+    public static String entities_to_search = "The band is known for an extremely heavy sound which blends diverse genres including";
 
     /**
      * 
