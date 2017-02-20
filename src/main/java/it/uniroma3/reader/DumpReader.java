@@ -34,7 +34,7 @@ public class DumpReader {
 	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageUsed()));
 
 	// writer json
-	PrintStream out_json = new PrintStream(new FileOutputStream(Configuration.getOutputFolder() + Configuration.getLanguageUsed() + ".json"), false, "UTF-8");
+	PrintStream out_json = new PrintStream(new FileOutputStream(Configuration.getOutputFolder() + "abstracts" + ".json"), false, "UTF-8");
 
 
 	/*
@@ -43,7 +43,7 @@ public class DumpReader {
 
 	List<String> lines;
 	long start_time = System.currentTimeMillis();
-	while ((lines = reader.nextChunk(Configuration.getChunkSize())) != null) {
+	while (!(lines = reader.nextChunk(Configuration.getChunkSize())).isEmpty()) {
 
 	    System.out.println("Working on next: " + lines.size() + " articles.");
 
@@ -53,8 +53,8 @@ public class DumpReader {
 	    .map(s -> EntityAugmenter.augmentEntities(s))
 	    .forEach(s -> out_json.println(s.toJson()));
 
-	    lines.clear();
 	    System.out.println("Reading for next batch.");
+	    lines.clear();
 	}
 
 	reader.closeBuffer();

@@ -36,6 +36,7 @@ public class XMLReader {
      * @return
      */
     public BufferedReader getReaderBZip2(String path){
+	System.out.println("Creating reader from: " + path);
 	BufferedReader br = null;
 	try {
 	    FileInputStream fis = new FileInputStream(path);
@@ -123,7 +124,7 @@ public class XMLReader {
 
 		// no articles found in the dump
 		if (line == null) {
-		    return null;
+		    break;
 
 		}else{ // extract an article
 		    sb.append(line + "\n");

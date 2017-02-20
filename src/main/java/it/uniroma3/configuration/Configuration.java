@@ -102,6 +102,10 @@ public class Configuration {
     public static String getRedirectIndex(){
   	return keyValue.get("redirectIndex");
       }
+    
+    public static boolean getWholeArticleFlag(){
+	return keyValue.get("wholeArticle").equals("true");	    
+       }
 
 
 }

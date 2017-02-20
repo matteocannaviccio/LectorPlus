@@ -128,6 +128,16 @@ public class EntityAugmenter {
     }
 
     /**
+     * To match a name it has to be in a sentence sourrounded by two boarders (\\b) that are
+     * not square bracket, _ or pipe | (which are terms that are inside a wikilink).
+     * @param name
+     * @return
+     */
+    private static String createRegexName(String name){
+	return "(?<=\\b)(?<![\\[_|])" + name + "(?![\\]_|])(?=\\b)";
+    }
+
+    /**
      * 
      * @param article
      * @return
@@ -136,7 +146,7 @@ public class EntityAugmenter {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	for(String seed : article.getSeeds())
 	    if (!seed.equals("-"))
-		regexes.add(Pair.make("(?<=\\b)(?<=[^\\[])(t|T)he " + seed.toLowerCase() + "(?=[^\\]])(?=\\b)", article.getPrimaryTag()));
+		regexes.add(Pair.make(createRegexName("(t|T)he " + seed.toLowerCase()), article.getPrimaryTag()));
 	return regexes;
     }
 
@@ -147,9 +157,9 @@ public class EntityAugmenter {
      */
     private static List<Pair<String, String>> getNameRegex(WikiArticle article){
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
-	regexes.add(Pair.make("(?<=\\b)(?<=[^\\[])" + article.getTitle() + "(?=[^\\]])(?=\\b)", article.getPrimaryTag()));
+	regexes.add(Pair.make(createRegexName(Pattern.quote(article.getTitle())), article.getPrimaryTag()));
 	for(String alias : article.getAliases())
-	    regexes.add(Pair.make("(?<=\\b)(?<=[^\\[])" + alias + "(?=[^\\]])(?=\\b)", article.getPrimaryTag()));
+	    regexes.add(Pair.make(createRegexName(Pattern.quote(alias)), article.getPrimaryTag()));
 	return regexes;
     }
 
@@ -163,8 +173,8 @@ public class EntityAugmenter {
 	String pronoun = article.getPronoun();
 	if(!pronoun.equals("-")){
 	    if (!pronoun.equals("It"))
-		regexes.add(Pair.make("(?<=, )" + pronoun.toLowerCase() + "(?=[^\\]])(?=\\b)", article.getPrimaryTag()));
-	    regexes.add(Pair.make("(?<=(. |\\n|^))" + pronoun + "(?=[^\\]])(?=\\b)", article.getPrimaryTag()));
+		regexes.add(Pair.make("(?<=\\, )" + pronoun.toLowerCase() + "(?=[^\\]_])(?=\\b)", article.getPrimaryTag()));
+	    regexes.add(Pair.make("(?<=\\. |\\n|^)" + pronoun + "(?=[^\\]_])(?=\\b)", article.getPrimaryTag()));
 	}
 	return regexes;
     }
@@ -180,7 +190,7 @@ public class EntityAugmenter {
 
 	for(Map.Entry<String, Set<String>> sec_ent : article.getWikilinks().entrySet()){
 	    for (String possibleName : sec_ent.getValue()){
-		Pair<String, String> p = Pair.make("(?<=\\b)(?<=[^\\[])" + Pattern.quote(sec_ent.getKey()) + "(?=[^\\]])(?=\\b)", "[[##" + possibleName + "##]]");
+		Pair<String, String> p = Pair.make(createRegexName(Pattern.quote(sec_ent.getKey())), "[[##" + possibleName + "##]]");
 		regexes2entity.add(p);
 	    }
 	}
@@ -196,7 +206,7 @@ public class EntityAugmenter {
      */
     private static String applyRegex(WikiArticle article, String sentence, String replacement, String pattern) throws Exception{
 	try{ 
-	    
+
 	    sentence = sentence.replaceAll(pattern, Matcher.quoteReplacement(replacement));
 
 	}catch(Exception e){	    
@@ -222,10 +232,37 @@ public class EntityAugmenter {
 	 * Collect all the patterns for Primary Entity (PE)
 	 */
 	ConcurrentSkipListSet<Pair<String, String>> regex2entity = new ConcurrentSkipListSet<Pair<String, String>>(new PatternComparator());
+	ConcurrentSkipListSet<Pair<String, String>> primaryEntityNames = new ConcurrentSkipListSet<Pair<String, String>>(new PatternComparator());
+	primaryEntityNames.addAll(getNameRegex(article));
+	
+	ConcurrentSkipListSet<Pair<String, String>> secondaryEntitiesNames = new ConcurrentSkipListSet<Pair<String, String>>(new PatternComparator());
+	secondaryEntitiesNames.addAll(getSecondaryEntitiesRegex(article));
+	
 	regex2entity.addAll(getNameRegex(article));
+	
+	for (Pair<String, String> reg : regex2entity)
+	    System.out.println(reg.key + "\t" + reg.value);
+	
+	/*
+	 * Adds a Secondary Entity (SE) only if it does not have a conflict of name with the primary entity! 
+	 */
+	for (Pair<String, String> secondaryEntity : secondaryEntitiesNames){
+	    boolean createsConflict = false;
+	    for (Pair<String, String> possiblePrimaryEntityName : primaryEntityNames){
+		if (secondaryEntity.key.equals(possiblePrimaryEntityName.key)){
+		    createsConflict = true;
+		    break;
+		}
+	    }
+	    if(!createsConflict)
+		regex2entity.add(secondaryEntity);
+	}
+
+	/*
+	 * Finishing add PE using the rest of the evidence
+	 */
 	regex2entity.addAll(getPronounRegex(article));
 	regex2entity.addAll(getSeedRegex(article));
-	regex2entity.addAll(getSecondaryEntitiesRegex(article));
 
 	/*
 	 * Run everything!
@@ -233,7 +270,7 @@ public class EntityAugmenter {
 	for(Map.Entry<String, String> section : article.getBlocks().entrySet())
 	    for(Pair<String, String> regex : regex2entity){
 		try{
-		article.getBlocks().put(section.getKey(), applyRegex(article, section.getValue(), regex.value, regex.key));
+		    article.getBlocks().put(section.getKey(), applyRegex(article, section.getValue(), regex.value, regex.key));
 		}catch(Exception e){
 		    System.out.println("Exception in:	" + article.getWikid());
 		    System.out.println("occurred for entity:	" + regex.value);

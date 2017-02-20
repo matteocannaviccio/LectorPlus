@@ -26,7 +26,7 @@ public class MarkupParser {
      * @return
      * @throws Exception 
      */
-    public static Map<String, String> fragmentArticle(String content){
+    public static Map<String, String> fragmentArticle(String content, boolean wholeArticle){
 	String ABSTRACT = "#Abstract";
 	String regex_first = "(?m)^==\\s?([^=]+)\\s?==$";	// h1
 	String regex_second = "(?m)^===\\s?([^=]+)\\s?===$";	// h2
@@ -62,7 +62,16 @@ public class MarkupParser {
 		    third_sections.put(head, entries.getValue());
 	    }
 	}
-
+	
+	/*
+	 * filter the blocks in case we want ot prcess only the abstract
+	 */
+	if (!wholeArticle && third_sections.containsKey(ABSTRACT)){
+	    Map<String, String> abstractSection = new LinkedHashMap<String, String>();
+	    abstractSection.put(ABSTRACT, third_sections.get(ABSTRACT));
+	    third_sections = abstractSection;
+	}
+	
 	return third_sections;
     }
 
@@ -127,7 +136,7 @@ public class MarkupParser {
 	Pattern LINKS3 = Pattern.compile("\\[\\[([^\\]\\|]+)\\]\\]");
 	s = LINKS3.matcher(s).replaceAll("$1");
 	
-	s = s.replaceAll("_", " ");
+	s = s.replaceAll("_", " ").replaceAll("\\[|\\]", "");
 	
 	return s;
     }
@@ -163,9 +172,13 @@ public class MarkupParser {
 	Pattern BR = Pattern.compile("(<|&lt;|&#60;)br */(>|&gt;|&#62;)");
 	Pattern REF1 = Pattern.compile("(<|&lt;|&#60;)ref[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
 	Pattern REF2 = Pattern.compile("(<|&lt;|&#60;)ref.*?(<|&lt;|&#60;)/ref(>|&gt;|&#62;)", Pattern.DOTALL);
+	Pattern MATH1 = Pattern.compile("(<|&lt;|&#60;)math[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
+	Pattern MATH2 = Pattern.compile("(<|&lt;|&#60;)math.*?(<|&lt;|&#60;)/math(>|&gt;|&#62;)", Pattern.DOTALL);
 	s = BR.matcher(s).replaceAll(""); // See test case for why we do this.
 	s = REF1.matcher(s).replaceAll("");
 	s = REF2.matcher(s).replaceAll("");
+	s = MATH1.matcher(s).replaceAll("");
+	s = MATH2.matcher(s).replaceAll("");
 	return s;
     }
 
@@ -264,19 +277,6 @@ public class MarkupParser {
 	return INDENTATION.matcher(text).replaceAll("\n");
     }
 
-    /**
-     * Remove math tags.
-     * 
-     * E.g. <math> content </math>
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeMath(String s) {
-	Pattern MATH = Pattern.compile("&lt;math&gt;.*?&lt;/math&gt;", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-	return MATH.matcher(s).replaceAll("");
-    }
-
 
     /**
      * 
@@ -349,7 +349,7 @@ public class MarkupParser {
 	 * detect commonsense entities with pipes, and transform them
 	 * in normal entities e.g. [[multinational corporation|multinational]] -> [[multinational]]
 	 */
-	Pattern LINKS1 = Pattern.compile("\\[[^\\]]+\\|([^A-Z][^\\]]+)\\]\\]");
+	Pattern LINKS1 = Pattern.compile("\\[\\[+[^\\]]*\\|([^A-Z\\]]*)\\]\\]+");
 	s = LINKS1.matcher(s).replaceAll("$1");
 
 	/*
@@ -358,14 +358,14 @@ public class MarkupParser {
 	 */
 	for (String listHook : lang.getListIdentifiers()){
 	    listHook = listHook.replaceAll("_", " ");
-	    Pattern LINKS2 = Pattern.compile("\\[\\[(?>"+listHook+")[^\\]]+\\|([^\\]]+)\\]\\]");
+	    Pattern LINKS2 = Pattern.compile("\\[\\[+(?>"+listHook+")[^\\]]+\\|([^\\]]*)\\]\\]+");
 	    s = LINKS2.matcher(s).replaceAll("$1");
 	}
 
 	/*
 	 * detect normal named entities and remove brackets, e.g. [[multinational]] -> multinational
 	 */
-	Pattern LINKS3 = Pattern.compile("\\[\\[([^A-Z][^\\]\\|]+)\\]\\]");
+	Pattern LINKS3 = Pattern.compile("\\[\\[+([^A-Z][^\\]\\|]*)\\]\\]+");
 	s = LINKS3.matcher(s).replaceAll("$1");
 
 	return s;
@@ -390,7 +390,7 @@ public class MarkupParser {
 	 * if we remove parenthesis in a text such as: Jack ''(elb)'' is the man 
 	 * --> we would end up with --> Jack '''' is the man 
 	 */
-	content = content.replaceAll("''''", "");
+	content = content.replaceAll("\\s''''\\s", "");
 	
 	
 	content = content.replaceAll(" {2,}", " ");				// remove double spaces
@@ -405,8 +405,8 @@ public class MarkupParser {
      * @return
      */
     private static String removeEmphasis(String block) {
-	Pattern EMPHASIS = Pattern.compile("('''|'')");
-	return EMPHASIS.matcher(block).replaceAll("");
+	Pattern ALIASES = Pattern.compile("'''([^\\{\\}\\(\\)\\+\\*]*)'''");
+	return ALIASES.matcher(block).replaceAll("$1");
     }
 
 
@@ -465,7 +465,7 @@ public class MarkupParser {
      */
     public static Map<String, List<String>> getTablesFromXml(String page, WikiLanguage lang, Cleaner cleaner){
 	String content = XMLParser.getWikiMarkup(page);
-	Map<String, String> blocks = fragmentArticle(content);
+	Map<String, String> blocks = fragmentArticle(content, true);
 	return retrieveTables(blocks, cleaner);
     }
 
@@ -503,7 +503,7 @@ public class MarkupParser {
      */
     public static Map<String, List<String>> getListsFromXml(String page, WikiLanguage lang){
 	String content = XMLParser.getWikiMarkup(page);
-	Map<String, String> blocks = fragmentArticle(content);
+	Map<String, String> blocks = fragmentArticle(content, true);
 	return retrieveLists(blocks);
     }
 

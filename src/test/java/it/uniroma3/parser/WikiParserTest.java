@@ -1,7 +1,6 @@
 package it.uniroma3.parser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +12,7 @@ import it.uniroma3.model.WikiLanguage;
 
 public class WikiParserTest {
 
-    public static String testWikilik1 = "test 1 - a [[wikilink|rendered]] molecule that is described as";
+    public static String testWikilik1 = "test 1 - a [[wikilink| ]] molecule that is described as";
     public static String testWikilik2 = "test 2 - a [[wikilink|]] molecule that is described as";
     public static String testWikilik3 = "test 3 - a [[wikilink|rend[ered]]] molecule that is described as";
     public static String testWikilik4 = "test 4 - a [[[wikilink|rendered]]] molecule that is described as";

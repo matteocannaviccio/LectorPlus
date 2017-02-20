@@ -24,8 +24,6 @@ public class ParserTest {
 	String page = reader.getArticle();
 
 	WikiArticle article = parser.createArticleFromXml(page);
-	
-		
 	System.out.println(EntityAugmenter.augmentEntities(article));
 	
 	

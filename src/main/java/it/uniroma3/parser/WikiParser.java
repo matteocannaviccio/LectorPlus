@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import it.uniroma3.configuration.Configuration;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.model.WikiLanguage;
@@ -46,7 +47,7 @@ public class WikiParser {
 	 * Obtain the title of the article and create a WikiArticle.
 	 */
 	String wikid = XMLParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
-	String title = clean(wikid);
+	String title = wikid.replaceAll("_", " ");
 	String id = XMLParser.getFieldFromXmlPage(page, "id");
 	String namespace = XMLParser.getFieldFromXmlPage(page, "ns");
 	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang);
@@ -59,7 +60,7 @@ public class WikiParser {
 
 	/* Filter to capture WIKIPEDIA portal articles */
 	for (String portalHook : lang.getPortalIdentifiers()){
-	    if (clean(wikid).startsWith(portalHook + ":")){
+	    if (wikid.startsWith(portalHook + ":")){
 		article.setType(ArticleType.PORTAL);
 		return article;
 	    }
@@ -67,7 +68,7 @@ public class WikiParser {
 
 	/* Filter to capture FILE articles */
 	for (String fileHook : lang.getFileIdentifiers()){
-	    if (clean(wikid).startsWith(fileHook + ":")){
+	    if (wikid.startsWith(fileHook + ":")){
 		article.setType(ArticleType.FILE);
 		return article;
 	    }
@@ -75,7 +76,7 @@ public class WikiParser {
 
 	/* Filter to capture HELP articles */
 	for (String helpHook : lang.getHelpIdentifiers()){
-	    if (clean(wikid).startsWith(helpHook + ":")){
+	    if (wikid.startsWith(helpHook + ":")){
 		article.setType(ArticleType.HELP);
 		return article;
 	    }
@@ -83,7 +84,7 @@ public class WikiParser {
 
 	/* Filter to capture CATEGORY articles */
 	for (String categoryHook : lang.getCategoryIdentifiers()){
-	    if (clean(wikid).startsWith(categoryHook + ":")){
+	    if (wikid.startsWith(categoryHook + ":")){
 		article.setType(ArticleType.CATEGORY);
 		return article;
 	    }
@@ -91,7 +92,7 @@ public class WikiParser {
 
 	/* Filter to capture TEMPLATE articles */
 	for (String templateHook : lang.getTemplateIdentifiers()){
-	    if (clean(wikid).startsWith(templateHook + ":")){
+	    if (wikid.startsWith(templateHook + ":")){
 		article.setType(ArticleType.TEMPLATE);
 		return article;
 	    }
@@ -99,7 +100,7 @@ public class WikiParser {
 
 	/* Filter to capture DISCUSSION articles */
 	for (String discussionHook : lang.getDiscussionIdentifiers()){
-	    if (clean(wikid).startsWith(discussionHook + ":")){
+	    if (wikid.startsWith(discussionHook + ":")){
 		article.setType(ArticleType.DISCUSSION);
 		return article;
 	    }
@@ -116,7 +117,7 @@ public class WikiParser {
 	/* ************************************************************************ */
 
 	// split the article in blocks - using all the ## headings ##
-	Map<String, String> blocks = MarkupParser.cleanBlocks(getBlocksOfContentFromXml(page), cleaner, lang);
+	Map<String, String> blocks = MarkupParser.cleanBlocks(getBlocksOfContentFromXml(page, Configuration.getWholeArticleFlag()), cleaner, lang);
 
 	String abstractSection = "-";
 	if(blocks.containsKey("#Abstract"))
@@ -180,14 +181,14 @@ public class WikiParser {
      * @param page
      * @return
      */
-    private Map<String, String> getBlocksOfContentFromXml(String page) {
+    private Map<String, String> getBlocksOfContentFromXml(String page, boolean wholeArticle) {
 	String content = XMLParser.getWikiMarkup(page);
 
 	/*
 	 *  split the content in: 
 	 *  name section --> content
 	 */
-	Map<String, String> blocks = MarkupParser.fragmentArticle(content);
+	Map<String, String> blocks = MarkupParser.fragmentArticle(content, wholeArticle);
 
 	/*
 	 * for each block, clean the content and replace the entry in the map
@@ -234,7 +235,6 @@ public class WikiParser {
 	String cleanBlock = StringEscapeUtils.unescapeHtml4(StringEscapeUtils.unescapeHtml4(content));
 	cleanBlock = MarkupParser.removeGallery(cleanBlock);
 	cleanBlock = MarkupParser.fixUnitConversion(cleanBlock);
-	cleanBlock = MarkupParser.removeMath(cleanBlock);
 	cleanBlock = MarkupParser.removeNoToc(cleanBlock);
 	cleanBlock = MarkupParser.removeInterWikiLinks(cleanBlock);
 	cleanBlock = MarkupParser.removeRefs(cleanBlock);
@@ -260,10 +260,11 @@ public class WikiParser {
     private Map<String, Set<String>> getWikilinks(Map<String, String> blocks) {
 	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
 
-	// composite wikilinks, e.g. [[Barack_Obama|Obama]]
-	Pattern LINKS1 = Pattern.compile("(?<=\\[)?(?<=\\[\\[)([^\\[\\]]+)\\|([^\\]\\[]+)(?=\\]\\])(?=\\])?");
+	// composite wikilinks, e.g. [[Barack_Obama|Obama]]	
+	Pattern LINKS1 = Pattern.compile("('')?\\[\\[([^\\[\\]]*)\\|([^\\]\\[]*)\\]\\]('')?");
+
 	// simple wikilinks, e.g. [[Barack_Obama]]
-	Pattern LINKS2 = Pattern.compile("(?<=\\[)?(?<=\\[\\[)([^\\]\\|\\[]+)(?=\\]\\])(?=\\])?");
+	Pattern LINKS2 = Pattern.compile("('')?\\[\\[([^\\[\\]\\|]*)\\]\\]('')?");
 
 	for(Map.Entry<String, String> section : blocks.entrySet()){
 	    wikilinks.putAll(harvestCompositeWikilinks(section.getValue(), LINKS1));
@@ -283,28 +284,34 @@ public class WikiParser {
 	/*
 	 * We need to use some *strong* filtering here to avoid considering strange cases like
 	 * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
+	 * We adopt this heuristic: if the rendered entity has only special characters we skip it.
+	 * We use the following regex to express special character that we do not want alone.
 	 */
-	String specialCharacters = "[" + "-/@#!*$%^&.'_+={}()"+ "]+" ;
+	String specialCharacters = "[" + "-/@#!*$%^'&._+={}()" + "]+" ;
 
 	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
 	Matcher m = regex.matcher(sentence);
 
 	while(m.find()){
-	    String rendered = m.group(2);
-	    String wikid = m.group(1);
+
+	    String rendered = m.group(3);
+	    String wikid = m.group(2);
 
 	    /*
-	     * We need to use some *strong* filtering here to avoid considering strange cases like
-	     * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha
-	     * We adopt this heuristic: if the rendered entity has only special characters we skip it.
+	     * check if it is an italic mention
 	     */
+	    if (m.group(1)!=null && m.group(4)!=null)
+		rendered = "''" + rendered + "''";
+
+
 	    if (wikid != null){
 		if(rendered != null && !rendered.matches(specialCharacters)){
 		    rendered = rendered.replaceAll("_", " ");
 		    if (!wikilinks.containsKey(rendered))
 			wikilinks.put(rendered, new TreeSet<String>());
 		    wikilinks.get(rendered).add(wikid);
-		}else{
+
+		}else{ // not sure when it happens
 		    rendered = wikid.replaceAll("_", " ");
 		    if (!wikilinks.containsKey(rendered))
 			wikilinks.put(rendered, new TreeSet<String>());
@@ -329,8 +336,14 @@ public class WikiParser {
 
 	while(m.find()){
 	    // simple wikilinks, e.g. [[Barack_Obama]]
-	    String wikid = m.group(1);
-	    String rendered = m.group(1).replaceAll("_", " ");
+	    String wikid = m.group(2);
+	    String rendered = m.group(2).replaceAll("_", " ");
+
+	    /*
+	     * check if it is an italic mention
+	     */
+	    if (m.group(1)!=null && m.group(3)!=null)
+		rendered = "''" + rendered + "''";
 
 	    if (!wikilinks.containsKey(rendered))
 		wikilinks.put(rendered, new TreeSet<String>());
@@ -342,7 +355,10 @@ public class WikiParser {
 
 
     /**
-     * We extract the bold (or italic) names that are in the block.
+     * We extract the bold names that are in the first block.
+     * We take into account the italics and we distinguish them from the normal keywords.
+     * E.g. we distinguish ''Batman'' from Batman.
+     * 
      * 
      * @param s
      * @return
@@ -350,10 +366,10 @@ public class WikiParser {
     protected List<String> getAlias(String block) {
 	List<String> aliases = new LinkedList<String>();
 	// we add the constraint of "{" and "}" because we remove {{template}} after this step
-	Pattern ALIASES = Pattern.compile("('''|''''')([^\\{\\}\\(\\)\\+\\*]+?)('''|''''')");
+	Pattern ALIASES = Pattern.compile("'''([^\\{\\}\\(\\)\\+\\*]*)'''");
 	Matcher m = ALIASES.matcher(block);
 	while(m.find()){
-	    String alias = m.group(2).replaceAll("(\\[|\\]|'')*", "").replaceAll("^'", "").replaceAll("'$", "").trim();
+	    String alias = m.group(1).replaceAll("(\\[|\\])*", "").trim();
 	    if (!alias.isEmpty())
 		aliases.add(alias);
 	}

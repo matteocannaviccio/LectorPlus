@@ -170,10 +170,12 @@ public class WikiArticle {
 		+ " id=" + this.id + ",\n"
 		+ " namespace=" + this.namespace + ",\n"
 		+ " aliases=" + this.aliases + ",\n"
+		+ " seed=" + this.seeds + ",\n"
 		+ " type= " + this.type + ",\n"
 		+ " target= " + this.targetPage + ",\n"
 		+ " disambiguation= " + this.disambiguation + ",\n"
 		+ " text= " + getText() + ",\n"
+		+ " wikilinks= " + this.wikilinks + ",\n"
 		+ " bio= " + this.bio + "]";
 	//+ " table= " + getTables() + ",\n"
 	//+ " list= " + getLists() + ",\n"
@@ -334,7 +336,7 @@ public class WikiArticle {
     }
 
     /**
-     * Returna the first sentence of the article, without the wikilinks!\
+     * Returns the first sentence of the article, without the wikilinks!\
      * 
      * @return
      */
@@ -344,7 +346,7 @@ public class WikiArticle {
 	    firstSentence = MarkupParser.splitSentences(this.getBlocks().get("#Abstract")).get(0); 
 	return MarkupParser.removeWikilinks(firstSentence);
     }
-
+    
     /**
      * @return the augmentedEntities
      */
