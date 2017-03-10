@@ -92,7 +92,25 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>6.0.0</version>
 		</dependency>
+		<!-- for Stanford NER -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>3.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>3.7.0</version>
+			<classifier>models</classifier>
+		</dependency>
 
+		<!-- for DBPedia Spotlight -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
 
 	</dependencies>
 </project>
