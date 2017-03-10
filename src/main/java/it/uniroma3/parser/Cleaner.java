@@ -1,7 +1,9 @@
 package it.uniroma3.parser;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,10 +12,11 @@ import it.uniroma3.model.WikiLanguage;
  * Finite state machine to capture composite structures in Wikipedia Markup Language.
  * Those structures can be: infobox, bio, tables, template, etc.
  * 
- * Everything that is exressed with an opening tag of two characters (e.g. "{|" for tables, "{{" for template) 
- * and closing of two characters (e.g. "|}" for tables, "}}" for template).
+ * Everything that is exressed with an opening tag of two characters (e.g. "{|" for tables, 
+ * "{{" for template) and closing of two characters (e.g. "|}" for tables, "}}" for template).
  * 
- * Moreover, it is possible to specify a keyword to capture a specific composite structure (e.g. Bio, Infobox).
+ * Moreover, it is possible to specify a keyword to capture a specific composite structure 
+ * (e.g. Bio, Infobox).
  * 
  * @author matteo
  *
@@ -175,7 +178,7 @@ public class Cleaner {
      * Clean the block of content from all the composite structures. It removes all
      * the spans of text between the initialDoubleCharacterLabel and finalDoubleCharacterLabel.
      * 
-     * blockOfContent:				WikiMarkup text
+     * blockOfContent:			WikiMarkup text
      * initialDoubleCharacterLabel:	the pair of characters at the begin, e.g. "{{"
      * finalDoubleCharacterLabel:	the pair of characters at the end, e.g. "}}"
      * 
@@ -223,7 +226,6 @@ public class Cleaner {
 
 	int state = DEFAULT;
 	int nestingLevel = 1;
-
 	// firstInitialDoubleCharacterLabel
 	final char FI = initialDoubleCharacterLabel.charAt(0); 
 	// secondInitialDoubleCharacterLabel
@@ -266,7 +268,67 @@ public class Cleaner {
 	}
 	return cur;
     }
+    
+ 
+    /* ***********************************************************************************
+     * 				REMOVE - RETRIEVE TABLES
+     * ***********************************************************************************/
+    
+    /**
+     * 
+     * @param blocks
+     * @return
+     */
+    public Map<String, List<String>> retrieveTables(Map<String, String> blocks){
+	Map<String, List<String>> tablesContent = new LinkedHashMap<String, List<String>>();
+	for(Map.Entry<String, String> block : blocks.entrySet()){
+	    List<String> tables = retrieveAll(block.getValue(), "{|", "|}");	// retrieve tables	    
+	    // add only if there is some textual content
+	    if (!tables.isEmpty())
+		tablesContent.put(block.getKey(), tables);
+	}
 
+	return tablesContent;
+    }
+    
+    /**
+     * This method needs improvements. For now, we are limiting to retrieve all the entry of the lists
+     * in each section and put them together.
+     * 
+     * https://regex101.com/r/JhwkQh/2
+     * 
+     * 
+     * @param blocks
+     * @return
+     */
+    public Map<String, List<String>> retrieveLists(Map<String, String> blocks){
+	Map<String, List<String>> listContent = new LinkedHashMap<String, List<String>>();
+	Pattern LISTS = Pattern.compile("(?m)^(;|#|\\*|:)(?:(?!\\n).)++");
+	for(Map.Entry<String, String> block : blocks.entrySet()){
+	    Matcher m = LISTS.matcher(block.getValue());
+	    while (m.find()){
+		if (!listContent.containsKey(block.getKey()))
+		    listContent.put(block.getKey(), new ArrayList<String>());
+		listContent.get(block.getKey()).add(m.group(0));
+	    }
+	}   
+	return listContent;
+    }
+
+    /* ***********************************************************************************
+     * 				REMOVE - RETRIEVE LIST
+     * ***********************************************************************************/
+    
+    /**
+     * 
+     * https://regex101.com/r/JhwkQh/2
+     * 
+     * @param blocks
+     * @return
+     */
+    public String removeLists(String block){
+	return block.replaceAll("(?m)^(;|#|\\*|:)(?:(?!\\n).)*+", "");
+    }
 
 
 }

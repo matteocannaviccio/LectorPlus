@@ -11,7 +11,7 @@ public class ParserTest {
 
     public static void main(String[] args) {
 
-	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/resources/config.properties");
+	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
 
 	/* ------ PIPELINE COMPONENTS ------ */
 	// reader
@@ -24,7 +24,10 @@ public class ParserTest {
 	String page = reader.getArticle();
 
 	WikiArticle article = parser.createArticleFromXml(page);
-	System.out.println(EntityAugmenter.augmentEntities(article));
+	//System.out.println(article);
+
+	article = EntityAugmenter.augmentEntities(article);
+	System.out.println(article);
 	
 	
 	

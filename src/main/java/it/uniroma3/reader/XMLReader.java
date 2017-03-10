@@ -71,15 +71,12 @@ public class XMLReader {
     public String getArticle(){
 	StringBuffer sb = new StringBuffer();
 	String line;
-
 	try {
-
 	    // read until the next article
 	    while ((line = br.readLine()) != null) {
 		if (line.endsWith("<page>"))
 		    break;
 	    }
-
 	    // no articles found in the dump
 	    if (line == null) {
 		br.close();
@@ -92,11 +89,9 @@ public class XMLReader {
 			break;
 		}
 	    }
-
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-
 	return sb.toString();
     }
 
@@ -109,37 +104,29 @@ public class XMLReader {
      */
     public List<String> nextChunk(int chunk){
 	List<String> s = new ArrayList<String>(chunk);
-
 	while(chunk > 0){
 	    StringBuffer sb = new StringBuffer();
 	    String line;
-
 	    try {
-
 		// read untill the next article
 		while ((line = br.readLine()) != null) {
 		    if (line.endsWith("<page>"))
 			break;
 		}
-
 		// no articles found in the dump
 		if (line == null) {
 		    break;
-
 		}else{ // extract an article
 		    sb.append(line + "\n");
-
 		    while ((line = br.readLine()) != null) {
 			sb.append(line + "\n");
 			if (line.endsWith("</page>"))
 			    break;
 		    }
 		}
-
 	    } catch (IOException e) {
 		e.printStackTrace();
 	    }
-
 	    s.add(sb.toString());
 	    chunk-=1;
 	}

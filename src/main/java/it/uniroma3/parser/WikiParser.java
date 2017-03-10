@@ -1,16 +1,8 @@
 package it.uniroma3.parser;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.model.WikiArticle;
@@ -25,7 +17,9 @@ import it.uniroma3.model.WikiLanguage;
  */
 public class WikiParser {
     protected WikiLanguage lang;
-    protected Cleaner cleaner;
+    protected XMLParser xmlParser;
+    protected BlockParser blockParser;
+    protected TextParser textParser;
 
     /**
      * 
@@ -33,10 +27,17 @@ public class WikiParser {
      */
     public WikiParser(WikiLanguage lang){
 	this.lang = lang;
-	this.cleaner = new Cleaner(lang);
+	this.xmlParser = new XMLParser();
+	this.blockParser = new BlockParser(lang);
+	this.textParser = new TextParser(lang);
     }
 
     /**
+     * It parse the xml extracting all the metadata 
+     * such as wikid, title, id, etc. Then it creates 
+     * a WikiArticle object assigning an ArticltType.
+     * 
+     * If the article is an ARTICLE, we further process it.
      * 
      * @param page
      * @return
@@ -44,336 +45,238 @@ public class WikiParser {
     public WikiArticle createArticleFromXml(String page){
 
 	/*
-	 * Obtain the title of the article and create a WikiArticle.
+	 * Obtain the title and metadata of the article from the xml and create a WikiArticle.
 	 */
-	String wikid = XMLParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
-	String title = wikid.replaceAll("_", " ");
-	String id = XMLParser.getFieldFromXmlPage(page, "id");
-	String namespace = XMLParser.getFieldFromXmlPage(page, "ns");
+	String wikid = this.extractsWikid(page);
+	String title = this.getTitle(wikid);
+	String id = xmlParser.getFieldFromXmlPage(page, "id");
+	String namespace = xmlParser.getFieldFromXmlPage(page, "ns");
 	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang);
 
-	/* ************************************************************************ */
-
 	/*
-	 * Check if it is an article that we can skip. 
+	 * Process only WikiArticle of type ARTICLE.
+	 * (we could extend the process to other kind of articles here...)
 	 */
+	ArticleType type = findArticleType(article);
+	switch(type){
+	case ARTICLE:
+	    article.setType(type);
+	    article.setOriginalMarkup(xmlParser.getWikiMarkup(page));
+	    processArticle(article);
+	    break;
+	default:
+	    article.setType(type);
+	    break;
+	}
+	return article;
+    }
 
+    /**
+     * Uses the wikid of the article to find the type of the article.
+     * Generally particular types of articles have particular wikids 
+     * such as "Category:Italian footballer" or "Discussion:something else".
+     * 
+     * It returns an ArticleType parsing the wikid of the page.
+     * 
+     * @param article
+     * @return
+     */
+    private ArticleType findArticleType(WikiArticle article){
 	/* Filter to capture WIKIPEDIA portal articles */
 	for (String portalHook : lang.getPortalIdentifiers()){
-	    if (wikid.startsWith(portalHook + ":")){
-		article.setType(ArticleType.PORTAL);
-		return article;
+	    if (article.getWikid().startsWith(portalHook + ":")){
+		return ArticleType.PORTAL;
 	    }
 	}
 
 	/* Filter to capture FILE articles */
 	for (String fileHook : lang.getFileIdentifiers()){
-	    if (wikid.startsWith(fileHook + ":")){
-		article.setType(ArticleType.FILE);
-		return article;
+	    if (article.getWikid().startsWith(fileHook + ":")){
+		return ArticleType.FILE;
 	    }
 	}
 
 	/* Filter to capture HELP articles */
 	for (String helpHook : lang.getHelpIdentifiers()){
-	    if (wikid.startsWith(helpHook + ":")){
-		article.setType(ArticleType.HELP);
-		return article;
+	    if (article.getWikid().startsWith(helpHook + ":")){
+		return ArticleType.HELP;
 	    }
 	}
 
 	/* Filter to capture CATEGORY articles */
 	for (String categoryHook : lang.getCategoryIdentifiers()){
-	    if (wikid.startsWith(categoryHook + ":")){
-		article.setType(ArticleType.CATEGORY);
-		return article;
+	    if (article.getWikid().startsWith(categoryHook + ":")){
+		return ArticleType.CATEGORY;
 	    }
 	}
 
 	/* Filter to capture TEMPLATE articles */
 	for (String templateHook : lang.getTemplateIdentifiers()){
-	    if (wikid.startsWith(templateHook + ":")){
-		article.setType(ArticleType.TEMPLATE);
-		return article;
+	    if (article.getWikid().startsWith(templateHook + ":")){
+		return ArticleType.TEMPLATE;
 	    }
 	}
 
 	/* Filter to capture DISCUSSION articles */
 	for (String discussionHook : lang.getDiscussionIdentifiers()){
-	    if (wikid.startsWith(discussionHook + ":")){
-		article.setType(ArticleType.DISCUSSION);
-		return article;
+	    if (article.getWikid().startsWith(discussionHook + ":")){
+		return ArticleType.DISCUSSION;
 	    }
 	}
 
 	/* Filter to capture LIST articles */
 	for (String listHook : lang.getListIdentifiers()){
-	    if (wikid.startsWith(listHook)){
-		article.setType(ArticleType.LIST);
-		return article;
+	    if (article.getWikid().startsWith(listHook)){
+		return ArticleType.LIST;
 	    }
 	}
 
-	/* ************************************************************************ */
-
-	// split the article in blocks - using all the ## headings ##
-	Map<String, String> blocks = MarkupParser.cleanBlocks(getBlocksOfContentFromXml(page, Configuration.getWholeArticleFlag()), cleaner, lang);
-
-	String abstractSection = "-";
-	if(blocks.containsKey("#Abstract"))
-	    abstractSection = blocks.get("#Abstract");
-
-	/* Filter to capture REDIRECT articles */
-	for (String redirectHook : lang.getRedirectIdentifiers()){
-	    if (abstractSection.matches("^.*#" + redirectHook + "\\b.*")){
-		article.setType(ArticleType.REDIRECT);
-		article.setTargetPage(getTargetPage(abstractSection));
-		return article;
+	/* Filter to capture DISAMBIGUATION articles */	
+	for (String disambiguationHook : lang.getDisambiguationIdentifiers()){
+	    String disambiguationToken = getDisambiguation(article.getWikid());
+	    if (disambiguationToken != null && disambiguationToken.equals(disambiguationHook)){
+		return ArticleType.DISAMBIGUATION;
 	    }
 	}
+
+	return ArticleType.ARTICLE;
+    }
+
+
+    /**
+     * Here we process he article using a particular order.
+     * 
+     * 1-
+     * First of all, we fragment the article in blocks starting 
+     * from its original WikiMarkup content, and using the 
+     * === header === of each section, up to h4. Note, we consider
+     * all the section in a flat order, without keeping their nesting.
+     * 
+     * 2-
+     * Then we extract structured contents that could be of interest
+     * such as tables and lists. We consider infoboxes as tables.
+     * We extract them now becuase we remve them from the blocks in the
+     * next stage.
+     * 
+     * 3-
+     * For each block, we use a text parser {@link it.uniroma3.parser.
+     * TextParser} to clean most of noisy contents, replacing the clean 
+     * block in the map. In particular, we replace each "structured" 
+     * content (table, list, template,..) with empty content. In this way,
+     * a block that contains only tables would be empty.
+     * 
+     * 4-
+     * In this stage we filter out blocks that we do not want to process.
+     * We remove the empty blocks obtained above and we also filter out
+     * undesired blocks using matching with specific headers declared in 
+     * the config file. 
+     * 
+     * 5-
+     * Later, after checking that it is not an redirect article, we extract 
+     * some others information from wikid and the text. We then extract the 
+     * aliases and only after we can finish to clean the text removing bold 
+     * tokens and content inside parenthesis.
+     * 
+     * 
+     * @param article
+     * @return
+     */
+    private WikiArticle processArticle(WikiArticle article){
+	/*
+	 * blocks is a map of contents of sections keyed by their header.
+	 * The section in the first position is the #Abstract.
+	 */
+	Map<String, String> blocks = blockParser.fragmentArticle(article.getOriginalMarkup());
 
 	/*
-	 * Check if it is a disambiguation article.
-	 */	
-	article.setDisambiguation(getDisambiguation(wikid));
+	 * Extract structured contents from the WikiMarkup.
+	 */
+	// "bio" are used in italian wikipedia
+	// article.setBio(blockParser.retrieveAllWithSpecification(page, "{{", "bio", "}}").get(0));
 
-	/* Filter to capture DISAMBIGUATION articles */
-	for (String disambiguationHook : lang.getDisambiguationIdentifiers()){
-	    if (getDisambiguation(wikid).equals(disambiguationHook)){
-		article.setType(ArticleType.DISAMBIGUATION);
-		return article;
-	    }
+	if(Configuration.extractTables())
+	    article.setTables(blockParser.extractTables(blocks));
+
+	if(Configuration.extractLists())
+	    article.setLists(blockParser.extractLists(blocks));
+
+	/*
+	 * Clean the text of the articles from <refs>, [[File:]], lists, 
+	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 */
+	for (Map.Entry<String, String> block : blocks.entrySet())
+	    blocks.put(block.getKey(), textParser.hugeCleaningText(block.getKey(), block.getValue(), article, lang));
+	blockParser.removeUndesiredBlocks(blocks, Configuration.getOnlyAbstractFlag());
+
+	if (Configuration.getEDTestingMode())
+	    blockParser.removeUndesiredBlocks(article.cleanBlocks(), Configuration.getOnlyAbstractFlag());
+
+	/*
+	 * If it is a REDIRECT or a DISAMBIGUATION, we set the type to the article and immediately return it.
+	 */
+	if (checkIsRedirect(blocks)){
+	    article.setType(ArticleType.REDIRECT);
+	    return article;
 	}
-
-	/* Filter to capture DISAMBIGUATION articles with text on the abstract */
-	for (String disambiguationHook : lang.getDisambiguationTextIdentifiers()){
-	    if (abstractSection.contains(disambiguationHook)){
-		article.setType(ArticleType.DISAMBIGUATION);
-		return article;
-	    }
+	
+	if (checkIsDisambiguation(blocks)){
+	    article.setType(ArticleType.DISAMBIGUATION);
+	    return article;
 	}
-
-	/* ************************************************************************ */
-
 
 	/*
 	 * if it is not of all of this... it is an article! :) 
+	 * 
+	 * We process it:
+	 * (1) extracting the disambiguation text from the wikid. For example, "movie" <-- Cold_war_(movie)
+	 * (2) extracting the first sentence (clean because we remove parenthesis and wikilinks from it.)
+	 * (3) extracting the aliases from the abstract section (token in bold characters).
+	 * (4) finally, we assignblock to the article performing some further cleaning of the text, which was 
+	 * not possible before. We remove parenthesis, bold text and normalize spaces between token and sentences. 
 	 */
-	article.setType(ArticleType.ARTICLE);
-
-	// select the emphasized words in the abstract as aliases for the primary entity
-	article.setAliases(getAlias(abstractSection));
-
-	// and now remove the emphasis and assign the blocks to the article
-	article.setBlocks(MarkupParser.removeEmphasis(blocks));
-
-	// and everything else
-	article.setBio(cleaner.retrieveAllWithSpecification(page, "{{", "bio", "}}").get(0));
-	article.setTables(MarkupParser.getTablesFromXml(page, lang, cleaner));
-	article.setLists(MarkupParser.getListsFromXml(page, lang));
-	article.setWikilinks(getWikilinks(article.getBlocks()));
+	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
+	article.setFirstSentence(TextParser.splitSentences(abstractSection).get(0));
+	article.setDisambiguation(getDisambiguation(article.getWikid()));
+	article.setAliases(textParser.getAlias(abstractSection));
+	article.setBlocks(textParser.finalCleanText(blocks));
 
 	return article;
     }
 
     /**
-     * 
-     * @param page
-     * @return
-     */
-    private Map<String, String> getBlocksOfContentFromXml(String page, boolean wholeArticle) {
-	String content = XMLParser.getWikiMarkup(page);
-
-	/*
-	 *  split the content in: 
-	 *  name section --> content
-	 */
-	Map<String, String> blocks = MarkupParser.fragmentArticle(content, wholeArticle);
-
-	/*
-	 * for each block, clean the content and replace the entry in the map
-	 * name section --> clean content
-	 */
-	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    blocks.put(block.getKey(), cleanContent(block.getValue()));
-	}
-
-	/*
-	 * filter out undesired blocks
-	 * name section (desired) --> block
-	 */
-	blocks = MarkupParser.removeUndesiredBlocks(blocks, lang);
-
-
-	return blocks;
-    }
-
-
-    /**
-     * split each block in sentences
-     * (here we deal with wiki-links!)
-     * name section --> sentence1, sentence2, ...
+     * Check if the article can be a REDIRECT using the text in the abstract section.
+     * if it contains the reference #REDIRECT.
      * 
      * @param blocks
      * @return
      */
-    private Map<String, List<String>> splitSentences(Map<String, String> blocks){
-	Map<String, List<String>> sectionsAndSentences = new LinkedHashMap<String, List<String>>();
-	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    sectionsAndSentences.put(block.getKey(), MarkupParser.splitSentences(block.getValue()));
-	}
-	return sectionsAndSentences;
-    }
-
-
-    /**
-     * 
-     * @param content
-     * @return
-     */
-    private String cleanContent(String content){
-	String cleanBlock = StringEscapeUtils.unescapeHtml4(StringEscapeUtils.unescapeHtml4(content));
-	cleanBlock = MarkupParser.removeGallery(cleanBlock);
-	cleanBlock = MarkupParser.fixUnitConversion(cleanBlock);
-	cleanBlock = MarkupParser.removeNoToc(cleanBlock);
-	cleanBlock = MarkupParser.removeInterWikiLinks(cleanBlock);
-	cleanBlock = MarkupParser.removeRefs(cleanBlock);
-	cleanBlock = MarkupParser.removeCategoryLinks(cleanBlock, lang);
-	cleanBlock = MarkupParser.removeHtmlComments(cleanBlock);
-	cleanBlock = MarkupParser.removeHtmlTags(cleanBlock);
-	cleanBlock = MarkupParser.removeIndentation(cleanBlock);
-	return cleanBlock;
-    }
-
-
-    /**
-     * For example:
-     * 
-     * [[Byzantine Empire|Byzantines]]
-     * 
-     * we have "Byzantines" in the text that refers to the wikid "Byzantine_Empire".
-     * 
-     * 
-     * @param s
-     * @return
-     */
-    private Map<String, Set<String>> getWikilinks(Map<String, String> blocks) {
-	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
-
-	// composite wikilinks, e.g. [[Barack_Obama|Obama]]	
-	Pattern LINKS1 = Pattern.compile("('')?\\[\\[([^\\[\\]]*)\\|([^\\]\\[]*)\\]\\]('')?");
-
-	// simple wikilinks, e.g. [[Barack_Obama]]
-	Pattern LINKS2 = Pattern.compile("('')?\\[\\[([^\\[\\]\\|]*)\\]\\]('')?");
-
-	for(Map.Entry<String, String> section : blocks.entrySet()){
-	    wikilinks.putAll(harvestCompositeWikilinks(section.getValue(), LINKS1));
-	    wikilinks.putAll(harvestSimpleWikilinks(section.getValue(), LINKS2));
-	}
-
-	return wikilinks;
-    }
-
-    /**
-     * 
-     * @param sentence
-     * @param regex
-     * @return
-     */
-    public Map<String, Set<String>> harvestCompositeWikilinks(String sentence, Pattern regex){
-	/*
-	 * We need to use some *strong* filtering here to avoid considering strange cases like
-	 * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
-	 * We adopt this heuristic: if the rendered entity has only special characters we skip it.
-	 * We use the following regex to express special character that we do not want alone.
-	 */
-	String specialCharacters = "[" + "-/@#!*$%^'&._+={}()" + "]+" ;
-
-	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
-	Matcher m = regex.matcher(sentence);
-
-	while(m.find()){
-
-	    String rendered = m.group(3);
-	    String wikid = m.group(2);
-
-	    /*
-	     * check if it is an italic mention
-	     */
-	    if (m.group(1)!=null && m.group(4)!=null)
-		rendered = "''" + rendered + "''";
-
-
-	    if (wikid != null){
-		if(rendered != null && !rendered.matches(specialCharacters)){
-		    rendered = rendered.replaceAll("_", " ");
-		    if (!wikilinks.containsKey(rendered))
-			wikilinks.put(rendered, new TreeSet<String>());
-		    wikilinks.get(rendered).add(wikid);
-
-		}else{ // not sure when it happens
-		    rendered = wikid.replaceAll("_", " ");
-		    if (!wikilinks.containsKey(rendered))
-			wikilinks.put(rendered, new TreeSet<String>());
-		    wikilinks.get(rendered).add(wikid);
-		}
+    private boolean checkIsRedirect(Map<String, String> blocks){
+	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
+	boolean isRedirect = false;
+	for (String redirectHook : lang.getRedirectIdentifiers()){
+	    if (abstractSection.matches("^.*#" + redirectHook + "\\b.*")){
+		isRedirect = true;
 	    }
 	}
-
-
-	return wikilinks;
+	return isRedirect;
     }
-
+    
     /**
+     * Check if the article can be a DISAMBIGUAITON using the text in the abstract section.
+     * if it contains the reference #REDIRECT.
      * 
-     * @param sentence
-     * @param regex
+     * @param blocks
      * @return
      */
-    public Map<String, Set<String>> harvestSimpleWikilinks(String sentence, Pattern regex){
-	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
-	Matcher m = regex.matcher(sentence);
-
-	while(m.find()){
-	    // simple wikilinks, e.g. [[Barack_Obama]]
-	    String wikid = m.group(2);
-	    String rendered = m.group(2).replaceAll("_", " ");
-
-	    /*
-	     * check if it is an italic mention
-	     */
-	    if (m.group(1)!=null && m.group(3)!=null)
-		rendered = "''" + rendered + "''";
-
-	    if (!wikilinks.containsKey(rendered))
-		wikilinks.put(rendered, new TreeSet<String>());
-	    wikilinks.get(rendered).add(wikid);
-
+    private boolean checkIsDisambiguation(Map<String, String> blocks){
+	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
+	boolean isDisambiguation = false;
+	for (String disambiguationHook : lang.getDisambiguationTextIdentifiers()){
+	    if (abstractSection.contains(disambiguationHook)){
+		isDisambiguation = true;
+	    }
 	}
-	return wikilinks;
-    }
-
-
-    /**
-     * We extract the bold names that are in the first block.
-     * We take into account the italics and we distinguish them from the normal keywords.
-     * E.g. we distinguish ''Batman'' from Batman.
-     * 
-     * 
-     * @param s
-     * @return
-     */
-    protected List<String> getAlias(String block) {
-	List<String> aliases = new LinkedList<String>();
-	// we add the constraint of "{" and "}" because we remove {{template}} after this step
-	Pattern ALIASES = Pattern.compile("'''([^\\{\\}\\(\\)\\+\\*]*)'''");
-	Matcher m = ALIASES.matcher(block);
-	while(m.find()){
-	    String alias = m.group(1).replaceAll("(\\[|\\])*", "").trim();
-	    if (!alias.isEmpty())
-		aliases.add(alias);
-	}
-	return aliases;
+	return isDisambiguation;
     }
 
     /**
@@ -381,8 +284,8 @@ public class WikiParser {
      * @param wikid
      * @return
      */
-    protected String getDisambiguation(String wikid){
-	String disambiguation = "-";
+    private String getDisambiguation(String wikid){
+	String disambiguation = null;
 	Pattern DISAMBIGATION = Pattern.compile("_\\(.*\\)$");
 	Matcher m = DISAMBIGATION.matcher(wikid);
 	if (m.find()){
@@ -392,31 +295,27 @@ public class WikiParser {
     }
 
     /**
+     * It calls the XMLParser to extract a files 
+     * named "title" from the xml.
      * 
-     * @param title
+     * @param page
+     * @return
      */
-    protected String clean(String wikid){
-	String title = wikid;
-	Pattern DISAMBIGATION = Pattern.compile("^.+(?=_\\(.*\\))");
-	Matcher m = DISAMBIGATION.matcher(wikid);
-	if (m.find()){
-	    title = m.group(0);
-	}
-	return title.replaceAll("_", " ").trim();
+    public String extractsWikid(String page){
+	return xmlParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
     }
-
+    
     /**
+     * It clean the wikid obtaining the title,
+     * without underscores or disambiguations.
      * 
-     * @param title
+     * @param wikid
+     * @return
      */
-    protected String getTargetPage(String textRedirect){
-	String target = "-";
-	Pattern TARGET = Pattern.compile("\\#.+?\\[\\[(.+?)\\]\\]");
-	Matcher m = TARGET.matcher(textRedirect);
-	if (m.find()){
-	    target = m.group(1);
-	}
-	return target;
+    private String getTitle(String wikid){
+	wikid = wikid.replaceAll("_", " ");
+	wikid = wikid.replaceAll(" \\(\\w+\\)$", "");
+	return wikid;
     }
 
 }

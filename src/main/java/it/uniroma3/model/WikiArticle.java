@@ -1,12 +1,13 @@
 package it.uniroma3.model;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
-
-import it.uniroma3.parser.MarkupParser;
+import com.google.gson.GsonBuilder;
 /**
  *
  * 
@@ -22,10 +23,11 @@ public class WikiArticle {
     private String namespace;
     private String title;
     private String url;
-    private String targetPage = "-";
+    private transient String originalMarkup;
 
     // Primary entity concepts
     private String pronoun;
+    private String subName;
     private List<String> aliases;
     private List<String> seeds;
     private ArticleType type;
@@ -38,13 +40,23 @@ public class WikiArticle {
     // Flag for the entity detection
     private transient boolean augmentedEntities;
 
-    // Article composite structures
+    // content
     private Map<String, String> blocks;
-    private Map<String, List<String>> sentences;
-    private transient Map<String, List<String>> tables;
-    private transient Map<String, List<String>> lists;
+    private Map<String, String> cleanBlocks;
+    private String firstSentence;
 
-    private static transient Gson gson = new Gson();
+    // Article composite structures
+    private Map<String, List<String>> tables;
+    private Map<String, List<String>> lists;
+
+    private static transient Gson gson_pp = new GsonBuilder()
+	    .disableHtmlEscaping()
+	    .setPrettyPrinting()
+	    .create();
+    
+    private static transient Gson gson = new GsonBuilder()
+	    .disableHtmlEscaping()
+	    .create();
 
     public enum ArticleType {
 	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, UNKNOWN, MAIN, LIST, PROJECT, PORTAL, FILE, HELP
@@ -63,6 +75,7 @@ public class WikiArticle {
 	this.namespace = namespace;
 	this.url = "http://" + lang.toString() + ".wikipedia.org/wiki/" + wikid;
 	this.augmentedEntities = false;
+	this.wikilinks = new HashMap<String, Set<String>>();
     }
 
     /**
@@ -96,15 +109,15 @@ public class WikiArticle {
     /**
      * @return the content
      */
-    public Map<String, List<String>> getSentences() {
-	return sentences;
+    public Map<String, String> cleanBlocks() {
+	return cleanBlocks;
     }
 
     /**
      * @param content the content to set
      */
-    public void setContent(Map<String, List<String>> sentences) {
-	this.sentences = sentences;
+    public void setContent(Map<String, String> cleanBlocks) {
+	this.cleanBlocks = cleanBlocks;
     }
 
     /* (non-Javadoc)
@@ -163,37 +176,7 @@ public class WikiArticle {
      */
     @Override
     public String toString() {
-	return "WikiArticle \n"
-		+ "[wikid=" + this.wikid + ",\n"
-		+ " url=" + this.url + ",\n"
-		+ " title=" + this.title + ",\n"
-		+ " id=" + this.id + ",\n"
-		+ " namespace=" + this.namespace + ",\n"
-		+ " aliases=" + this.aliases + ",\n"
-		+ " seed=" + this.seeds + ",\n"
-		+ " type= " + this.type + ",\n"
-		+ " target= " + this.targetPage + ",\n"
-		+ " disambiguation= " + this.disambiguation + ",\n"
-		+ " text= " + getText() + ",\n"
-		+ " wikilinks= " + this.wikilinks + ",\n"
-		+ " bio= " + this.bio + "]";
-	//+ " table= " + getTables() + ",\n"
-	//+ " list= " + getLists() + ",\n"
-    }
-
-    /**
-     * 
-     * @return
-     */
-    private String getText(){
-	StringBuffer sb = new StringBuffer();
-	if (this.blocks != null)
-	    for(Map.Entry<String, String> section : this.blocks.entrySet()){
-		sb.append(section.getKey() + "\t" + section.getValue() + "\n");
-	    }
-	else
-	    sb.append("-");
-	return sb.toString();
+	return this.toJsonPP();
     }
 
 
@@ -254,13 +237,6 @@ public class WikiArticle {
 
 
     /**
-     * @param title the title to set
-     */
-    public void setTitle(String title) {
-	this.title = title;
-    }
-
-    /**
      * @return the bio
      */
     public String getBio() {
@@ -296,6 +272,14 @@ public class WikiArticle {
     public String toJson() {
 	return gson.toJson(this);
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public String toJsonPP() {
+	return gson_pp.toJson(this);
+    }
 
     /**
      * 
@@ -317,8 +301,14 @@ public class WikiArticle {
     /**
      * @param wikilinks the wikilinks to set
      */
-    public void setWikilinks(Map<String, Set<String>> wikilinks) {
-	this.wikilinks = wikilinks;
+    public void addWikilinks(Map<String, Set<String>> wikilinks) {
+	for(Map.Entry<String, Set<String>> link : wikilinks.entrySet()){
+	    if(this.wikilinks.containsKey(link.getKey())){
+		this.wikilinks.get(link.getKey()).addAll(link.getValue());
+	    }else{
+		this.wikilinks.put(link.getKey(), link.getValue());
+	    }
+	}
     }
 
     /**
@@ -335,18 +325,6 @@ public class WikiArticle {
 	return lists;
     }
 
-    /**
-     * Returns the first sentence of the article, without the wikilinks!\
-     * 
-     * @return
-     */
-    public String getCleanFirstSentence(){
-	String firstSentence = "-";
-	if(this.getBlocks().containsKey("#Abstract"))
-	    firstSentence = MarkupParser.splitSentences(this.getBlocks().get("#Abstract")).get(0); 
-	return MarkupParser.removeWikilinks(firstSentence);
-    }
-    
     /**
      * @return the augmentedEntities
      */
@@ -376,7 +354,7 @@ public class WikiArticle {
     }
 
     public String getPrimaryTag(){
-	return "[[###" + this.wikid + "###]]";
+	return "PE-TITLE<" + this.wikid + ">";
     }
 
     /**
@@ -408,18 +386,79 @@ public class WikiArticle {
     }
 
     /**
-     * @return the targetPage
+     * @param blocks the blocks to set
      */
-    public String getTargetPage() {
-	return targetPage;
+    public void setCleanBlocks(Map<String, String> cleanBlocks) {
+	this.cleanBlocks = cleanBlocks;
     }
 
     /**
-     * @param targetPage the targetPage to set
+     * @param blocks the blocks to set
      */
-    public void setTargetPage(String targetPage) {
-	this.targetPage = targetPage;
+    public Map<String, String> getCleanBlocks() {
+	if(this.cleanBlocks == null)
+	    this.cleanBlocks = new LinkedHashMap<String, String>();
+	return this.cleanBlocks;
     }
+
+    /**
+     * @return the originalMarkup
+     */
+    public String getOriginalMarkup() {
+	return originalMarkup;
+    }
+
+    /**
+     * @param originalMarkup the originalMarkup to set
+     */
+    public void setOriginalMarkup(String originalMarkup) {
+	this.originalMarkup = originalMarkup;
+    }
+
+    /**
+     * @return the firstSentence
+     */
+    public String getFirstSentence() {
+	return firstSentence;
+    }
+
+    /**
+     * @param firstSentence the firstSentence to set
+     */
+    public void setFirstSentence(String firstSentence) {
+	this.firstSentence = firstSentence;
+    }
+
+    /**
+     * @return the subName
+     */
+    public String getSubName() {
+	return subName;
+    }
+
+    /**
+     * @param subName the subName to set
+     */
+    public void setSubName(String subName) {
+	this.subName = subName;
+    }
+
+    /**
+     * @return the url
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * @param url the url to set
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+
+
 
 
 }

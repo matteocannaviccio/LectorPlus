@@ -1,12 +1,15 @@
 package it.uniroma3.entitydetection;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.util.ExpertNLP;
-import it.uniroma3.util.Pair;
+import it.uniroma3.util.Token;
 /**
  * 
  * @author matteo
@@ -17,20 +20,20 @@ public class SeedFSM {
     private static final List<String> R_LIST = Arrays.asList("RB", "RBR", "RBS");
     private static final List<String> DT_LIST = Arrays.asList("DT");
     private static final List<String> J_LIST = Arrays.asList("JJ", "JJR", "JJS", "VBG");
-    
+
     private static final List<String> N_LIST = Arrays.asList("NN");
     private static final List<String> NS_LIST = Arrays.asList("NNS");
-    private static final List<String> NP_LIST = Arrays.asList("NNP");
-    
+    private static final List<String> NP_LIST = Arrays.asList("NNP", "NNPS");
+
     private static final List<String> POS_LIST = Arrays.asList("POS");
     private static final List<String> CC_LIST = Arrays.asList("CC", ",");
     private static final List<String> CD_LIST = Arrays.asList("CD");
     private static final List<String> IN_LIST = Arrays.asList("IN");
     private static final List<String> FINAL_LIST = Arrays.asList("VB", "VBN", "VBD", "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
-    
+
     private FSM finiteStateMachine;
     private ExpertNLP expert;
-    
+
     /**
      * 
      * @param expert
@@ -39,8 +42,8 @@ public class SeedFSM {
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
     }
-    
-    
+
+
     /**
      * Method to implement a finite state machine to capture the seeds from the first sentence.
      * 
@@ -100,7 +103,7 @@ public class SeedFSM {
 	    fsm.addTransition("S2", symbol, "S7");
 	    fsm.addTransition("S4", symbol, "S7");
 	    fsm.addTransition("S7", symbol, "S7");
-	    
+
 	}
 	for (String symbol : POS_LIST){
 	    fsm.addTransition("S4", symbol, "S6");
@@ -123,7 +126,7 @@ public class SeedFSM {
 	}
 	return fsm;
     }
-    
+
 
     /**
      * Return a list of seed given the sentence.
@@ -134,22 +137,21 @@ public class SeedFSM {
     public List<String> findSeed(String sentence){
 	this.finiteStateMachine.reset();
 	List<String> seeds = new LinkedList<String>();
-	List<Pair<String, String>> tags = cutOutFirstPart(expert.tagSentence(sentence));
+	Token[] tokens = cutOutFirstPart(expert.tagFirstSentence(sentence));
 	String tmpToken = "-";
-	
-	for(Pair<String, String> tag : tags){
-	    this.finiteStateMachine.transition(tag.value);
+
+	for(Token token : tokens){
+	    this.finiteStateMachine.transition(token.getPOS());
 	    if(this.finiteStateMachine.accepts())
 		seeds.add(tmpToken);
-	    if(NS_LIST.contains(tag.value))
-		tmpToken = expert.getSingular(tag.key, tag.value);
+	    if(NS_LIST.contains(token.getPOS()))
+		tmpToken = expert.getSingular(token.getRenderedToken(), token.getPOS());
 	    else
-		tmpToken = tag.key;
+		tmpToken = token.getRenderedToken();
 	}
-	
+
 	return seeds;
     }
-    
 
     /**
      * Remove the "subject" part of the sentence. 
@@ -158,19 +160,86 @@ public class SeedFSM {
      * @param tags --> full pos-tags of the first sentence.
      * @return
      */
-    private static List<Pair<String, String>> cutOutFirstPart(List<Pair<String, String>> tags){
-	List<Pair<String, String>> subtags = new ArrayList<Pair<String, String>>(tags);
-	for(Pair<String, String> tag : tags){
-	    if (!tag.key.equals("is") && !tag.key.equals("are") && !tag.key.equals("was") && !tag.key.equals("were")){
-		subtags.remove(tag);
-	    }else{
-		subtags.remove(tag);
+    private static Token[] cutOutFirstPart(Token[] tokens){
+	int initialToken=0;
+	for(int i = 0; i<tokens.length; i++){
+	    String word = tokens[i].getRenderedToken();
+	    if (word.equals("is") || word.equals("are") || word.equals("was") || word.equals("were")){
+		initialToken = i+1;
 		break;
 	    }
 	}
-	return subtags;
+	return Arrays.copyOfRange(tokens, initialToken, tokens.length);
     }
-    
-  
+
+    /**
+     * 
+     * @author matteo
+     *
+     */
+    public class FSM{
+	public final String START = "-";
+	public final String ACCEPT = "*1";
+	public MultiValueMap transitions; // this is a map that allows for repeated keys
+	public Set<String> states;
+
+	/**
+	 * Creates a new FSM.
+	 * 
+	 */
+	public FSM(){
+	    transitions = new MultiValueMap();
+	    states = new TreeSet<String>();
+	    reset();
+	}
+
+	/**
+	 * Initializes an empty FSM.
+	 * 
+	 */
+	public void reset(){
+	    states.clear();
+	    states.add(START);
+	}
+
+	/**
+	 * Adds a transition (arrow) to our FSM.
+	 * 
+	 * @param from
+	 * @param symbol
+	 * @param to
+	 */
+	public void addTransition(String from, String symbol, String to){
+	    transitions.put(from + " + " + symbol, to);
+	}
+
+	/**
+	 * The FSM is complete if states contains a terminal state.
+	 * 
+	 * @return
+	 */
+	public boolean accepts(){
+	    boolean isInAcceptanceState = states.contains(ACCEPT);
+	    if(isInAcceptanceState)
+		states.remove(ACCEPT);
+	    return isInAcceptanceState;
+	}
+
+	/**
+	 * Changes the states of the FSM given the symbol in input.
+	 * 
+	 * @param symbol
+	 */
+	public void transition(String symbol){
+	    Set<String> newState = new TreeSet<String>();
+	    for (String s1 : states){
+		@SuppressWarnings("unchecked")
+		List<String> t = (List<String>) transitions.get(s1+" + "+symbol);
+		if (t != null)
+		    newState.addAll(t);
+	    }
+	    states = newState;
+	}
+    }
 
 }

@@ -1,14 +1,16 @@
 package it.uniroma3.parser;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.components.RedirectResolver;
+import it.uniroma3.configuration.Configuration;
+import it.uniroma3.model.WikiArticle;
+
 /**
  * 
  * 
@@ -20,538 +22,179 @@ import it.uniroma3.model.WikiLanguage;
 public class MarkupParser {
 
     /**
-     * Fragment the article in multiple (sub)sections.
+     * Detect all the wikilinks and normalize them in text.
+     * E.g.:  ... artist SE-ORG<Britney_Spears> by SE-ORG<JIVE_Records>.
+     * became: ... artist Britney Spears by JIVE Records.
      * 
-     * @param content
-     * @return
-     * @throws Exception 
-     */
-    public static Map<String, String> fragmentArticle(String content, boolean wholeArticle){
-	String ABSTRACT = "#Abstract";
-	String regex_first = "(?m)^==\\s?([^=]+)\\s?==$";	// h1
-	String regex_second = "(?m)^===\\s?([^=]+)\\s?===$";	// h2
-	String regex_third = "(?m)^====\\s?([^=]+)\\s?====$";	// h3
-
-	// content --> first sections
-	Map<String, String> first_sections = getBlocksFromContent(content, regex_first, ABSTRACT, "#");
-
-	// first sections --> second sections
-	Map<String, String> second_sections = new LinkedHashMap<String, String>();
-	for(Map.Entry<String, String> entry : first_sections.entrySet()){
-	    String head = entry.getKey();
-	    String cont = entry.getValue();
-	    Map<String, String> tmp = getBlocksFromContent(cont, regex_second, ABSTRACT, "#");
-	    for(Map.Entry<String, String> entries : tmp.entrySet()){
-		if (!entries.getKey().equals(ABSTRACT))
-		    second_sections.put(entries.getKey(), entries.getValue());
-		else
-		    second_sections.put(head, entries.getValue());
-	    }
-	}
-
-	// second sections --> third sections
-	Map<String, String> third_sections = new LinkedHashMap<String, String>();
-	for(Map.Entry<String, String> entry : second_sections.entrySet()){
-	    String head = entry.getKey();
-	    String cont = entry.getValue();
-	    Map<String, String> tmp = getBlocksFromContent(cont, regex_third, ABSTRACT, "#");
-	    for(Map.Entry<String, String> entries : tmp.entrySet()){
-		if (!entries.getKey().equals(ABSTRACT))
-		    third_sections.put(entries.getKey(), entries.getValue());
-		else
-		    third_sections.put(head, entries.getValue());
-	    }
-	}
-	
-	/*
-	 * filter the blocks in case we want ot prcess only the abstract
-	 */
-	if (!wholeArticle && third_sections.containsKey(ABSTRACT)){
-	    Map<String, String> abstractSection = new LinkedHashMap<String, String>();
-	    abstractSection.put(ABSTRACT, third_sections.get(ABSTRACT));
-	    third_sections = abstractSection;
-	}
-	
-	return third_sections;
-    }
-
-    /**
-     * Splits a piece of content in multiple sub-sections based on the regex in input.
-     * The regex capture sub-sections from paragraphs such as h1, h2, h3,.. .
-     * 
-     * @param content
-     * @param regex
-     * @param nameFirst
-     * @param separator
+     * @param text
      * @return
      */
-    private static Map<String, String> getBlocksFromContent(String content, String regex, String nameFirst, String separator){
-	Map<String,String> subsections = new LinkedHashMap<String, String>();
-
-	Pattern SECTIONS = Pattern.compile(regex);
-	Matcher m_sec = SECTIONS.matcher(content);
-
-	// for sure there is at least one subsection
-	String[] list_subsection = content.split(regex);
-
-	// insert the abstract
-	int subsections_count = 0;
-	subsections.put(nameFirst, list_subsection[subsections_count]);
-
-	// if there is at least one (sub)section in the article...
-	while(m_sec.find()){
-	    subsections_count+=1;
-
-	    // get the title of the section (removing possible wikilinks) and normalize it (adapting for the urls)
-	    String title_block = removeWikilinks(m_sec.group(0).replaceAll("=", "").trim()).replaceAll(" ", "_");
-
-	    String header = separator + title_block;
-
-	    // insert the other sections
-	    if (list_subsection.length > subsections_count)
-		subsections.put(header, list_subsection[subsections_count]);
-
-	}
-	return subsections;
-    }
-
-    /**
-     * General method to remove wiki-links from text.
-     * (used to remove wiki-links from sections title)
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeWikilinks(String s) {
-	/*
-	 * detect entities with pipes, and transform them in normal entities 
-	 * e.g. [[multinational corporation|multinational]] -> [[multinational]]
-	 */
-	Pattern LINKS1 = Pattern.compile("\\[[^\\]]+\\|([^\\]]+)\\]\\]");
-	s = LINKS1.matcher(s).replaceAll("$1");
-
-	/*
-	 * detect normal named entities and remove brackets, e.g. [[multinational]] -> multinational
-	 */
-	Pattern LINKS3 = Pattern.compile("\\[\\[([^\\]\\|]+)\\]\\]");
-	s = LINKS3.matcher(s).replaceAll("$1");
-	
-	s = s.replaceAll("_", " ").replaceAll("\\[|\\]", "");
-	
-	return s;
-    }
-
-    /**
-     * Note that WiktionaryLinks have the form [[wikt:anarchism|anarchism]], which is easily confused
-     * with inter-wikilinks. The distinguishing characteristic is the lack of pipe (|).
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeInterWikiLinks(String s) {
-	Pattern INTER_WIKI_LINKS = Pattern.compile("\\[\\[[a-z\\-]+:[^|\\]]+\\]\\]");
-	Pattern EXTERNAL_LINKS = Pattern.compile("\\[http[^\\s]+\\]");
-	Pattern EXTERNAL_LINKS_WITH_TEXT = Pattern.compile("\\[http[^\\s]+((\\s)[^\\]]+)?\\]");
-	s = INTER_WIKI_LINKS.matcher(s).replaceAll(" ");
-	s = EXTERNAL_LINKS.matcher(s).replaceAll("");
-	s = EXTERNAL_LINKS_WITH_TEXT.matcher(s).replaceAll("$1");
-
-	return s;
-    }
-
-    /**
-     * Remove refs blocks.
-     * 
-     * E.g. <ref> content <\ref>
-     * 
-     * 
-     * @param s
-     * @return
-     */ 
-    public static String removeRefs(String s) {
-	Pattern BR = Pattern.compile("(<|&lt;|&#60;)br */(>|&gt;|&#62;)");
-	Pattern REF1 = Pattern.compile("(<|&lt;|&#60;)ref[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern REF2 = Pattern.compile("(<|&lt;|&#60;)ref.*?(<|&lt;|&#60;)/ref(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern MATH1 = Pattern.compile("(<|&lt;|&#60;)math[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern MATH2 = Pattern.compile("(<|&lt;|&#60;)math.*?(<|&lt;|&#60;)/math(>|&gt;|&#62;)", Pattern.DOTALL);
-	s = BR.matcher(s).replaceAll(""); // See test case for why we do this.
-	s = REF1.matcher(s).replaceAll("");
-	s = REF2.matcher(s).replaceAll("");
-	s = MATH1.matcher(s).replaceAll("");
-	s = MATH2.matcher(s).replaceAll("");
-	return s;
-    }
-
-    /**
-     * Remove category links.
-     * 
-     * @param s
-     * @param lang
-     * @return
-     */
-    public static String removeCategoryLinks(String s, WikiLanguage lang) {
-	List<String> keywordsCategory = lang.getCategoryIdentifiers();
-	for (String keyword : keywordsCategory){
-	    Pattern CATEGORY_LINK = Pattern.compile("\\[\\["+keyword+":([^\\]]+)\\]\\]");
-	    s = CATEGORY_LINK.matcher(s).replaceAll("");
-	}
-	return s;
-    }
-
-    /**
-     * Remove HTML comments.
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeHtmlComments(String s) {
-	Pattern HTML_COMMENT = Pattern.compile("(<|&lt;|&#60;)!--.*?--(>|&gt;|&#62;)", Pattern.DOTALL);
-	s = HTML_COMMENT.matcher(s).replaceAll("");
-	return s;
-    }
-
-    /**
-     * Fixs unit conversion.
-     * 
-     * @param s
-     * @return
-     */
-    public static String fixUnitConversion(String s) {
-	Pattern UNIT_CONVERSION1 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\}\\}");
-	Pattern UNIT_CONVERSION2 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\|[^}]+\\}\\}");
-	String t = UNIT_CONVERSION1.matcher(s).replaceAll("$1 $2");
-	return UNIT_CONVERSION2.matcher(t).replaceAll("$1 $2");
-    }
-
-    /**
-     * Removes HTML tags.
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeHtmlTags(String s) {
-	Pattern HTML_TAGS = Pattern.compile("<[^>]+>");
-	return HTML_TAGS.matcher(s).replaceAll("");
-    }
-
-    /**
-     * Removes gallery tags and content.
-     * 
-     * E.g. <gallery> content </gallery>
-     * 
-     * (modified removing &gt at the end of the first line)
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeGallery(String s) {
-	Pattern GALLERY = Pattern.compile("&lt;gallery.*?&lt;/gallery&gt;", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-	return GALLERY.matcher(s).replaceAll("");
-    }
-
-    /**
-     * Removes NOTOC tag.
-     * It is used to denote article that do not have table of content.
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeNoToc(String s) {
-	Pattern NO_TOC = Pattern.compile("__NOTOC__");
-	return NO_TOC.matcher(s).replaceAll("");
-    }
-
-    /**
-     * Removes indentations.
-     * This includes a regex to remove sentences that should be included in template but
-     * for errors in wikimarkup they are in free text.
-     * e.g. look at the initial distinguish in "https://en.wikipedia.org/wiki/Catullus"
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeIndentation(String text) {
-	text = text.replaceAll("(?m)^\\;.+\\n", "");
-	text = text.replaceAll("(?m)^\\:''[^\\.']+\\.''", "");
-	Pattern INDENTATION = Pattern.compile("[\\n\\r]:\\s*");
-	return INDENTATION.matcher(text).replaceAll("\n");
-    }
-
-
-    /**
-     * 
-     * @param blocks
-     * @param cleaner
-     * @param lang
-     * @return
-     */
-    public static Map<String, String> cleanBlocks(Map<String, String> blocks, Cleaner cleaner, WikiLanguage lang){
-	Map<String, String> cleanedBlocks = new LinkedHashMap<String, String>();
-
-	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    String cleanContent = cleaner.cleanBlockOfContent(block.getValue(), "{{", "}}");			// removes templates
-	    cleanContent = cleaner.cleanBlockOfContentFromSpecific(cleanContent, "[[", "image", "]]"); 		// removes media
-	    cleanContent = cleaner.cleanBlockOfContent(cleanContent, "{|", "|}"); 				// removes tables
-	    cleanContent = removeLists(cleanContent);								// remove lists
-
-	    // before to split in sentences, clean and normalize important wiki-links!
-	    cleanContent = removeCommonsenseWikilinks(cleanContent, lang);
-	    cleanContent = normalizeWikilinks(cleanContent);
-
-	    /* remove spaces, parenthesis */
-	    cleanContent = cleanAndNormalizeContent(cleanContent);
-
-	    if (!cleanContent.isEmpty())
-		cleanedBlocks.put(block.getKey(), cleanContent);
-	}
-	return cleanedBlocks;
-    }
-    
-    /**
-     * 
-     * @param blocks
-     * @param cleaner
-     * @param lang
-     * @return
-     */
-    public static Map<String, String> removeEmphasis(Map<String, String> blocks){
-	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    blocks.put(block.getKey(), removeEmphasis(block.getValue()));
-	}
-	return blocks;
-    }
-    
-
-    /**
-     * Splits the paragraphs in sentences.
-     * 
-     * @param paragraphs
-     * @return
-     */
-    public static List<String> splitSentences(String text){
-	List<String> sentences = new LinkedList<String>();
-	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
-	for(String sent : text.split(regex)){
-	    sentences.add(sent);
-	}
-	return sentences;
-    }
-
-    /**
-     * Remove common sense wiki-links.
-     * (used to remove wiki-links in the text)
-     * 
-     * @param s
-     * @return
-     */
-    public static String removeCommonsenseWikilinks(String s, WikiLanguage lang) {
-	/*
-	 * detect commonsense entities with pipes, and transform them
-	 * in normal entities e.g. [[multinational corporation|multinational]] -> [[multinational]]
-	 */
-	Pattern LINKS1 = Pattern.compile("\\[\\[+[^\\]]*\\|([^A-Z\\]]*)\\]\\]+");
-	s = LINKS1.matcher(s).replaceAll("$1");
-
-	/*
-	 * detect commonsense entities using the presence of some keywords (i.e. List) in the target wikid.
-	 * e.g. [[List of canadian territories|terriories in Alberta]]
-	 */
-	for (String listHook : lang.getListIdentifiers()){
-	    listHook = listHook.replaceAll("_", " ");
-	    Pattern LINKS2 = Pattern.compile("\\[\\[+(?>"+listHook+")[^\\]]+\\|([^\\]]*)\\]\\]+");
-	    s = LINKS2.matcher(s).replaceAll("$1");
-	}
-
-	/*
-	 * detect normal named entities and remove brackets, e.g. [[multinational]] -> multinational
-	 */
-	Pattern LINKS3 = Pattern.compile("\\[\\[+([^A-Z][^\\]\\|]*)\\]\\]+");
-	s = LINKS3.matcher(s).replaceAll("$1");
-
-	return s;
-    }
-
-    /**
-     * Removes double spaces between tokens, deouble new lines, and 
-     * removes all the parenthesis, fixing spaces before commas.
-     * 
-     * @param content
-     * @return
-     */
-    public static String cleanAndNormalizeContent(String content){
-	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?(\\([^\\(]*?\\))");	// remove parenthesis
-	Matcher m = PARENTHESIS.matcher(content);
+    public static String removeAllWikilinks(String text) {
+	Pattern WIKILINK = Pattern.compile("[A-Z-]+" + "<([^>]*?)>");
+	Matcher m = WIKILINK.matcher(text);
 	while(m.find()){
-	    content = m.replaceAll("");
-	    m = PARENTHESIS.matcher(content);
+	    String renderedName = m.group(1).replaceAll("_", " ");
+	    text = text.replaceAll(Pattern.quote(m.group(0)), Matcher.quoteReplacement(renderedName));
 	}
-	/*
-	 * this is a conseguence of removing parenthesis. For example, 
-	 * if we remove parenthesis in a text such as: Jack ''(elb)'' is the man 
-	 * --> we would end up with --> Jack '''' is the man 
-	 */
-	content = content.replaceAll("\\s''''\\s", "");
-	
-	
-	content = content.replaceAll(" {2,}", " ");				// remove double spaces
-	content = content.replaceAll("\n{2,}", "\n");				// remove double new lines
-	content = content.replaceAll(" , ", ", ");				// remove space before commma
-	return content.trim();
+	return text;
     }
 
     /**
+     * Detect wrong marked wikilinks that were originally rendered with a template
+     * but we remove them in a previous step.
      * 
-     * @param content
+     * For example, wikilinks such as:
+     * 		[[Mount_Rushmore#Height|{{template}}]]
+     * 
+     * become, after the cleaning step:
+     * 		[[Mount_Rushmore#Height|]]
+     * 
+     * @param text
      * @return
      */
-    private static String removeEmphasis(String block) {
-	Pattern ALIASES = Pattern.compile("'''([^\\{\\}\\(\\)\\+\\*]*)'''");
-	return ALIASES.matcher(block).replaceAll("$1");
+    public static String cleanEmptyTemplateWikilinks(String text){
+	/*
+	 * [[Mount_Rushmore#Heigth|]] --> Mount Rushmore Heigth
+	 */
+	Pattern TEMPLATEWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]]+)\\|" + "\\]\\]+");
+	Matcher m = TEMPLATEWIKILINK.matcher(text);
+	while(m.find()){
+	    text = m.replaceAll(m.group(1).replaceAll("_", " ").replaceAll("#", " "));
+	}
+	return text;
     }
 
+    /**
+     * Detect commonsense entities with pipes, and transform them
+     * in normal entities e.g. [[multinational corporation|multinational]] -> multinational
+     * 
+     * @param text
+     * @return
+     */
+    public static String removeCommonSenseWikilinks(String text){
+	Pattern COMMONSENSE = Pattern.compile("\\[\\[+" + "([^\\]]*\\|)?" + "('')?" + "([a-z][^A-Z].*?)" + "('')?" + "\\]\\]+");
+	Matcher m = COMMONSENSE.matcher(text);
+	while(m.find()){
+	    if ( m.group(2) != null && m.group(4) != null){
+		text = text.replace(m.group(0), m.group(2) + m.group(3) + m.group(4));
+	    }else{
+		text = text.replace(m.group(0), m.group(3));
+	    }
+	}
+	return text;
+    }
 
     /**
-     * Normalized wiki-links to appear with underscores instead of their keyword names.
+     * For example:
+     * 
+     * [[Byzantine Empire|Byzantines]]
+     * 
+     * we have "Byzantines" in the text that refers to the wikid "Byzantine_Empire".
+     * 
      * 
      * @param s
      * @return
      */
-    public static String normalizeWikilinks(String s) {
-	/*
-	 * transform entities in wikids
-	 * e.g. [[multinational corporation|multinational]] -> [[multinational_corporation|multinational]]
-	 */
-	StringBuffer newContent = new StringBuffer();
-	Pattern LINKS1 = Pattern.compile("(?<=\\[\\[)([^\\]]+)\\|([^\\]]+)(?=\\]\\])");
-	Matcher m1 = LINKS1.matcher(s);
-	int begin = 0;
-	while(m1.find()){
-	    int start = m1.start(0);
-	    int end = m1.end(0);
-	    newContent.append(s.substring(begin, start));
-	    newContent.append(m1.group(1).replaceAll(" ", "_") + "|" + m1.group(2));
-	    begin = end;
-	}
-	newContent.append(s.substring(begin));
+    public static String harvestAllWikilinks(String text, WikiArticle article) {
 
-	String newContentTmp = newContent.toString();
-	StringBuffer newContent2 = new StringBuffer();
+	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
 
 	/*
-	 * transform entities in wikids, 
-	 * e.g. [[multinational corporation]] -> [[multinational_corporation]]
+	 * We need to use some *strong* filtering here to avoid considering strange cases like
+	 * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
+	 * We adopt this heuristic: if the rendered entity has only special characters we skip it.
+	 * We use the following regex to express special character that we do not want alone.
+	 * We also skip wikiliks composed by only numbers.
 	 */
-	Pattern LINKS2 = Pattern.compile("(?<=\\[\\[)([^\\]]+)(?=\\]\\])");
-	Matcher m2 = LINKS2.matcher(newContentTmp);
-	begin = 0;
-	while(m2.find()){
-	    int start = m2.start(0);
-	    int end = m2.end(0);
-	    newContent2.append(newContentTmp.substring(begin, start));
-	    newContent2.append(m2.group(1).replaceAll(" ", "_"));
-	    begin = end;
-	}
-	newContent2.append(newContentTmp.substring(begin));
+	String specialCharacters = "^[" + "0-9/@#!-*\\$%^'&._+={}()" + "]+$" ;
 
-	return newContent2.toString();
-    }
+	/*
+	 * The following regex captures all the Wikilinks (after removed common-sense ones, see above)
+	 * Named entities wikilinks can be sorrouned by '', which can stay inside square brackets or outside.
+	 */
+	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
+	Matcher m = ENTITY.matcher(text);
 
+	/*
+	 * For each matching ...
+	 */
+	String wikid;
+	String rendered;
 
-    /**
-     * 
-     * @param page
-     * @return
-     * @throws Exception 
-     */
-    public static Map<String, List<String>> getTablesFromXml(String page, WikiLanguage lang, Cleaner cleaner){
-	String content = XMLParser.getWikiMarkup(page);
-	Map<String, String> blocks = fragmentArticle(content, true);
-	return retrieveTables(blocks, cleaner);
-    }
-
-
-    /**
-     * Remove undesired blocks (from the lang file!).
-     *  
-     * @param sentences
-     * @return
-     */
-    public static Map<String, String> removeUndesiredBlocks(Map<String, String> blocks, WikiLanguage lang) {
-	List<String> sectionToDelete = lang.getFooterIdentifiers();
-	Map<String, String> filteredBlocks = blocks;
-
-	// remove undesired sections (notes, references, etc.)
-	for(String undesiredSection : sectionToDelete){
-	    String normUndesiredSection = "#" + undesiredSection.replace(" ", "_");
-	    filteredBlocks.remove(normUndesiredSection); // we need to change it!
-	}
-
-	// remove empty contents
-	for(Map.Entry<String, String> entry : filteredBlocks.entrySet()){
-	    if(entry.getValue().isEmpty())
-		filteredBlocks.remove(entry.getKey());
-	}
-	return filteredBlocks;
-    }
-
-
-    /**
-     * 
-     * @param page
-     * @return
-     * @throws Exception 
-     */
-    public static Map<String, List<String>> getListsFromXml(String page, WikiLanguage lang){
-	String content = XMLParser.getWikiMarkup(page);
-	Map<String, String> blocks = fragmentArticle(content, true);
-	return retrieveLists(blocks);
-    }
-
-    /**
-     * 
-     * @param blocks
-     * @return
-     */
-    public static Map<String, List<String>> retrieveTables(Map<String, String> blocks, Cleaner cleaner){
-	Map<String, List<String>> tablesContent = new LinkedHashMap<String, List<String>>();
-
-	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    List<String> tables = cleaner.retrieveAll(block.getValue(), "{|", "|}");	// retrieve tables	    
-	    // add only if there is some textual content
-	    if (!tables.isEmpty())
-		tablesContent.put(block.getKey(), tables);
-	}
-
-	return tablesContent;
-    }
-
-    /**
-     * 
-     * @param blocks
-     * @return
-     */
-    public static String removeLists(String block){
-	return block.replaceAll("(?m)^\\*.*", "");
-    }
-
-    /**
-     * 
-     * @param blocks
-     * @return
-     */
-    public static Map<String, List<String>> retrieveLists(Map<String, String> blocks){
-	Map<String, List<String>> listContent = new LinkedHashMap<String, List<String>>();
-	Pattern LISTS = Pattern.compile("(\\*[^\n]+(\n|\r|$)){2,}+");
-
-	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    Matcher m = LISTS.matcher(block.getValue());
-	    while (m.find()){
-		if (!listContent.containsKey(block.getKey()))
-		    listContent.put(block.getKey(), new ArrayList<String>());
-		listContent.get(block.getKey()).add(m.group(0));
+	while(m.find()){
+	    if (m.group(2) != null){
+		wikid = m.group(2).replaceAll(" ", "_").substring(0, m.group(2).length()-1);
+		if ( m.group(3) != null && m.group(5) != null){
+		    rendered = m.group(3) + m.group(4) + m.group(5);
+		}else if ( m.group(1) != null && m.group(6) != null){
+		    rendered = m.group(1) + m.group(4) + m.group(6);
+		}else{
+		    rendered = m.group(4);
+		}
+	    }else{
+		rendered = m.group(4);
+		wikid = m.group(4).replaceAll(" ", "_");
 	    }
-	}   
-	return listContent;
+
+	    /*
+	     * 
+	     */
+	    if (Configuration.solveRedirect())
+		wikid = RedirectResolver.getTargetPage(wikid);
+
+	    /*
+	     * we can have an empty rendered in case of presence of template (the we eliminate previously).
+	     * Indeed, a wikilink such as [[Dipavamsa|{{IAST|Dīpavaṃsa}}]] would become [[Dipavamsa|]]
+	     * with an empty rendered name.
+	     */
+	    if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
+		if (!wikilinks.containsKey(rendered))
+		    wikilinks.put(rendered, new HashSet<String>());
+		wikilinks.get(rendered).add("SE-AUG<" + wikid +  ">");
+		/*
+		 * 
+		 * SOSTITUISCI CON addREPLACEMENT!!
+		 * 
+		 */
+		text = text.replaceAll(Pattern.quote(m.group(0)), Matcher.quoteReplacement("SE-ORG<" + wikid + ">"));
+	    }
+	}
+	article.addWikilinks(wikilinks);
+	return text;
+    }
+
+    /**
+     * 
+     * @param cleanText
+     * @param article
+     * @return
+     */
+    public static String cleanAllWikilinks(String cleanText, WikiArticle article) {
+	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
+	Matcher m = ENTITY.matcher(cleanText);
+
+	/*
+	 * For each matching ...
+	 */
+	String rendered;
+	StringBuffer cleanBlock = new StringBuffer();
+	while(m.find()){
+	    if (m.group(2) != null){
+		if ( m.group(3) != null && m.group(5) != null){
+		    rendered = m.group(3) + m.group(4) + m.group(5);
+		}else if ( m.group(1) != null && m.group(6) != null){
+		    rendered = m.group(1) + m.group(4) + m.group(6);
+		}else{
+		    rendered = m.group(4);
+		}
+	    }else{
+		rendered = m.group(4);
+	    }
+	    m.appendReplacement(cleanBlock, rendered);
+	}
+	m.appendTail(cleanBlock);
+	
+	return cleanBlock.toString();
     }
 
 }

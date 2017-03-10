@@ -17,6 +17,9 @@ public class XMLParser {
     
     private static final Logger logger = LoggerFactory.getLogger(WikiLanguage.class);
 
+    public XMLParser(){};
+
+    
     /**
      * Parse the XML and returns the content of the fields given as a parameter.
      * E.g.  <title> content </title>, <id> content </id>, <ns> content </ns>
@@ -25,7 +28,7 @@ public class XMLParser {
      * @param field
      * @return
      */
-    public static String getFieldFromXmlPage(String content, String field){
+    public String getFieldFromXmlPage(String content, String field){
 	String XML_START_TAG_FIELD = "<" + field + ">";
 	String XML_END_TAG_FIELD = "</" + field + ">";
 	int start = content.indexOf(XML_START_TAG_FIELD);
@@ -46,7 +49,7 @@ public class XMLParser {
      * @param s
      * @return
      */
-    public static String getWikiMarkup(String s) {
+    public String getWikiMarkup(String s) {
 	String XML_START_TAG_FIELD = "<text xml:space=\"preserve\">";
 	String XML_END_TAG_FIELD = "</text>";
 	// parse out actual text of article

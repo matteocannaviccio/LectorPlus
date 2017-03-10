@@ -94,18 +94,62 @@ public class Configuration {
     public static String getLemmaDictionary(){
 	return keyValue.get("lemmatizerDictonary");
     }
-    
+
     public static String getRedirectFile(){
- 	return keyValue.get("redirectFile");
-     }
-    
+	return keyValue.get("redirectFile");
+    }
+
     public static String getRedirectIndex(){
-  	return keyValue.get("redirectIndex");
-      }
+	return keyValue.get("redirectIndex");
+    }
+
+    public static String getTypesFileAirpedia(){
+	return keyValue.get("typesFileAirpedia");
+    }
+
+    public static String getTypesIndexAirpedia(){
+	return keyValue.get("typesIndexAirpedia");
+    }
     
-    public static boolean getWholeArticleFlag(){
-	return keyValue.get("wholeArticle").equals("true");	    
-       }
+    public static String getTypesFileOriginal(){
+	return keyValue.get("typesFileOriginal");
+    }
+
+    public static String getTypesIndexOriginal(){
+	return keyValue.get("typesIndexOriginal");
+    }
+
+    public static boolean getOnlyAbstractFlag(){
+	return keyValue.get("onlyAbstract").equals("true");	    
+    }
+
+    public static boolean getOnlyTextWikilinks(){
+	return keyValue.get("onlyTextWikilinks").equals("true");	    
+    }
+
+    public static String getExperimentFolder(){
+	return keyValue.get("experimentFolder");
+    }
 
 
+    public static String getInputDump50Articles(){
+	return keyValue.get("miniDumpExp");
+    }
+
+    public static boolean getEDTestingMode(){
+	return keyValue.get("edTestingMode").equals("true");	    
+    }
+
+
+    public static boolean extractTables(){
+	return keyValue.get("extractTables").equals("true");	    
+    }
+
+    public static boolean extractLists(){
+	return keyValue.get("extractLists").equals("true");	    
+    }
+
+    public static boolean solveRedirect(){
+	return keyValue.get("solveRedirect").equals("true");	    
+    }
 }

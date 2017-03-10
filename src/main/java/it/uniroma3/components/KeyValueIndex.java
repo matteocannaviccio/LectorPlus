@@ -203,13 +203,13 @@ public class KeyValueIndex {
      */
     public static void main(String[] args) throws IOException, ParseException {
 
-	String INDEX_DIR = "/Users/matteo/Desktop/index";
-	String DOCUMENT_PATH = "/Users/matteo/Desktop/redirects.txt";
+	String INDEX_DIR = "/Users/matteo/Work/lectorplus_data/redirect/index";
+	String DOCUMENT_PATH = "/Users/matteo/Work/lectorplus_data/redirect/redirect_airpedia.tsv";
 
 	// indexing
 	KeyValueIndex index = new KeyValueIndex(DOCUMENT_PATH, INDEX_DIR);
 	
-	System.out.println(index.retrieveKeys("City_of_Rome"));
+	System.out.println(index.retrieveValues("Race and ethnicity in the United States Census"));
 
     }
 }
