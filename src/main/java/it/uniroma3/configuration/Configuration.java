@@ -131,7 +131,6 @@ public class Configuration {
 	return keyValue.get("experimentFolder");
     }
 
-
     public static String getInputDump50Articles(){
 	return keyValue.get("miniDumpExp");
     }
@@ -139,7 +138,6 @@ public class Configuration {
     public static boolean getEDTestingMode(){
 	return keyValue.get("edTestingMode").equals("true");	    
     }
-
 
     public static boolean extractTables(){
 	return keyValue.get("extractTables").equals("true");	    

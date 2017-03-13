@@ -189,11 +189,31 @@ public class WikiParser {
 	Map<String, String> blocks = blockParser.fragmentArticle(article.getOriginalMarkup());
 
 	/*
-	 * Extract structured contents from the WikiMarkup.
+	 * Use the first block (i.e. #Abstract) to check if it is not an interesting article:
+	 * - REDIRECT
+	 * - DISAMBIGUATION
+	 * - DATE
+	 *  we set the type to the article and immediately return it.
 	 */
-	// "bio" are used in italian wikipedia
-	// article.setBio(blockParser.retrieveAllWithSpecification(page, "{{", "bio", "}}").get(0));
+	if (checkIsRedirect(blocks)){
+	    article.setType(ArticleType.REDIRECT);
+	    return article;
+	}
+	if (checkIsDisambiguation(blocks)){
+	    article.setType(ArticleType.DISAMBIGUATION);
+	    return article;
+	}
+	if (checkIsDate(blocks)){
+	    article.setType(ArticleType.DATE);
+	    return article;
+	}
 
+	/*
+	 * Extract structured contents from the WikiMarkup.
+	 * For now:
+	 * - TABLES
+	 * - LISTS
+	 */
 	if(Configuration.extractTables())
 	    article.setTables(blockParser.extractTables(blocks));
 
@@ -204,25 +224,68 @@ public class WikiParser {
 	 * Clean the text of the articles from <refs>, [[File:]], lists, 
 	 * tables, infobox, etc. and removed undesired blocks from the map.
 	 */
-	for (Map.Entry<String, String> block : blocks.entrySet())
-	    blocks.put(block.getKey(), textParser.hugeCleaningText(block.getKey(), block.getValue(), article, lang));
-	blockParser.removeUndesiredBlocks(blocks, Configuration.getOnlyAbstractFlag());
-
-	if (Configuration.getEDTestingMode())
-	    blockParser.removeUndesiredBlocks(article.cleanBlocks(), Configuration.getOnlyAbstractFlag());
+	for (Map.Entry<String, String> block : blocks.entrySet()){
+	    String blockContent = block.getValue();
+	    blockContent = textParser.fixSomeTemplates(blockContent);
+	    blockContent = textParser.removeNoise(blockContent, lang);
+	    blockContent = textParser.removeUselessWikilinks(blockContent);
+	    blocks.put(block.getKey(), blockContent);
+	}
 
 	/*
-	 * If it is a REDIRECT or a DISAMBIGUATION, we set the type to the article and immediately return it.
+	 * Here is the moment to store the article first sentence, 
+	 * clean in order to use for extract seed types and run NLP tools.
 	 */
-	if (checkIsRedirect(blocks)){
-	    article.setType(ArticleType.REDIRECT);
-	    return article;
+	article.setFirstSentence(textParser.obtainCleanFirstSentence(
+		blockParser.getAbstractSection(blocks)));
+
+	/*
+	 * Clean the text of the articles from <refs>, [[File:]], lists, 
+	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 */
+	if (!Configuration.getOnlyTextWikilinks())
+	    for (Map.Entry<String, String> block : blocks.entrySet()){
+		String blockContent = block.getValue();
+		blockContent = textParser.harvestWikilinks(blockContent, article);
+		blocks.put(block.getKey(), blockContent);
+	    }
+
+	/*
+	 * Clean the text of the articles from <refs>, [[File:]], lists, 
+	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 */
+	for (Map.Entry<String, String> block : blocks.entrySet()){
+	    String blockContent = block.getValue();
+	    blockContent = textParser.removeStructuredContents(blockContent);
+	    blocks.put(block.getKey(), blockContent);
 	}
-	
-	if (checkIsDisambiguation(blocks)){
-	    article.setType(ArticleType.DISAMBIGUATION);
-	    return article;
-	}
+
+	/*
+	 * Clean the text of the articles from <refs>, [[File:]], lists, 
+	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 */
+	if (Configuration.getOnlyTextWikilinks())
+	    for (Map.Entry<String, String> block : blocks.entrySet()){
+		String blockContent = block.getValue();
+		blockContent = textParser.harvestWikilinks(blockContent, article);
+		blocks.put(block.getKey(), blockContent);
+	    }
+	blockParser.removeUndesiredBlocks(blocks, Configuration.getOnlyAbstractFlag());
+
+	/*
+	 * Extract clean text, that is used to execute the article with DBpedia Spotlight.
+	 * Used for testing DBPedia Spootlight
+	 */
+	/*
+	if(Configuration.getEDTestingMode())
+	    for (Map.Entry<String, String> block : blocks.entrySet()){
+		String blockContent = block.getValue();
+		String blockNoWikilink = MarkupParser.cleanAllWikilinks(blockContent);
+		article.getCleanBlocks().put(block.getKey(), blockNoWikilink);
+	    }
+	if (Configuration.getEDTestingMode())
+	    blockParser.removeUndesiredBlocks(article.cleanBlocks(), Configuration.getOnlyAbstractFlag());
+	 *?
 
 	/*
 	 * if it is not of all of this... it is an article! :) 
@@ -234,12 +297,9 @@ public class WikiParser {
 	 * (4) finally, we assignblock to the article performing some further cleaning of the text, which was 
 	 * not possible before. We remove parenthesis, bold text and normalize spaces between token and sentences. 
 	 */
-	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
-	article.setFirstSentence(TextParser.splitSentences(abstractSection).get(0));
 	article.setDisambiguation(getDisambiguation(article.getWikid()));
-	article.setAliases(textParser.getAlias(abstractSection));
+	article.setAliases(textParser.getAlias(blockParser.getAbstractSection(blocks)));
 	article.setBlocks(textParser.finalCleanText(blocks));
-
 	return article;
     }
 
@@ -251,16 +311,29 @@ public class WikiParser {
      * @return
      */
     private boolean checkIsRedirect(Map<String, String> blocks){
-	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
 	boolean isRedirect = false;
 	for (String redirectHook : lang.getRedirectIdentifiers()){
-	    if (abstractSection.matches("^.*#" + redirectHook + "\\b.*")){
+	    if (blockParser.getAbstractSection(blocks).matches(".*#" + redirectHook + "(.|\\n|\\r)*")){
 		isRedirect = true;
 	    }
 	}
 	return isRedirect;
     }
-    
+
+    /**
+     * Check if the article can be a DATE ARTICLE using the templates in the abstract section.
+     * 
+     * @param blocks
+     * @return
+     */
+    private boolean checkIsDate(Map<String, String> blocks){
+	boolean isDate = false;
+	if (blockParser.getAbstractSection(blocks).contains("{{Day}}") || blockParser.getAbstractSection(blocks).contains("{{Year article header|")){
+	    isDate = true;
+	}
+	return isDate;
+    }
+
     /**
      * Check if the article can be a DISAMBIGUAITON using the text in the abstract section.
      * if it contains the reference #REDIRECT.
@@ -268,16 +341,17 @@ public class WikiParser {
      * @param blocks
      * @return
      */
+
     private boolean checkIsDisambiguation(Map<String, String> blocks){
-	String abstractSection = textParser.removeLinks(blockParser.getAbstractSection(blocks));
 	boolean isDisambiguation = false;
 	for (String disambiguationHook : lang.getDisambiguationTextIdentifiers()){
-	    if (abstractSection.contains(disambiguationHook)){
+	    if (blockParser.getAbstractSection(blocks).contains(disambiguationHook)){
 		isDisambiguation = true;
 	    }
 	}
 	return isDisambiguation;
     }
+
 
     /**
      * 
@@ -304,7 +378,7 @@ public class WikiParser {
     public String extractsWikid(String page){
 	return xmlParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
     }
-    
+
     /**
      * It clean the wikid obtaining the title,
      * without underscores or disambiguations.

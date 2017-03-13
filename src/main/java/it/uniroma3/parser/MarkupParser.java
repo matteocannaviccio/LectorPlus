@@ -1,5 +1,6 @@
 package it.uniroma3.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,6 +21,15 @@ import it.uniroma3.model.WikiArticle;
  *
  */
 public class MarkupParser {
+
+
+    private static Set<String> commonsense_entities = new HashSet<String>(
+	    Arrays.asList("United States dollar", "Euro", "Japanese yen", 
+		    "Pound sterling", "Australian dollar", "Canadian dollar", 
+		    "Swiss franc", "Chinese yuan", "Swedish krona", "Mexican peso",
+		    "New Zealand dollar", "Singapore dollar", "Hong Kong dollar",
+		    "Norwegian krone", "South Korean won", "Turkish lira", 
+		    "Indian rupee", "Russian ruble", "Brazilian real", "South African rand"));
 
     /**
      * Detect all the wikilinks and normalize them in text.
@@ -137,26 +147,36 @@ public class MarkupParser {
 	    }
 
 	    /*
-	     * 
+	     * last moment to eliminate commonsese entities 
+	     * (essentially the ones that are not lower cased strings)
 	     */
-	    if (Configuration.solveRedirect())
-		wikid = RedirectResolver.getTargetPage(wikid);
+	    if (commonsense_entities.contains(wikid)){
+		text = text.replace(Pattern.quote(m.group(0)), Matcher.quoteReplacement(rendered));
+	   
+	    }else{
 
-	    /*
-	     * we can have an empty rendered in case of presence of template (the we eliminate previously).
-	     * Indeed, a wikilink such as [[Dipavamsa|{{IAST|Dīpavaṃsa}}]] would become [[Dipavamsa|]]
-	     * with an empty rendered name.
-	     */
-	    if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
-		if (!wikilinks.containsKey(rendered))
-		    wikilinks.put(rendered, new HashSet<String>());
-		wikilinks.get(rendered).add("SE-AUG<" + wikid +  ">");
 		/*
 		 * 
-		 * SOSTITUISCI CON addREPLACEMENT!!
-		 * 
 		 */
-		text = text.replaceAll(Pattern.quote(m.group(0)), Matcher.quoteReplacement("SE-ORG<" + wikid + ">"));
+		if (Configuration.solveRedirect())
+		    wikid = RedirectResolver.getTargetPage(wikid);
+
+		/*
+		 * we can have an empty rendered in case of presence of template (the we eliminate previously).
+		 * Indeed, a wikilink such as [[Dipavamsa|{{IAST|Dīpavaṃsa}}]] would become [[Dipavamsa|]]
+		 * with an empty rendered name.
+		 */
+		if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
+		    if (!wikilinks.containsKey(rendered))
+			wikilinks.put(rendered, new HashSet<String>());
+		    wikilinks.get(rendered).add("SE-AUG<" + wikid +  ">");
+		    /*
+		     * 
+		     * SOSTITUISCI CON addREPLACEMENT!!
+		     * 
+		     */
+		    text = text.replaceAll(Pattern.quote(m.group(0)), Matcher.quoteReplacement("SE-ORG<" + wikid + ">"));
+		}
 	    }
 	}
 	article.addWikilinks(wikilinks);
@@ -166,35 +186,43 @@ public class MarkupParser {
     /**
      * 
      * @param cleanText
-     * @param article
      * @return
      */
-    public static String cleanAllWikilinks(String cleanText, WikiArticle article) {
+    public static String cleanAllWikilinks(String cleanText) {
 	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
 	Matcher m = ENTITY.matcher(cleanText);
 
-	/*
-	 * For each matching ...
-	 */
-	String rendered;
 	StringBuffer cleanBlock = new StringBuffer();
-	while(m.find()){
-	    if (m.group(2) != null){
-		if ( m.group(3) != null && m.group(5) != null){
-		    rendered = m.group(3) + m.group(4) + m.group(5);
-		}else if ( m.group(1) != null && m.group(6) != null){
-		    rendered = m.group(1) + m.group(4) + m.group(6);
+	try {
+	    /*
+	     * For each matching ...
+	     */
+	    String rendered;
+	    cleanBlock = new StringBuffer();
+	    while(m.find()){
+		if (m.group(2) != null){
+		    if ( m.group(3) != null && m.group(5) != null){
+			rendered = m.group(3) + m.group(4) + m.group(5);
+		    }else if ( m.group(1) != null && m.group(6) != null){
+			rendered = m.group(1) + m.group(4) + m.group(6);
+		    }else{
+			rendered = m.group(4);
+		    }
 		}else{
 		    rendered = m.group(4);
 		}
-	    }else{
-		rendered = m.group(4);
+		m.appendReplacement(cleanBlock, Matcher.quoteReplacement(rendered));
 	    }
-	    m.appendReplacement(cleanBlock, rendered);
+	    m.appendTail(cleanBlock);
+
+	} catch (Exception e) {
+	    System.out.println(cleanText);
+	    e.printStackTrace();
 	}
-	m.appendTail(cleanBlock);
-	
+
 	return cleanBlock.toString();
     }
+
+
 
 }

@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import it.uniroma3.parser.TextParser;
 /**
  *
  * 
@@ -48,6 +50,9 @@ public class WikiArticle {
     // Article composite structures
     private Map<String, List<String>> tables;
     private Map<String, List<String>> lists;
+    
+    // DBpedia types
+    private List<String> types;
 
     private static transient Gson gson_pp = new GsonBuilder()
 	    .disableHtmlEscaping()
@@ -59,7 +64,7 @@ public class WikiArticle {
 	    .create();
 
     public enum ArticleType {
-	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, UNKNOWN, MAIN, LIST, PROJECT, PORTAL, FILE, HELP
+	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, DATE, MAIN, LIST, PROJECT, PORTAL, FILE, HELP
     };
 
     /**
@@ -455,6 +460,20 @@ public class WikiArticle {
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    /**
+     * @return the types
+     */
+    public List<String> getTypes() {
+        return types;
+    }
+
+    /**
+     * @param types the types to set
+     */
+    public void setTypes(List<String> types) {
+        this.types = types;
     }
 
 

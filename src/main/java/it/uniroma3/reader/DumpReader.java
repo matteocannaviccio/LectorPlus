@@ -4,14 +4,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Set;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.entitydetection.EntityAugmenter;
 import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
-import it.uniroma3.util.Reader;
 /**
  * This is the main entry point of the parser.
  * 
@@ -57,9 +55,6 @@ public class DumpReader {
 	// Output printer.
 	String output_file = Configuration.getOutputFolder() + "refactor_FILTERED.json";
 	PrintStream out_json = new PrintStream(new FileOutputStream(output_file), false, "UTF-8");
-	
-	// Filter (tmp)
-	Set<String> entitieToFilterIn = Reader.getLines("/Users/matteo/Work/Repository/java/lectorplus/groundtruths/entities/gt_people.tsv");
 
 	/* ********************************
 	 * *********** EXECUTION **********
@@ -76,8 +71,6 @@ public class DumpReader {
 	    lines.parallelStream()
 	    .map(s -> parser.createArticleFromXml(s))
 	    .filter(s -> s.getType() == ArticleType.ARTICLE)
-	    .filter(s -> entitieToFilterIn.contains(s.getWikid()))		//includes a filter to eliminate not-person entities
-	    //.filter(s -> !s.getTables().isEmpty())
 	    .map(s -> EntityAugmenter.augmentEntities(s))
 	    .forEach(s -> out_json.println(s.toJson()));
 	    

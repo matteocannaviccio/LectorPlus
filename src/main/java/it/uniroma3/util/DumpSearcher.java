@@ -14,7 +14,7 @@ public class DumpSearcher {
     /*
      * 
      */
-    public static String entities_to_search = "<title>Andrei Sakharov";
+    public static String entities_to_search = "<title>Alfred of Beverley";
 
     /**
      * 
@@ -24,9 +24,7 @@ public class DumpSearcher {
     public static void main(String[] args) throws IOException {
 
 	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
-
-
-	Set<String> titles = Reader.getLines("/Users/matteo/Desktop/gt.txt");
+	Set<String> titles = Reader.getLines("/Users/matteo/Desktop/gt.tsv");
 
 	/* ------ PIPELINE COMPONENTS ------ */
 	// reader

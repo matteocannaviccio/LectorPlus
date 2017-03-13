@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import it.uniroma3.configuration.Configuration;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 /**
@@ -29,68 +28,77 @@ public class TextParser {
     }
 
     /**
+     * In this method we put some manually-done templates resolver.
      * 
-     * @param text
+     * @param block
+     * @return
+     */
+    public String fixSomeTemplates(String block){
+	String cleanBlock = StringEscapeUtils.unescapeHtml4(StringEscapeUtils.unescapeHtml4(block));
+	cleanBlock = fixUnitConversion(cleanBlock);
+	cleanBlock = fixLangTemplate(cleanBlock);
+	return cleanBlock;
+    }
+
+    /**
+     * In this method we put some noise removal operations on the text.
+     * Finally we remove block of content that are contained between 
+     * curly brackets or square brackets (templates, for example).
+     * 
+     * @param block
      * @param lang
      * @return
      */
-    public String hugeCleaningText(String titleBlock, String text, WikiArticle article, WikiLanguage lang){
-	String cleanText = StringEscapeUtils.unescapeHtml4(StringEscapeUtils.unescapeHtml4(text));
-	cleanText = fixUnitConversion(cleanText);	// this is an attempt to save some templates.
-	cleanText = fixLangTemplate(cleanText);	// this is an attempt to save some templates.
-	cleanText = removeNoToc(cleanText);
-	cleanText = removeInterWikiLinks(cleanText);
-	cleanText = removeRefs(cleanText);
-	cleanText = removeCategoryLinks(cleanText, lang);
-	cleanText = removeHtmlComments(cleanText);
-	cleanText = removeHtmlTags(cleanText); 		// it is important to run it after "removeRefs"
-	cleanText = removeIndentation(cleanText);
-
-	/*
-	 * remove noisy wikilinks and template
-	 * this is done running specific methods of the cleaner that remove 
-	 * balanced content in between two specific span of text, "{{" and "}}" 
-	 * for example would remove templates.
-	 * We also remove wikilinks that are not named entities.
-	 */
-	cleanText = cleaner.cleanBlockOfContent(cleanText, "{{", "}}");				// removes templates
-	cleanText = cleaner.cleanBlockOfContentFromSpecific(cleanText, "[[", "image", "]]"); 	// removes media
-	cleanText = MarkupParser.cleanEmptyTemplateWikilinks(cleanText);
-	cleanText = MarkupParser.removeCommonSenseWikilinks(cleanText);
-	
-	/* 
-	 * wikilinks - alternative one
-	 * Here we extract all the wikilinks present in the WHOLE page that have been not removed above.
-	 * We harvest wikilinks from the text, from the tables, reference block, etc.
-	 */
-	if(!Configuration.getOnlyTextWikilinks()){
-	    cleanText = MarkupParser.harvestAllWikilinks(cleanText, article);
-	}
-
-	/*
-	 * after extract all the wikilinks in the page (that are not category or media, remove above)
-	 * we can extract whole span of text that are relative to structured contentes such as tables,
-	 * infoboxes, lists, etc. using the same stack-based method in the cleaner.
-	 */
-	cleanText = cleaner.cleanBlockOfContent(cleanText, "{|", "|}"); 			// removes tables
-	cleanText = cleaner.removeLists(cleanText);						// remove lists
-
-	if(Configuration.getEDTestingMode()){
-	    String blockNoWikilink = MarkupParser.cleanAllWikilinks(cleanText, article);
-	    article.getCleanBlocks().put(titleBlock, blockNoWikilink);
-	}
-	
-	/* 
-	 * wikilinks - alternative two
-	 * Here we extract all the wikilinks present only in the TEXT of the page, that have been not removed above. 
-	 */
-	if(Configuration.getOnlyTextWikilinks()){
-	    cleanText = MarkupParser.harvestAllWikilinks(cleanText, article);
-	}
-
-	return cleanText;
+    public String removeNoise(String block, WikiLanguage lang){
+	String cleanBlock = removeNoToc(block);
+	cleanBlock = removeInterWikiLinks(cleanBlock);
+	cleanBlock = removeRefs(cleanBlock);
+	cleanBlock = removeCategoryLinks(cleanBlock, lang);
+	cleanBlock = removeHtmlComments(cleanBlock);
+	cleanBlock = removeHtmlTags(cleanBlock);
+	cleanBlock = removeIndentation(cleanBlock);
+	cleanBlock = cleaner.cleanBlockOfContent(cleanBlock, "{{", "}}");			// removes templates
+	cleanBlock = cleaner.cleanBlockOfContentFromSpecific(cleanBlock, "[[", "image", "]]"); 	// removes media
+	return cleanBlock;
     }
 
+    /**
+     * This methods removes wikilinks that are not named entities, 
+     * or that are empty after the removing of wikilinks with templates.
+     * 
+     * @param block
+     * @return
+     */
+    public String removeUselessWikilinks(String block){
+	String cleanBlock = MarkupParser.cleanEmptyTemplateWikilinks(block);
+	cleanBlock = MarkupParser.removeCommonSenseWikilinks(cleanBlock);
+	return cleanBlock;
+    }
+
+    /**
+     * The method extracts all the wikilinks present in the block, 
+     * and add them to the wikilinks collection of the article.
+     * 
+     * @param block
+     * @param article
+     * @return
+     */
+    public String harvestWikilinks(String block, WikiArticle article){
+	return MarkupParser.harvestAllWikilinks(block, article);
+    }
+
+    /**
+     * This method extracts structured contents such as tables, infobox, lists,
+     * using the stack-based method of the cleaner.
+     * 
+     * @param block
+     * @return
+     */
+    public String removeStructuredContents(String block){
+	String cleanBlock = cleaner.cleanBlockOfContent(block, "{|", "|}"); 	// removes tables
+	cleanBlock = cleaner.removeLists(cleanBlock);				// remove lists
+	return cleanBlock;
+    }
 
     /**
      * Note that WiktionaryLinks have the form [[wikt:anarchism|anarchism]], which is easily confused
@@ -176,7 +184,7 @@ public class TextParser {
 	String t = UNIT_CONVERSION1.matcher(s).replaceAll("$1 $2");
 	return UNIT_CONVERSION2.matcher(t).replaceAll("$1 $2");
     }
-    
+
     /**
      * Fixs lang template.
      * 
@@ -189,8 +197,11 @@ public class TextParser {
     private String fixLangTemplate(String s) {
 	Pattern LANG1 = Pattern.compile("\\{\\{lang\\|[^\\|]+\\|([^\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
 	Pattern LANG2 = Pattern.compile("\\{\\{lang-[^\\|]+\\|([^\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+	Pattern LANG3_JAP = Pattern.compile("\\{\\{Nihongo\\|([^\\|]+)\\|[^\\}]+?\\}\\}", Pattern.CASE_INSENSITIVE);
 	String t = LANG1.matcher(s).replaceAll("$1");
-	return LANG2.matcher(t).replaceAll("$1");
+	t = LANG2.matcher(t).replaceAll("$1");
+	t = LANG3_JAP.matcher(t).replaceAll("$1");
+	return t;
     }
 
     /**
@@ -235,15 +246,6 @@ public class TextParser {
     /* ***********************************************************************************
      * 				CLEAN CONTENT
      * ***********************************************************************************/
-
-    /**
-     * Returns the first sentence of the article, without the wikilinks!
-     * 
-     * @return
-     */
-    public String getFirstSentence(String text){
-	return splitSentences(text).get(0);
-    }
 
     /**
      * 
@@ -304,7 +306,7 @@ public class TextParser {
     public Map<String, String> finalCleanText(Map<String, String> blocks){
 	for(Map.Entry<String, String> block : blocks.entrySet()){
 	    //String cleanContent = removeParenthesis(block.getValue());
-	    String cleanContent = removeEmphasis(block.getValue());
+	    String cleanContent = removeEmphasis(block.getValue(), true);
 	    cleanContent = cleanContent.replaceAll(" {2,}", " ");				// remove double spaces
 	    cleanContent = cleanContent.replaceAll("\n{2,}", "\n");				// remove double new lines
 	    cleanContent = cleanContent.replaceAll(" , ", ", ").trim();				// remove space before commma
@@ -320,7 +322,7 @@ public class TextParser {
      * @param block
      * @return
      */
-    private String removeEmphasis(String block) {
+    private String removeEmphasis(String block, boolean keepItalics) {
 	Pattern ALIASES = Pattern.compile("'''('')?([^\\{\\}\\(\\)\\+\\*]*?)('')?'''");
 	Matcher m = ALIASES.matcher(block);
 	while(m.find()){
@@ -331,12 +333,13 @@ public class TextParser {
 	    /*
 	     * check if it is an italic name
 	     */
-	    if (m.group(1)!=null && m.group(3)!=null)
-		name = "''" + name + "''";
+	    if(keepItalics){
+		if (m.group(1)!=null && m.group(3)!=null)
+		    name = "''" + name + "''";
+	    }
 	    block = block.replaceAll(Pattern.quote(m.group(0)), Matcher.quoteReplacement(name));
 	}
 	return block;
-
     }
 
     /**
@@ -353,6 +356,23 @@ public class TextParser {
 	    m = PARENTHESIS.matcher(block);
 	}
 	return block.trim();
+    }
+
+    /**
+     * 
+     * @param abstractSection
+     * @return
+     */
+    public String obtainCleanFirstSentence(String abstractSection) {
+	String firstSentence = removeParenthesis(abstractSection);
+	firstSentence = removeEmphasis(firstSentence, false);
+	firstSentence = firstSentence.replaceAll("\"", "");		// remove ""
+	firstSentence = firstSentence.replaceAll(" {2,}", " ");		// remove double spaces
+	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");	// remove double new lines
+	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();	// remove space before commma
+	firstSentence = MarkupParser.cleanAllWikilinks(firstSentence); 
+	firstSentence = splitSentences(firstSentence).get(0);
+	return removeLinks(firstSentence);
     }
 
 

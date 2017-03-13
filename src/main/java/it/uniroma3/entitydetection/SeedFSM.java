@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
+import it.uniroma3.configuration.Configuration;
 import it.uniroma3.util.ExpertNLP;
 import it.uniroma3.util.Token;
 /**
@@ -29,7 +30,7 @@ public class SeedFSM {
     private static final List<String> CC_LIST = Arrays.asList("CC", ",");
     private static final List<String> CD_LIST = Arrays.asList("CD");
     private static final List<String> IN_LIST = Arrays.asList("IN");
-    private static final List<String> FINAL_LIST = Arrays.asList("VB", "VBN", "VBD", "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
+    private static final List<String> FINAL_LIST = Arrays.asList("VBG", "JJ","CC", ",", "VB", "VBN", "VBD", "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
 
     private FSM finiteStateMachine;
     private ExpertNLP expert;
@@ -46,6 +47,15 @@ public class SeedFSM {
 
     /**
      * Method to implement a finite state machine to capture the seeds from the first sentence.
+     * S1 -> RR state
+     * S2 -> numerical state
+     * S3 -> noun state
+     * S4 -> adjective state
+     * S5 -> conjunction state
+     * S6 -> pos state
+     * S7 -> proper noun state
+     * S8 -> in state
+     * S9 -> plural nouns
      * 
      * @return
      */
@@ -80,28 +90,30 @@ public class SeedFSM {
 	}
 	for (String symbol : N_LIST){
 	    fsm.addTransition(fsm.START, symbol, "S3");
-	    fsm.addTransition("S4", symbol, "S3");
 	    fsm.addTransition("S2", symbol, "S3");
 	    fsm.addTransition("S3", symbol, "S3");
+	    fsm.addTransition("S4", symbol, "S3");
 	    fsm.addTransition("S5", symbol, "S3");
 	    fsm.addTransition("S6", symbol, "S3");
 	    fsm.addTransition("S7", symbol, "S3");
 	    fsm.addTransition("S9", symbol, "S3");
 	}
 	for (String symbol : NS_LIST){
+	    fsm.addTransition(fsm.START, symbol, "S9");
 	    fsm.addTransition("S2", symbol, "S9");
+	    fsm.addTransition("S3", symbol, "S9");
 	    fsm.addTransition("S4", symbol, "S9");
 	    fsm.addTransition("S5", symbol, "S9");
-	    fsm.addTransition("S3", symbol, "S9");
 	    fsm.addTransition("S6", symbol, "S9");
 	    fsm.addTransition("S7", symbol, "S9");
 	    fsm.addTransition("S9", symbol, "S9");
 	}
 	for (String symbol : NP_LIST){
 	    fsm.addTransition(fsm.START, symbol, "S7");
-	    fsm.addTransition("S5", symbol, "S7");
 	    fsm.addTransition("S2", symbol, "S7");
+	    fsm.addTransition("S3", symbol, "S7");
 	    fsm.addTransition("S4", symbol, "S7");
+	    fsm.addTransition("S5", symbol, "S7");
 	    fsm.addTransition("S7", symbol, "S7");
 
 	}
@@ -124,6 +136,7 @@ public class SeedFSM {
 	    fsm.addTransition("S3", symbol, fsm.ACCEPT);
 	    fsm.addTransition("S9", symbol, fsm.ACCEPT);
 	}
+	
 	return fsm;
     }
 
@@ -139,7 +152,9 @@ public class SeedFSM {
 	List<String> seeds = new LinkedList<String>();
 	Token[] tokens = cutOutFirstPart(expert.tagFirstSentence(sentence));
 	String tmpToken = "-";
-
+	//System.out.println(sentence);
+	//System.out.println(Arrays.asList(tokens));
+	//System.out.println("==================");
 	for(Token token : tokens){
 	    this.finiteStateMachine.transition(token.getPOS());
 	    if(this.finiteStateMachine.accepts())
@@ -240,6 +255,13 @@ public class SeedFSM {
 	    }
 	    states = newState;
 	}
+    }
+    
+    public static void main(String[] args){
+	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	String test = "Actresses is a 1997 Catalan language Spanish drama film.";
+	SeedFSM fsm = new SeedFSM(new ExpertNLP());
+	System.out.println(fsm.findSeed(test));
     }
 
 }
