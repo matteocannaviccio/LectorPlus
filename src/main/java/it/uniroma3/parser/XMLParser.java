@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import it.uniroma3.model.WikiLanguage;
 /**
- * 
- * 
- * 
+ * This reader takes an XML content and extract fields of interest from it.
  * 
  * @author matteo
  *
@@ -16,12 +14,19 @@ import it.uniroma3.model.WikiLanguage;
 public class XMLParser {
     
     private static final Logger logger = LoggerFactory.getLogger(WikiLanguage.class);
-
-    public XMLParser(){};
-
     
     /**
-     * Parse the XML and returns the content of the fields given as a parameter.
+     * It extracts a the wikid from the field "title" in the xml.
+     * 
+     * @param page
+     * @return
+     */
+    public String extractsWikid(String page){
+	return getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
+    }
+    
+    /**
+     * Parse the XML and returns the content of the field given as a parameter.
      * E.g.  <title> content </title>, <id> content </id>, <ns> content </ns>
      * 
      * @param content
@@ -41,7 +46,7 @@ public class XMLParser {
     }
 
     /**
-     * Parse the XML and returns the content of the "text" field.
+     * Parse the XML and returns the real content, inside the "text" field.
      * We differentiate it only because of the different regex (to improve).
      * 
      * E.g.  <text xml:space="preserve"> text </text>, 

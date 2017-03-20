@@ -152,9 +152,11 @@ public class SeedFSM {
 	List<String> seeds = new LinkedList<String>();
 	Token[] tokens = cutOutFirstPart(expert.tagFirstSentence(sentence));
 	String tmpToken = "-";
+	
+	//System.out.println("==================");
 	//System.out.println(sentence);
 	//System.out.println(Arrays.asList(tokens));
-	//System.out.println("==================");
+	
 	for(Token token : tokens){
 	    this.finiteStateMachine.transition(token.getPOS());
 	    if(this.finiteStateMachine.accepts())
@@ -258,7 +260,7 @@ public class SeedFSM {
     }
     
     public static void main(String[] args){
-	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
 	String test = "Actresses is a 1997 Catalan language Spanish drama film.";
 	SeedFSM fsm = new SeedFSM(new ExpertNLP());
 	System.out.println(fsm.findSeed(test));

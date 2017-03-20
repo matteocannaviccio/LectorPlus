@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.components.RedirectResolver;
 import it.uniroma3.configuration.Configuration;
+import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
 
 /**
@@ -159,7 +159,7 @@ public class MarkupParser {
 		 * 
 		 */
 		if (Configuration.solveRedirect())
-		    wikid = RedirectResolver.getTargetPage(wikid);
+		    wikid = Lector.getRedirectResolver().resolveRedirect(wikid);
 
 		/*
 		 * we can have an empty rendered in case of presence of template (the we eliminate previously).

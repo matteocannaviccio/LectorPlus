@@ -17,14 +17,12 @@ import it.uniroma3.model.WikiLanguage;
 public class BlockParser {
 
     private Cleaner cleaner;
-    private WikiLanguage lang;
 
     /**
      * 
      * @param lang
      */
     public BlockParser(WikiLanguage lang){
-	this.lang = lang;
 	this.cleaner = new Cleaner(lang);
     }
 
@@ -136,34 +134,27 @@ public class BlockParser {
      * Remove undesired blocks (described in the lang file!) from the blocks.
      * 
      * @param blocks
-     * @param onlyAbstract
      * @return
      */
-    public Map<String, String> removeUndesiredBlocks(Map<String, String> blocks, boolean onlyAbstract) {
+    public Map<String, String> removeUndesiredBlocks(Map<String, String> blocks, WikiLanguage lang) {
 
-	if(onlyAbstract){
-	    Set<String> desiredSectionNames = new HashSet<String>();
-	    desiredSectionNames.add("#Abstract");
-	    blocks.keySet().retainAll(desiredSectionNames);
-	}else{
-	    /* get the titles of all undesired sections ... */
-	    Set<String> undesiredSectionNames = new HashSet<String>();
-	    undesiredSectionNames.addAll(lang.getFooterIdentifiers());	
+	/* get the titles of all undesired sections ... */
+	Set<String> undesiredSectionNames = new HashSet<String>();
+	undesiredSectionNames.addAll(lang.getFooterIdentifiers());	
 
-	    /* get the titles of all empty sections and add to the undesired */
-	    for(Map.Entry<String, String> entry : blocks.entrySet()){
-		if(!isInterestingBlock(entry.getValue())){
-		    undesiredSectionNames.add(entry.getKey());
-		}
+	/* get the titles of all empty sections and add to the undesired */
+	for(Map.Entry<String, String> entry : blocks.entrySet()){
+	    if(!isInterestingBlock(entry.getValue())){
+		undesiredSectionNames.add(entry.getKey());
 	    }
-	  
-	    /* and eliminated them! */
-	    blocks.keySet().removeAll(undesiredSectionNames);
 	}
+
+	/* and eliminated them! */
+	blocks.keySet().removeAll(undesiredSectionNames);
 
 	return blocks;
     }
-    
+
     /**
      * 
      * @param block

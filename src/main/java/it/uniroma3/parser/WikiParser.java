@@ -1,8 +1,6 @@
 package it.uniroma3.parser;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.model.WikiArticle;
@@ -16,10 +14,11 @@ import it.uniroma3.model.WikiLanguage;
  *
  */
 public class WikiParser {
-    protected WikiLanguage lang;
-    protected XMLParser xmlParser;
-    protected BlockParser blockParser;
-    protected TextParser textParser;
+    private WikiLanguage lang;
+    private ArticleTyper articleTyper;
+    private XMLParser xmlParser;
+    private BlockParser blockParser;
+    private TextParser textParser;
 
     /**
      * 
@@ -27,13 +26,14 @@ public class WikiParser {
      */
     public WikiParser(WikiLanguage lang){
 	this.lang = lang;
+	this.articleTyper = new ArticleTyper(lang);
 	this.xmlParser = new XMLParser();
 	this.blockParser = new BlockParser(lang);
 	this.textParser = new TextParser(lang);
     }
 
     /**
-     * It parse the xml extracting all the metadata 
+     * It parses the XML extracting all the metadata 
      * such as wikid, title, id, etc. Then it creates 
      * a WikiArticle object assigning an ArticltType.
      * 
@@ -43,103 +43,34 @@ public class WikiParser {
      * @return
      */
     public WikiArticle createArticleFromXml(String page){
-
 	/*
 	 * Obtain the title and metadata of the article from the xml and create a WikiArticle.
 	 */
-	String wikid = this.extractsWikid(page);
-	String title = this.getTitle(wikid);
+	String wikid = xmlParser.extractsWikid(page);
+	String title = textParser.getTitle(wikid);
 	String id = xmlParser.getFieldFromXmlPage(page, "id");
 	String namespace = xmlParser.getFieldFromXmlPage(page, "ns");
-	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang);
+	String originalMarkup = xmlParser.getWikiMarkup(page);
+	
+	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang, originalMarkup);
 
 	/*
 	 * Process only WikiArticle of type ARTICLE.
 	 * (we could extend the process to other kind of articles here...)
 	 */
-	ArticleType type = findArticleType(article);
+	ArticleType type = articleTyper.findArticleType(article);
 	switch(type){
+	
 	case ARTICLE:
 	    article.setType(type);
-	    article.setOriginalMarkup(xmlParser.getWikiMarkup(page));
 	    processArticle(article);
 	    break;
+	    
 	default:
 	    article.setType(type);
 	    break;
 	}
 	return article;
-    }
-
-    /**
-     * Uses the wikid of the article to find the type of the article.
-     * Generally particular types of articles have particular wikids 
-     * such as "Category:Italian footballer" or "Discussion:something else".
-     * 
-     * It returns an ArticleType parsing the wikid of the page.
-     * 
-     * @param article
-     * @return
-     */
-    private ArticleType findArticleType(WikiArticle article){
-	/* Filter to capture WIKIPEDIA portal articles */
-	for (String portalHook : lang.getPortalIdentifiers()){
-	    if (article.getWikid().startsWith(portalHook + ":")){
-		return ArticleType.PORTAL;
-	    }
-	}
-
-	/* Filter to capture FILE articles */
-	for (String fileHook : lang.getFileIdentifiers()){
-	    if (article.getWikid().startsWith(fileHook + ":")){
-		return ArticleType.FILE;
-	    }
-	}
-
-	/* Filter to capture HELP articles */
-	for (String helpHook : lang.getHelpIdentifiers()){
-	    if (article.getWikid().startsWith(helpHook + ":")){
-		return ArticleType.HELP;
-	    }
-	}
-
-	/* Filter to capture CATEGORY articles */
-	for (String categoryHook : lang.getCategoryIdentifiers()){
-	    if (article.getWikid().startsWith(categoryHook + ":")){
-		return ArticleType.CATEGORY;
-	    }
-	}
-
-	/* Filter to capture TEMPLATE articles */
-	for (String templateHook : lang.getTemplateIdentifiers()){
-	    if (article.getWikid().startsWith(templateHook + ":")){
-		return ArticleType.TEMPLATE;
-	    }
-	}
-
-	/* Filter to capture DISCUSSION articles */
-	for (String discussionHook : lang.getDiscussionIdentifiers()){
-	    if (article.getWikid().startsWith(discussionHook + ":")){
-		return ArticleType.DISCUSSION;
-	    }
-	}
-
-	/* Filter to capture LIST articles */
-	for (String listHook : lang.getListIdentifiers()){
-	    if (article.getWikid().startsWith(listHook)){
-		return ArticleType.LIST;
-	    }
-	}
-
-	/* Filter to capture DISAMBIGUATION articles */	
-	for (String disambiguationHook : lang.getDisambiguationIdentifiers()){
-	    String disambiguationToken = getDisambiguation(article.getWikid());
-	    if (disambiguationToken != null && disambiguationToken.equals(disambiguationHook)){
-		return ArticleType.DISAMBIGUATION;
-	    }
-	}
-
-	return ArticleType.ARTICLE;
     }
 
 
@@ -189,27 +120,8 @@ public class WikiParser {
 	Map<String, String> blocks = blockParser.fragmentArticle(article.getOriginalMarkup());
 
 	/*
-	 * Use the first block (i.e. #Abstract) to check if it is not an interesting article:
-	 * - REDIRECT
-	 * - DISAMBIGUATION
-	 * - DATE
-	 *  we set the type to the article and immediately return it.
-	 */
-	if (checkIsRedirect(blocks)){
-	    article.setType(ArticleType.REDIRECT);
-	    return article;
-	}
-	if (checkIsDisambiguation(blocks)){
-	    article.setType(ArticleType.DISAMBIGUATION);
-	    return article;
-	}
-	if (checkIsDate(blocks)){
-	    article.setType(ArticleType.DATE);
-	    return article;
-	}
-
-	/*
 	 * Extract structured contents from the WikiMarkup.
+	 * 
 	 * For now:
 	 * - TABLES
 	 * - LISTS
@@ -221,175 +133,68 @@ public class WikiParser {
 	    article.setLists(blockParser.extractLists(blocks));
 
 	/*
-	 * Clean the text of the articles from <refs>, [[File:]], lists, 
-	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 * Removing the noise.
 	 */
 	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    String blockContent = block.getValue();
-	    blockContent = textParser.fixSomeTemplates(blockContent);
-	    blockContent = textParser.removeNoise(blockContent, lang);
-	    blockContent = textParser.removeUselessWikilinks(blockContent);
+	    String blockContent = textParser.fixSomeTemplates(block.getValue());
+	    blockContent = textParser.removeNoise(blockContent, lang); // lang is needed for categories
+	    blockContent = textParser.removeUselessWikilinks(blockContent); // commonsense and blacklist
 	    blocks.put(block.getKey(), blockContent);
 	}
 
 	/*
-	 * Here is the moment to store the article first sentence, 
-	 * clean in order to use for extract seed types and run NLP tools.
+	 * Store the first clean sentence of the article and clean it, 
+	 * in order to extract seed types and run NLP tools.
 	 */
-	article.setFirstSentence(textParser.obtainCleanFirstSentence(
-		blockParser.getAbstractSection(blocks)));
+	article.setFirstSentence(textParser.obtainCleanFirstSentence(blockParser.getAbstractSection(blocks)));
 
 	/*
-	 * Clean the text of the articles from <refs>, [[File:]], lists, 
-	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 * Harvest all the wikilinks from the WHOLE article, 
+	 * setting the variable in the WikiArticle object.
 	 */
 	if (!Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		String blockContent = block.getValue();
-		blockContent = textParser.harvestWikilinks(blockContent, article);
-		blocks.put(block.getKey(), blockContent);
+		blocks.put(block.getKey(), textParser.harvestWikilinks(block.getValue(), article));
 	    }
 
 	/*
-	 * Clean the text of the articles from <refs>, [[File:]], lists, 
-	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 * Textual cleaning of the articles from, essentially from:
+	 *  - <refs>
+	 *  - [[File:]]
+	 *  - lists 
+	 *  - tables
+	 *  - infobox
+	 *  - etc. 
 	 */
 	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    String blockContent = block.getValue();
-	    blockContent = textParser.removeStructuredContents(blockContent);
-	    blocks.put(block.getKey(), blockContent);
+	    blocks.put(block.getKey(), textParser.removeStructuredContents(block.getValue()));
 	}
 
 	/*
-	 * Clean the text of the articles from <refs>, [[File:]], lists, 
-	 * tables, infobox, etc. and removed undesired blocks from the map.
+	 * Harvest all the wikilinks from the TEXT article, 
+	 * setting the variable in the WikiArticle object.
 	 */
 	if (Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		String blockContent = block.getValue();
-		blockContent = textParser.harvestWikilinks(blockContent, article);
-		blocks.put(block.getKey(), blockContent);
+		blocks.put(block.getKey(), textParser.harvestWikilinks(block.getValue(), article));
 	    }
-	blockParser.removeUndesiredBlocks(blocks, Configuration.getOnlyAbstractFlag());
 
 	/*
-	 * Extract clean text, that is used to execute the article with DBpedia Spotlight.
-	 * Used for testing DBPedia Spootlight
+	 * Finally we remove undesired sections, expressed in the WikiLanguage file.
 	 */
-	/*
-	if(Configuration.getEDTestingMode())
-	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		String blockContent = block.getValue();
-		String blockNoWikilink = MarkupParser.cleanAllWikilinks(blockContent);
-		article.getCleanBlocks().put(block.getKey(), blockNoWikilink);
-	    }
-	if (Configuration.getEDTestingMode())
-	    blockParser.removeUndesiredBlocks(article.cleanBlocks(), Configuration.getOnlyAbstractFlag());
-	 *?
+	blockParser.removeUndesiredBlocks(blocks, lang);
 
-	/*
-	 * if it is not of all of this... it is an article! :) 
-	 * 
-	 * We process it:
-	 * (1) extracting the disambiguation text from the wikid. For example, "movie" <-- Cold_war_(movie)
-	 * (2) extracting the first sentence (clean because we remove parenthesis and wikilinks from it.)
-	 * (3) extracting the aliases from the abstract section (token in bold characters).
-	 * (4) finally, we assignblock to the article performing some further cleaning of the text, which was 
-	 * not possible before. We remove parenthesis, bold text and normalize spaces between token and sentences. 
+	/* Finally, we:
+	 * (1) extract the disambiguation text from the wikid. For example, Cold_war_(movie) --> "movie"
+	 * (2) extract the aliases from the abstract section (token in bold characters).
+	 * (3) assign blocks to the article performing some further cleaning (normalize spaces between token 
+	 * 								and sentences, remove bold text, etc.)
 	 */
-	article.setDisambiguation(getDisambiguation(article.getWikid()));
+	article.setDisambiguation(textParser.getDisambiguation(article.getWikid()));
 	article.setAliases(textParser.getAlias(blockParser.getAbstractSection(blocks)));
 	article.setBlocks(textParser.finalCleanText(blocks));
+
 	return article;
-    }
-
-    /**
-     * Check if the article can be a REDIRECT using the text in the abstract section.
-     * if it contains the reference #REDIRECT.
-     * 
-     * @param blocks
-     * @return
-     */
-    private boolean checkIsRedirect(Map<String, String> blocks){
-	boolean isRedirect = false;
-	for (String redirectHook : lang.getRedirectIdentifiers()){
-	    if (blockParser.getAbstractSection(blocks).matches(".*#" + redirectHook + "(.|\\n|\\r)*")){
-		isRedirect = true;
-	    }
-	}
-	return isRedirect;
-    }
-
-    /**
-     * Check if the article can be a DATE ARTICLE using the templates in the abstract section.
-     * 
-     * @param blocks
-     * @return
-     */
-    private boolean checkIsDate(Map<String, String> blocks){
-	boolean isDate = false;
-	if (blockParser.getAbstractSection(blocks).contains("{{Day}}") || blockParser.getAbstractSection(blocks).contains("{{Year article header|")){
-	    isDate = true;
-	}
-	return isDate;
-    }
-
-    /**
-     * Check if the article can be a DISAMBIGUAITON using the text in the abstract section.
-     * if it contains the reference #REDIRECT.
-     * 
-     * @param blocks
-     * @return
-     */
-
-    private boolean checkIsDisambiguation(Map<String, String> blocks){
-	boolean isDisambiguation = false;
-	for (String disambiguationHook : lang.getDisambiguationTextIdentifiers()){
-	    if (blockParser.getAbstractSection(blocks).contains(disambiguationHook)){
-		isDisambiguation = true;
-	    }
-	}
-	return isDisambiguation;
-    }
-
-
-    /**
-     * 
-     * @param wikid
-     * @return
-     */
-    private String getDisambiguation(String wikid){
-	String disambiguation = null;
-	Pattern DISAMBIGATION = Pattern.compile("_\\(.*\\)$");
-	Matcher m = DISAMBIGATION.matcher(wikid);
-	if (m.find()){
-	    disambiguation = m.group(0).replaceAll("(_\\(|\\))*", "").trim();
-	}
-	return disambiguation;
-    }
-
-    /**
-     * It calls the XMLParser to extract a files 
-     * named "title" from the xml.
-     * 
-     * @param page
-     * @return
-     */
-    public String extractsWikid(String page){
-	return xmlParser.getFieldFromXmlPage(page, "title").replaceAll(" ", "_");
-    }
-
-    /**
-     * It clean the wikid obtaining the title,
-     * without underscores or disambiguations.
-     * 
-     * @param wikid
-     * @return
-     */
-    private String getTitle(String wikid){
-	wikid = wikid.replaceAll("_", " ");
-	wikid = wikid.replaceAll(" \\(\\w+\\)$", "");
-	return wikid;
     }
 
 }

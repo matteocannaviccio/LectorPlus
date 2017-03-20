@@ -8,8 +8,6 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import it.uniroma3.parser.TextParser;
 /**
  *
  * 
@@ -25,26 +23,22 @@ public class WikiArticle {
     private String namespace;
     private String title;
     private String url;
+    private ArticleType type;
     private transient String originalMarkup;
 
-    // Primary entity concepts
+    // Primary entity replacements
     private String pronoun;
     private String subName;
     private List<String> aliases;
     private List<String> seeds;
-    private ArticleType type;
     private String disambiguation;
-    private String bio;// for the italian language
 
-    // Secondary entities concepts 
+    // Secondary entities replacements 
     private Map<String, Set<String>> wikilinks;
-
-    // Flag for the entity detection
-    private transient boolean augmentedEntities;
 
     // content
     private Map<String, String> blocks;
-    private Map<String, String> cleanBlocks;
+    private Map<String, List<String>> sentences; // used only for DBpedia Spotlight
     private String firstSentence;
 
     // Article composite structures
@@ -52,7 +46,7 @@ public class WikiArticle {
     private Map<String, List<String>> lists;
     
     // DBpedia types
-    private List<String> types;
+    private List<String> dbpedia_types;
 
     private static transient Gson gson_pp = new GsonBuilder()
 	    .disableHtmlEscaping()
@@ -64,7 +58,7 @@ public class WikiArticle {
 	    .create();
 
     public enum ArticleType {
-	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, DATE, MAIN, LIST, PROJECT, PORTAL, FILE, HELP
+	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, DATE, OUTLINE, LIST, PROJECT, PORTAL, FILE, HELP
     };
 
     /**
@@ -73,14 +67,14 @@ public class WikiArticle {
      * @param id
      * @param text
      */
-    public WikiArticle(String wikid, String id, String title, String namespace, WikiLanguage lang) {
+    public WikiArticle(String wikid, String id, String title, String namespace, WikiLanguage lang, String originalMarkup) {
 	this.wikid = wikid;
 	this.id = id;
 	this.title = title;
 	this.namespace = namespace;
-	this.url = "http://" + lang.toString() + ".wikipedia.org/wiki/" + wikid;
-	this.augmentedEntities = false;
+	this.url = "http://" + lang.getCode() + ".wikipedia.org/wiki/" + wikid;
 	this.wikilinks = new HashMap<String, Set<String>>();
+	this.originalMarkup = originalMarkup;
     }
 
     /**
@@ -114,15 +108,17 @@ public class WikiArticle {
     /**
      * @return the content
      */
-    public Map<String, String> cleanBlocks() {
-	return cleanBlocks;
+    public Map<String, List<String>> getSentences() {
+	if (this.sentences == null)
+	    this.sentences = new LinkedHashMap<String, List<String>>();
+	return sentences;
     }
 
     /**
      * @param content the content to set
      */
-    public void setContent(Map<String, String> cleanBlocks) {
-	this.cleanBlocks = cleanBlocks;
+    public void setSentences(Map<String, List<String>> sentences) {
+	this.sentences = sentences;
     }
 
     /* (non-Javadoc)
@@ -240,21 +236,6 @@ public class WikiArticle {
 	return title;
     }
 
-
-    /**
-     * @return the bio
-     */
-    public String getBio() {
-	return bio;
-    }
-
-    /**
-     * @param bio the bio to set
-     */
-    public void setBio(String bio) {
-	this.bio = bio;
-    }
-
     /**
      * @param tables the tables to set
      */
@@ -331,20 +312,6 @@ public class WikiArticle {
     }
 
     /**
-     * @return the augmentedEntities
-     */
-    public boolean isAugmentedEntities() {
-	return augmentedEntities;
-    }
-
-    /**
-     * @param augmentedEntities the augmentedEntities to set
-     */
-    public void setAugmentedEntities(boolean augmentedEntities) {
-	this.augmentedEntities = augmentedEntities;
-    }
-
-    /**
      * @return the seeds
      */
     public List<String> getSeeds() {
@@ -388,22 +355,6 @@ public class WikiArticle {
      */
     public void setBlocks(Map<String, String> blocks) {
 	this.blocks = blocks;
-    }
-
-    /**
-     * @param blocks the blocks to set
-     */
-    public void setCleanBlocks(Map<String, String> cleanBlocks) {
-	this.cleanBlocks = cleanBlocks;
-    }
-
-    /**
-     * @param blocks the blocks to set
-     */
-    public Map<String, String> getCleanBlocks() {
-	if(this.cleanBlocks == null)
-	    this.cleanBlocks = new LinkedHashMap<String, String>();
-	return this.cleanBlocks;
     }
 
     /**
@@ -465,15 +416,15 @@ public class WikiArticle {
     /**
      * @return the types
      */
-    public List<String> getTypes() {
-        return types;
+    public List<String> getDBpediaTypes() {
+        return dbpedia_types;
     }
 
     /**
      * @param types the types to set
      */
-    public void setTypes(List<String> types) {
-        this.types = types;
+    public void setDBpediaTypes(List<String> types) {
+        this.dbpedia_types = types;
     }
 
 

@@ -1,7 +1,7 @@
 package it.uniroma3.parser;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.EntityAugmenter;
+import it.uniroma3.entitydetection.ReplacementsFinder;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.reader.XMLReader;
@@ -11,14 +11,16 @@ public class ParserTest {
 
     public static void main(String[] args) {
 
-	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	
+	ReplacementsFinder repFinder = new ReplacementsFinder(); 
 
 	/* ------ PIPELINE COMPONENTS ------ */
 	// reader
-	XMLReader reader = new XMLReader(Configuration.getTestWikipediaDump(), false);
+	XMLReader reader = new XMLReader(Configuration.getOriginalArticlesFile(), false);
 
 	// parser
-	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageUsed()));
+	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 
 	/* ------ EXECUTION ------ */
 	String page = reader.getArticle();
@@ -26,7 +28,7 @@ public class ParserTest {
 	WikiArticle article = parser.createArticleFromXml(page);
 	//System.out.println(article);
 
-	article = EntityAugmenter.augmentEntities(article);
+	article = repFinder.increaseEvidence(article);
 	System.out.println(article);
 	
 	

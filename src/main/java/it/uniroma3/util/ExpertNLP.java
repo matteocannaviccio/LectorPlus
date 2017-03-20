@@ -29,7 +29,6 @@ public class ExpertNLP {
     private Tokenizer tokenizer;
     private DictionaryLemmatizer lemmatizer;
 
-
     /**
      * 
      * @param task
@@ -144,7 +143,7 @@ public class ExpertNLP {
      * @throws IOException
      */
     public DictionaryLemmatizer obtainLemmatizer() throws InvalidFormatException, FileNotFoundException, IOException{
-	InputStream model = new FileInputStream(Configuration.getLemmaDictionary());
+	InputStream model = new FileInputStream(Configuration.getLemmatizerModel());
 	DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(model);
 	return lemmatizer;
     }
@@ -157,7 +156,7 @@ public class ExpertNLP {
      * @throws IOException
      */
     public POSTagger obtainPOSTagger() throws InvalidFormatException, FileNotFoundException, IOException{
-	POSModel model = new POSModel(new FileInputStream(Configuration.getPosTagModel()));
+	POSModel model = new POSModel(new FileInputStream(Configuration.getPOSModel()));
 	POSTagger sdetector = new POSTaggerME(model);
 	return sdetector;
     }
@@ -167,7 +166,7 @@ public class ExpertNLP {
 	/*
 	 * Read the config file and instanciate a Configuration object.
 	 */
-	Configuration.setConfigFile("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
 	String text = "PE_ALIAS<Alexander_Kerensky> was a Russian lawyer, and Alexander politician who served as the SE_NAME<Minister_of_Justice> in the newly formed SE_ORG<Russian_Provisional_Government>, as SE_ORG<Minister_of_War>, and second SE_ORG<Prime_Minister_of_Russia> of the between July and November 1917. A leader of the moderate-socialist SE_ORG<Trudoviks> faction of the SE_ORG<Socialist_Revolutionary_Party>, Kerensky was a key political figure in the SE_ORG<Russian_Revolution> of 1917. On 7 November, his government was overthrown by the SE_ORG<Vladimir_Lenin>-led SE_ORG<Bolshevik>s in the SE_ORG<October_Revolution>. PE_PRO<Alexander_Kerensky> spent the remainder of his life in exile, in Paris and New York City, but was buried in London.";
 	ExpertNLP expert = new ExpertNLP();
 	System.out.println(expert.tagBlock(text));

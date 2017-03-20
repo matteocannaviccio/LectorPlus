@@ -7,9 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 /**
  * 
  * 
@@ -17,26 +14,23 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class WikiLanguage {
-    private static final Logger logger = LoggerFactory.getLogger(WikiLanguage.class);
-
+    private String code;
     private Properties properties;
-    private String langId;
     private static final String SEPARATOR = ",";
 
     /**
      * 
      * @param lang
      */
-    public WikiLanguage(String langId) {
+    public WikiLanguage(String code, String langProperties) {
 	properties = new Properties();
-	this.langId = langId;
 	try {
-	    properties.load(new FileInputStream("/Users/matteo/Work/Repository/java/lectorplus/resources/languages/" + langId + ".properties"));
+	    this.code = code;
+	    properties.load(new FileInputStream(langProperties));
+	
 	} catch (IOException e) {
-	    logger.error("reading the locale for language {} ({})", langId, e.toString());
 	    System.exit(-1);
 	}
-	logger.info("using {} language ", properties.get("language"));
 	
     }
 
@@ -125,13 +119,6 @@ public class WikiLanguage {
 	return getValues("discussion");
     }
     
-    /**
-     * 
-     * @return
-     */
-    public List<String> getListIdentifiers() {
-	return getValues("list");
-    }
 
     /**
      * 
@@ -172,15 +159,15 @@ public class WikiLanguage {
      */
     public List<String> getIdentifiers(String key) {
 	List<String> identifiers = getValues(key);
-	if (identifiers.isEmpty())
-	    logger.error("No entry in language properties for key: " + key);
 	return identifiers;
     }
 
 
-    @Override
-    public String toString() {
-	return langId;
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
     }
 
 }

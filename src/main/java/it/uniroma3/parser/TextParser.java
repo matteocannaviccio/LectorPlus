@@ -26,6 +26,34 @@ public class TextParser {
     public TextParser(WikiLanguage lang){
 	this.cleaner = new Cleaner(lang);
     }
+    
+    /**
+     * It clean the wikid obtaining the title,
+     * without underscores or disambiguations.
+     * 
+     * @param wikid
+     * @return
+     */
+    public String getTitle(String wikid){
+	wikid = wikid.replaceAll("_", " ");
+	wikid = wikid.replaceAll(" \\(\\w+\\)$", "");
+	return wikid;
+    }
+    
+    /**
+     * 
+     * @param wikid
+     * @return
+     */
+    public String getDisambiguation(String wikid){
+	String disambiguation = null;
+	Pattern DISAMBIGATION = Pattern.compile("_\\(.*\\)$");
+	Matcher m = DISAMBIGATION.matcher(wikid);
+	if (m.find()){
+	    disambiguation = m.group(0).replaceAll("(_\\(|\\))*", "").trim();
+	}
+	return disambiguation;
+    }
 
     /**
      * In this method we put some manually-done templates resolver.
@@ -195,9 +223,9 @@ public class TextParser {
      * @return
      */
     private String fixLangTemplate(String s) {
-	Pattern LANG1 = Pattern.compile("\\{\\{lang\\|[^\\|]+\\|([^\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
-	Pattern LANG2 = Pattern.compile("\\{\\{lang-[^\\|]+\\|([^\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
-	Pattern LANG3_JAP = Pattern.compile("\\{\\{Nihongo\\|([^\\|]+)\\|[^\\}]+?\\}\\}", Pattern.CASE_INSENSITIVE);
+	Pattern LANG1 = Pattern.compile("\\{\\{lang\\|[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+	Pattern LANG2 = Pattern.compile("\\{\\{lang-[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+	Pattern LANG3_JAP = Pattern.compile("\\{\\{Nihongo\\|([^\\|]+)\\|[^\\{\\}]+?\\}\\}", Pattern.CASE_INSENSITIVE);
 	String t = LANG1.matcher(s).replaceAll("$1");
 	t = LANG2.matcher(t).replaceAll("$1");
 	t = LANG3_JAP.matcher(t).replaceAll("$1");
@@ -305,11 +333,10 @@ public class TextParser {
      */
     public Map<String, String> finalCleanText(Map<String, String> blocks){
 	for(Map.Entry<String, String> block : blocks.entrySet()){
-	    //String cleanContent = removeParenthesis(block.getValue());
-	    String cleanContent = removeEmphasis(block.getValue(), true);
-	    cleanContent = cleanContent.replaceAll(" {2,}", " ");				// remove double spaces
-	    cleanContent = cleanContent.replaceAll("\n{2,}", "\n");				// remove double new lines
-	    cleanContent = cleanContent.replaceAll(" , ", ", ").trim();				// remove space before commma
+	    String cleanContent = block.getValue().replaceAll(" {2,}", " ");	// remove double spaces
+	    cleanContent = removeEmphasis(cleanContent, true);
+	    cleanContent = cleanContent.replaceAll("\n{2,}", "\n");		// remove double new lines
+	    cleanContent = cleanContent.replaceAll(" , ", ", ").trim();		// remove space before commma
 	    blocks.put(block.getKey(), cleanContent);
 	}
 	return blocks;
