@@ -3,6 +3,7 @@ package it.uniroma3.parser;
 import java.util.Map;
 
 import it.uniroma3.configuration.Configuration;
+import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.model.WikiLanguage;
@@ -15,10 +16,6 @@ import it.uniroma3.model.WikiLanguage;
  */
 public class WikiParser {
     private WikiLanguage lang;
-    private ArticleTyper articleTyper;
-    private XMLParser xmlParser;
-    private BlockParser blockParser;
-    private TextParser textParser;
 
     /**
      * 
@@ -26,10 +23,6 @@ public class WikiParser {
      */
     public WikiParser(WikiLanguage lang){
 	this.lang = lang;
-	this.articleTyper = new ArticleTyper(lang);
-	this.xmlParser = new XMLParser();
-	this.blockParser = new BlockParser(lang);
-	this.textParser = new TextParser(lang);
     }
 
     /**
@@ -46,26 +39,25 @@ public class WikiParser {
 	/*
 	 * Obtain the title and metadata of the article from the xml and create a WikiArticle.
 	 */
-	String wikid = xmlParser.extractsWikid(page);
-	String title = textParser.getTitle(wikid);
-	String id = xmlParser.getFieldFromXmlPage(page, "id");
-	String namespace = xmlParser.getFieldFromXmlPage(page, "ns");
-	String originalMarkup = xmlParser.getWikiMarkup(page);
-	
-	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang, originalMarkup);
+	String wikid = Lector.getXmlParser().extractsWikid(page);
+	String title = Lector.getTextParser().getTitle(wikid);
+	String id = Lector.getXmlParser().getFieldFromXmlPage(page, "id");
+	String namespace = Lector.getXmlParser().getFieldFromXmlPage(page, "ns");
+	String originalMarkup = Lector.getXmlParser().getWikiMarkup(page);
+	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang.getCode(), originalMarkup);
 
 	/*
 	 * Process only WikiArticle of type ARTICLE.
 	 * (we could extend the process to other kind of articles here...)
 	 */
-	ArticleType type = articleTyper.findArticleType(article);
+	ArticleType type = Lector.getArticleTyper().findArticleType(article);
 	switch(type){
-	
+
 	case ARTICLE:
 	    article.setType(type);
 	    processArticle(article);
 	    break;
-	    
+
 	default:
 	    article.setType(type);
 	    break;
@@ -117,7 +109,7 @@ public class WikiParser {
 	 * blocks is a map of contents of sections keyed by their header.
 	 * The section in the first position is the #Abstract.
 	 */
-	Map<String, String> blocks = blockParser.fragmentArticle(article.getOriginalMarkup());
+	Map<String, String> blocks = Lector.getBlockParser().fragmentArticle(article.getOriginalMarkup());
 
 	/*
 	 * Extract structured contents from the WikiMarkup.
@@ -127,18 +119,18 @@ public class WikiParser {
 	 * - LISTS
 	 */
 	if(Configuration.extractTables())
-	    article.setTables(blockParser.extractTables(blocks));
+	    article.setTables(Lector.getBlockParser().extractTables(blocks));
 
 	if(Configuration.extractLists())
-	    article.setLists(blockParser.extractLists(blocks));
+	    article.setLists(Lector.getBlockParser().extractLists(blocks));
 
 	/*
 	 * Removing the noise.
 	 */
 	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    String blockContent = textParser.fixSomeTemplates(block.getValue());
-	    blockContent = textParser.removeNoise(blockContent, lang); // lang is needed for categories
-	    blockContent = textParser.removeUselessWikilinks(blockContent); // commonsense and blacklist
+	    String blockContent = Lector.getTextParser().fixSomeTemplates(block.getValue());
+	    blockContent = Lector.getTextParser().removeNoise(blockContent, lang); // lang is needed for categories
+	    blockContent = Lector.getTextParser().removeUselessWikilinks(blockContent); // commonsense and blacklist
 	    blocks.put(block.getKey(), blockContent);
 	}
 
@@ -146,7 +138,7 @@ public class WikiParser {
 	 * Store the first clean sentence of the article and clean it, 
 	 * in order to extract seed types and run NLP tools.
 	 */
-	article.setFirstSentence(textParser.obtainCleanFirstSentence(blockParser.getAbstractSection(blocks)));
+	article.setFirstSentence(Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(blocks)));
 
 	/*
 	 * Harvest all the wikilinks from the WHOLE article, 
@@ -154,7 +146,7 @@ public class WikiParser {
 	 */
 	if (!Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		blocks.put(block.getKey(), textParser.harvestWikilinks(block.getValue(), article));
+		blocks.put(block.getKey(), Lector.getTextParser().harvestWikilinks(block.getValue(), article));
 	    }
 
 	/*
@@ -167,7 +159,7 @@ public class WikiParser {
 	 *  - etc. 
 	 */
 	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    blocks.put(block.getKey(), textParser.removeStructuredContents(block.getValue()));
+	    blocks.put(block.getKey(), Lector.getTextParser().removeStructuredContents(block.getValue()));
 	}
 
 	/*
@@ -176,13 +168,13 @@ public class WikiParser {
 	 */
 	if (Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		blocks.put(block.getKey(), textParser.harvestWikilinks(block.getValue(), article));
+		blocks.put(block.getKey(), Lector.getTextParser().harvestWikilinks(block.getValue(), article));
 	    }
 
 	/*
 	 * Finally we remove undesired sections, expressed in the WikiLanguage file.
 	 */
-	blockParser.removeUndesiredBlocks(blocks, lang);
+	Lector.getBlockParser().removeUndesiredBlocks(blocks, lang);
 
 	/* Finally, we:
 	 * (1) extract the disambiguation text from the wikid. For example, Cold_war_(movie) --> "movie"
@@ -190,9 +182,9 @@ public class WikiParser {
 	 * (3) assign blocks to the article performing some further cleaning (normalize spaces between token 
 	 * 								and sentences, remove bold text, etc.)
 	 */
-	article.setDisambiguation(textParser.getDisambiguation(article.getWikid()));
-	article.setAliases(textParser.getAlias(blockParser.getAbstractSection(blocks)));
-	article.setBlocks(textParser.finalCleanText(blocks));
+	article.setDisambiguation(Lector.getTextParser().getDisambiguation(article.getWikid()));
+	article.setAliases(Lector.getTextParser().getAlias(Lector.getBlockParser().getAbstractSection(blocks)));
+	article.setBlocks(Lector.getTextParser().finalCleanText(blocks));
 
 	return article;
     }

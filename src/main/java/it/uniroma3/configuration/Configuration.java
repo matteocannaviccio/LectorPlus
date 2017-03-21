@@ -150,6 +150,30 @@ public class Configuration {
 	return getModelsFolder() + "/" + keyValue.get("postaggerModel");
     } 
     /***********************************************************************/
+    
+    /***********************************************************************/
+    private static String getListsFolder(){
+	return keyValue.get("listsFolder");
+    }
+    
+    public static String getCurrenciesList(){
+	return getListsFolder() + "/" + keyValue.get("currencies");
+    }
+    
+    public static String getNationalitiesList(){
+	return getListsFolder() + "/" + keyValue.get("nationalities");
+    }
+    
+    public static String getProfessionsList(){
+	return getListsFolder() + "/" + keyValue.get("professions");
+    }
+    
+    public static String getStopwordsList(){
+	return getListsFolder() + "/" + keyValue.get("stopwords");
+    }
+    
+    
+    /***********************************************************************/
 
     /***********************************************************************/
 

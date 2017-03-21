@@ -67,14 +67,22 @@ public class WikiArticle {
      * @param id
      * @param text
      */
-    public WikiArticle(String wikid, String id, String title, String namespace, WikiLanguage lang, String originalMarkup) {
+    public WikiArticle(String wikid, String id, String title, String namespace, String langCode, String originalMarkup) {
 	this.wikid = wikid;
 	this.id = id;
 	this.title = title;
 	this.namespace = namespace;
-	this.url = "http://" + lang.getCode() + ".wikipedia.org/wiki/" + wikid;
+	this.url = "http://" + langCode + ".wikipedia.org/wiki/" + wikid;
 	this.wikilinks = new HashMap<String, Set<String>>();
 	this.originalMarkup = originalMarkup;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public static WikiArticle makeDummyArticle() { 
+	return new WikiArticle("dummy", "dummy", "dummy", "dummy", "dummy", "dummy");
     }
 
     /**

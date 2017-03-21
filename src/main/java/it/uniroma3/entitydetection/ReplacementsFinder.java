@@ -63,7 +63,7 @@ public class ReplacementsFinder {
      * @param THRESHOLD --> used to limit the usage of wrong pronouns
      * @return
      */
-    private String detectPronoun(WikiArticle article, double THRESHOLD){
+    private String findPronoun(WikiArticle article, double THRESHOLD){
 	Multiset<String> pronounsStatsTmp = TreeMultiset.create();
 	Multiset<String> pronounsStats = TreeMultiset.create();
 	List<String> possiblePronouns = Arrays.asList("He", "She", "It","They", "His", "Her", "Their", "Its");
@@ -135,7 +135,7 @@ public class ReplacementsFinder {
      * @param THRESHOLD
      * @return
      */
-    private String findPossibleSubNames(WikiArticle article, double THRESHOLD){
+    private String findSubNames(WikiArticle article, double THRESHOLD){
 	Multiset<String> stats = obtainStatsSubNames(article);
 	int total = 0;
 	for(String subName : stats.elementSet()){
@@ -212,20 +212,27 @@ public class ReplacementsFinder {
 
 
     /**
+     * This is the main part of this step: find all possible replacements 
+     * to augment instances of primary entity.
+     * 
+     * Here we look for the following replacements:
+     * - seeds
+     * - pronoun			
+     * - subnames 	(only named-entities NE)
+     * 
+     * We use this constraint to determine if it is a NE:
+     * - the article needs to have at least one alias (bold names)
+     * Also, the subname can not override one of the secondary entities (for constraint).
+     * 
      * 
      * @param article
      * @return
      */
     public WikiArticle increaseEvidence(WikiArticle article){
-	/*
-	 * Here we use this constraint:
-	 * an article, in order to describe a named entity, needs to have at least one alias (bold names).
-	 * Also, the subname can not override one of the secondary entities (for constraint).
-	 */
 	article.setSeeds(findSeeds(article));
-	article.setPronoun(detectPronoun(article, Configuration.getPronounThreshold()));
+	article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
 	if (!article.getAliases().isEmpty()){
-	    String candidateSubname = findPossibleSubNames(article, Configuration.getSubnameThreshold());
+	    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
 	    if (!article.getWikilinks().containsKey(candidateSubname) &&
 		    !article.getTitle().equals(candidateSubname) &&
 		    !article.getSeeds().contains(candidateSubname))
@@ -235,5 +242,6 @@ public class ReplacementsFinder {
 	return article;
 
     }
+   
 
 }

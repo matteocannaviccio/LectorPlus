@@ -72,9 +72,12 @@ public class ArticleTyper {
 		Pattern.CASE_INSENSITIVE);
 	Pattern DIS4 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(disambig)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
 		Pattern.CASE_INSENSITIVE);
+	Pattern DIS5 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(hndis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
+		Pattern.CASE_INSENSITIVE);
 	DIS_PAT.add(DIS1);
 	DIS_PAT.add(DIS3);
 	DIS_PAT.add(DIS4);
+	DIS_PAT.add(DIS5);
 	for (Pattern p : DIS_PAT){
 	    Matcher m = p.matcher(article.getOriginalMarkup());
 	    while (m.find()){

@@ -48,13 +48,15 @@ public class ArticleParser {
      */
     public static void main(String[] args) throws IOException {
 	
-	String config = args[0];
-	if (config == null){
+	String config;
+	if (args.length == 0){
 	    config = "/Users/matteo/Desktop/data/config.properties";
+	}else{
+	    config = args[0];
 	}
+	
 	Configuration.init(config);
-	Lector.init();
-
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	XMLReader reader = new XMLReader(Configuration.getOriginalArticlesFile(), true);
 	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	ReplacementsFinder repFinder = new ReplacementsFinder();

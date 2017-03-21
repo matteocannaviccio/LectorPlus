@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 /**
@@ -98,8 +99,8 @@ public class TextParser {
      * @return
      */
     public String removeUselessWikilinks(String block){
-	String cleanBlock = MarkupParser.cleanEmptyTemplateWikilinks(block);
-	cleanBlock = MarkupParser.removeCommonSenseWikilinks(cleanBlock);
+	String cleanBlock = Lector.getMarkupParser().cleanEmptyTemplateWikilinks(block);
+	cleanBlock = Lector.getMarkupParser().removeCommonSenseWikilinks(cleanBlock);
 	return cleanBlock;
     }
 
@@ -112,7 +113,7 @@ public class TextParser {
      * @return
      */
     public String harvestWikilinks(String block, WikiArticle article){
-	return MarkupParser.harvestAllWikilinks(block, article);
+	return Lector.getMarkupParser().harvestAllWikilinks(block, article);
     }
 
     /**
@@ -281,7 +282,7 @@ public class TextParser {
      * @return
      */
     public String removeLinks(String text){
-	return MarkupParser.removeAllWikilinks(text);
+	return Lector.getMarkupParser().removeAllWikilinks(text);
     }
 
     /**
@@ -397,7 +398,7 @@ public class TextParser {
 	firstSentence = firstSentence.replaceAll(" {2,}", " ");		// remove double spaces
 	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");	// remove double new lines
 	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();	// remove space before commma
-	firstSentence = MarkupParser.cleanAllWikilinks(firstSentence); 
+	firstSentence = Lector.getMarkupParser().cleanAllWikilinks(firstSentence); 
 	firstSentence = splitSentences(firstSentence).get(0);
 	return removeLinks(firstSentence);
     }
