@@ -1,5 +1,6 @@
 package it.uniroma3.entitydetection;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.util.ExpertNLP;
+import it.uniroma3.util.Reader;
 import it.uniroma3.util.Token;
 /**
  * 
@@ -34,6 +36,7 @@ public class SeedFSM {
 
     private FSM finiteStateMachine;
     private ExpertNLP expert;
+    private Set<String> stopwords; // we need them only for a post-processing filetering
 
     /**
      * 
@@ -42,6 +45,7 @@ public class SeedFSM {
     public SeedFSM(ExpertNLP expert){
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
+	this.stopwords = Reader.getLines(Configuration.getStopwordsList());
     }
 
 
@@ -152,11 +156,6 @@ public class SeedFSM {
 	List<String> seeds = new LinkedList<String>();
 	Token[] tokens = cutOutFirstPart(expert.tagFirstSentence(sentence));
 	String tmpToken = "-";
-	
-	//System.out.println("==================");
-	//System.out.println(sentence);
-	//System.out.println(Arrays.asList(tokens));
-	
 	for(Token token : tokens){
 	    this.finiteStateMachine.transition(token.getPOS());
 	    if(this.finiteStateMachine.accepts())
@@ -166,8 +165,7 @@ public class SeedFSM {
 	    else
 		tmpToken = token.getRenderedToken();
 	}
-
-	return seeds;
+	return cleanSeeds(seeds);
     }
 
     /**
@@ -187,6 +185,20 @@ public class SeedFSM {
 	    }
 	}
 	return Arrays.copyOfRange(tokens, initialToken, tokens.length);
+    }
+    
+    /**
+     * Clean the list of retrieved seeds from (improbable) stopwords.
+     * @param seeds
+     * @return
+     */
+    private List<String> cleanSeeds(List<String> seeds){
+	List<String> filteredSeeds = new ArrayList<String>(seeds.size());
+	for (String seed : seeds){
+	    if (!stopwords.contains(seed))
+		filteredSeeds.add(seed);
+	}
+	return filteredSeeds;
     }
 
     /**
@@ -258,12 +270,6 @@ public class SeedFSM {
 	    states = newState;
 	}
     }
-    
-    public static void main(String[] args){
-	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
-	String test = "Actresses is a 1997 Catalan language Spanish drama film.";
-	SeedFSM fsm = new SeedFSM(new ExpertNLP());
-	System.out.println(fsm.findSeed(test));
-    }
+  
 
 }

@@ -12,10 +12,13 @@ import java.util.regex.Pattern;
 import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.util.Pair;
-import it.uniroma3.util.StanfordExpertNLP;
+/**
+ * 
+ * @author matteo
+ *
+ */
+public class ReplAttacher {
 
-public class EntityDetector {
-    
     /**
      * To match a name it has to be in a sentence sourrounded by two boarders (\\b) that are
      * not square bracket, _ or pipe | (which are terms that are inside a wikilink).
@@ -26,17 +29,18 @@ public class EntityDetector {
      * @return
      */
     private String createRegexName(String name){
-	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |\\n)(?:\\w++\\s)?)(" + Pattern.quote(name) + ")(?!\\s[A-Z][a-z]++|-|<)";
+	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |\\n)(?:\\w++\\s)?)\\b(" + Pattern.quote(name) + ")\\b(?!\\s[A-Z][a-z]++|-|<| <)";
     }
 
     /**
-     * To match a name it has to be in a sentence surrounded by two boarders (\\b) that are
-     * not square bracket, _ or pipe | (which are terms that are inside a wikilink).
+     * To match a seed it has to be preceded by a determiner (the) and can not be followed by
+     * a term with a capital letter or an other entity.
+     * 
      * @param name
      * @return
      */
     private String createRegexSeed(String name){
-	return "((?<![A-Z-]<)\\b)(" + Pattern.quote(name) + ")\\b(?![^<]*?>)";
+	return "((?<!<[A-Z-]<)\\b)(" + Pattern.quote(name) + ")\\b(?![^<]*?>>|\\s[A-Z][a-z]++|-|<| <)";
     }
 
 
@@ -49,9 +53,10 @@ public class EntityDetector {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	String pronoun = article.getPronoun();
 	if(pronoun != null){
-	    if (!pronoun.equals("It"))
-		regexes.add(Pair.make("((?<=\\, )(?<![A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>)", "PE-PRON<" + article.getWikid() + ">"));
-	    regexes.add(Pair.make("((?<=\\. |\\n|^)(?<![A-Z-]<)\\b)(" + Pattern.quote(pronoun) + ")\\b(?![^<]*?>)", "PE-PRON<" + article.getWikid() + ">"));
+	    if (!pronoun.equals("It")){
+		regexes.add(Pair.make("((?<=\\, )(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
+		regexes.add(Pair.make("((?<=\\. |\\n|^)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
+	    }
 	}
 	return regexes;
     }
@@ -65,8 +70,8 @@ public class EntityDetector {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	for(String seed : article.getSeeds()){
 	    if (seed != null){
-		regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "PE-SEED<" + article.getWikid() + ">"));
-		regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "PE-SEED<" + article.getWikid() + ">"));
+		regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
+		regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
 	    }
 	}
 	return regexes;
@@ -81,8 +86,8 @@ public class EntityDetector {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	String disamb = article.getDisambiguation();
 	if (disamb != null){
-	    regexes.add(Pair.make(createRegexSeed("the " + disamb.toLowerCase()), "PE-DISAMB<" + article.getWikid() + ">"));
-	    regexes.add(Pair.make(createRegexSeed("The " + disamb.toLowerCase()), "PE-DISAMB<" + article.getWikid() + ">"));
+	    regexes.add(Pair.make(createRegexSeed("the " + disamb.toLowerCase()), "<PE-DISAMB<" + article.getWikid() + ">>"));
+	    regexes.add(Pair.make(createRegexSeed("The " + disamb.toLowerCase()), "<PE-DISAMB<" + article.getWikid() + ">>"));
 	}
 	return regexes;
     }
@@ -94,11 +99,11 @@ public class EntityDetector {
      */
     private List<Pair<String, String>> getNameRegex(WikiArticle article){
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
-	regexes.add(Pair.make(createRegexName(article.getTitle()), "PE-TITLE<" + article.getWikid() + ">"));
+	regexes.add(Pair.make(createRegexName(article.getTitle()), "<PE-TITLE<" + article.getWikid() + ">>"));
 	for(String alias : article.getAliases())
-	    regexes.add(Pair.make(createRegexName(alias), "PE-ALIAS<" + article.getWikid() + ">"));
+	    regexes.add(Pair.make(createRegexName(alias), "<PE-ALIAS<" + article.getWikid() + ">>"));
 	if (article.getSubName() != null)
-	    regexes.add(Pair.make(createRegexName(article.getSubName()), "PE-SUBTITLE<" + article.getWikid() + ">"));
+	    regexes.add(Pair.make(createRegexName(article.getSubName()), "<PE-SUBTITLE<" + article.getWikid() + ">>"));
 	return regexes;
     }
 
@@ -118,7 +123,7 @@ public class EntityDetector {
 	}
 	return regexes2secentity;
     }
-    
+
     /**
      * 
      * @param article
@@ -134,6 +139,7 @@ public class EntityDetector {
 	    Pattern p = Pattern.compile(pattern);
 	    Matcher m = p.matcher(sentence);
 	    while (m.find()){
+		// we attached the part of thext before the entities (m.group(1)) and then the entity replaced.
 		m.appendReplacement(tmp, Matcher.quoteReplacement(m.group(1)) + Matcher.quoteReplacement(replacement));
 	    }
 	    m.appendTail(tmp);
@@ -203,6 +209,9 @@ public class EntityDetector {
 		    break;
 		}
 	    }
+	    /*
+	     * Apply a Named Entity Recognition to find instances of the remaining entities
+	     */
 	    article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
 
 	}

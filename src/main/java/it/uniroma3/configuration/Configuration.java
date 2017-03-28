@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.varia.NullAppender;
 /**
  * Loads the configuration file and set the parameters.
  * 
@@ -24,6 +26,13 @@ public class Configuration {
      * @param configFile
      */
     public static void init(String configFile){
+	/*
+	 * we need to remove the following instruction when we insert a logger
+	 */
+	org.apache.log4j.BasicConfigurator.configure(new NullAppender());
+	/*
+	 * start here
+	 */
 	Pattern p = Pattern.compile("^([a-z,A-Z]+) *= *(.*)$");
 	BufferedReader br = null;
 	try{
@@ -102,6 +111,10 @@ public class Configuration {
     public static String getRedirectIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("redirectIndexName");
     } 
+
+    public static String getKGIndex(){
+	return getIndexesFolder() + "/" + keyValue.get("kgIndexName");
+    } 
     /***********************************************************************/
 
     /***********************************************************************/
@@ -130,6 +143,14 @@ public class Configuration {
 
     public static String getAirpediaFile(){
 	return getSourcesFolder() + "/" + keyValue.get("typesAirpediaFile");
+    }
+
+    public static String getMappingBasedDBPediaSourceFile(){
+	return getSourcesFolder() + "/" + keyValue.get("mappingBasedDBpediaSource");
+    } 
+
+    public static String getNormalizedDBPediaFile(){
+	return getSourcesFolder() + "/" + keyValue.get("normalizedDBpedia");
     } 
     /***********************************************************************/
 
@@ -150,29 +171,28 @@ public class Configuration {
 	return getModelsFolder() + "/" + keyValue.get("postaggerModel");
     } 
     /***********************************************************************/
-    
+
     /***********************************************************************/
     private static String getListsFolder(){
 	return keyValue.get("listsFolder");
     }
-    
+
     public static String getCurrenciesList(){
 	return getListsFolder() + "/" + keyValue.get("currencies");
     }
-    
+
     public static String getNationalitiesList(){
 	return getListsFolder() + "/" + keyValue.get("nationalities");
     }
-    
+
     public static String getProfessionsList(){
 	return getListsFolder() + "/" + keyValue.get("professions");
     }
-    
+
     public static String getStopwordsList(){
 	return getListsFolder() + "/" + keyValue.get("stopwords");
     }
-    
-    
+
     /***********************************************************************/
 
     /***********************************************************************/
@@ -204,5 +224,34 @@ public class Configuration {
     public static double getSubnameThreshold(){
 	return Double.parseDouble(keyValue.get("subnameDensityThreshold"));	    
     }
+
+    /***********************************************************************/
+
+    /***********************************************************************/
+    private static String getTriplesFolder(){
+	return keyValue.get("triplesFolder");
+    }
+
+    public static String getMVLFile(){
+	return getTriplesFolder() + "/" + keyValue.get("multiValuesFile");
+    }
+
+    public static String getMVLTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("multiValuesTriples");
+    }
+
+    public static String getLabeledTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("labeledTriples");
+    }
+    
+    public static String getUnlabeledTriples(){
+   	return getTriplesFolder() + "/" + keyValue.get("unlabeledTriples");
+       }
+
+    public static String getNERTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("nerTriples");
+    }
+    /***********************************************************************/
+
 
 }

@@ -15,30 +15,14 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.TreeMultiset;
 
 import it.uniroma3.configuration.Configuration;
+import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
-import it.uniroma3.util.ExpertNLP;
 /**
  * 
  * @author matteo
  *
  */
-public class ReplacementsFinder {
-
-    /*
-     * Each thread uses its own specific fsm
-     */
-    private final ThreadLocal<SeedFSM> fsm;
-
-    /**
-     * 
-     */
-    public ReplacementsFinder(){
-	this.fsm = new ThreadLocal<SeedFSM>() {
-	    @Override protected SeedFSM initialValue() {
-		return new SeedFSM(new ExpertNLP());
-	    }
-	};
-    }
+public class ReplFinder {
 
     /**
      * Run the FSM to detect the seeds in the articles.
@@ -47,7 +31,7 @@ public class ReplacementsFinder {
      * @return
      */
     private List<String> findSeeds(WikiArticle article){
-	List<String> seeds = fsm.get().findSeed(article.getFirstSentence());
+	List<String> seeds = Lector.getFsm().get().findSeed(article.getFirstSentence());
 	return seeds;
     }
 
@@ -75,8 +59,8 @@ public class ReplacementsFinder {
 	for(String pronoun : possiblePronouns){
 	    List<String> regexes = new ArrayList<String>(2);
 	    if (!pronoun.equals("It"))
-		regexes.add("(?<=, )(?<![A-Z-]<)\\b" + pronoun.toLowerCase() + "\\b(?![^<]*?>)");
-	    regexes.add("(?<=\\. |\\n)(?<![A-Z-]<)\\b" + pronoun + "\\b(?![^<]*?>)");
+		regexes.add("(?<=, )(?<!<[A-Z-]<)\\b" + pronoun.toLowerCase() + "\\b(?![^<]*?>>)");
+	    regexes.add("(?<=\\. |\\n)(?<!<[A-Z-]<)\\b" + pronoun + "\\b(?![^<]*?>>)");
 	    regexesPronouns.put(pronoun, regexes);
 	}
 

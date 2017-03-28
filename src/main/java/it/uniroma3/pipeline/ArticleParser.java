@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.entitydetection.ReplacementsFinder;
+import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
@@ -55,16 +55,18 @@ public class ArticleParser {
 	    config = args[0];
 	}
 	
+	/******************************************************************/
 	Configuration.init(config);
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	XMLReader reader = new XMLReader(Configuration.getOriginalArticlesFile(), true);
 	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	ReplacementsFinder repFinder = new ReplacementsFinder();
+	ReplFinder repFinder = new ReplFinder();
 	String output_file = Configuration.getParsedArticlesFile();
 	PrintStream out_json = new PrintStream(new FileOutputStream(output_file), false, "UTF-8");
-
+	/******************************************************************/
+	
+	/******************************************************************/
 	List<String> lines;
-
 	/* Iterate over the dump and process each article */
 	while (!(lines = reader.nextChunk(Configuration.getChunkSize())).isEmpty()) {
 
@@ -81,10 +83,9 @@ public class ArticleParser {
 	    System.out.println("Reading for next batch.");
 	    lines.clear();
 	}
-
 	reader.closeBuffer();
 	out_json.close();
-
+	/******************************************************************/
     }
 
 }

@@ -27,7 +27,6 @@ public class JSONReader {
 	try {
 	    this.br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 	    this.gson = new Gson();
-
 	} catch (FileNotFoundException | UnsupportedEncodingException e) {
 	    e.printStackTrace();
 	}

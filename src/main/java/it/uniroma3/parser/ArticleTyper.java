@@ -6,8 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.model.WikiArticle;
-import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.model.WikiArticle.ArticleType;
+import it.uniroma3.model.WikiLanguage;
 /**
  * This parser is able to assign a specific type to 
  * the article using its wikid or original wiki-markup.
@@ -74,10 +74,16 @@ public class ArticleTyper {
 		Pattern.CASE_INSENSITIVE);
 	Pattern DIS5 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(hndis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
 		Pattern.CASE_INSENSITIVE);
+	Pattern DIS6 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(geodis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
+		Pattern.CASE_INSENSITIVE);
+	Pattern DIS7 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(numberdis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
+		Pattern.CASE_INSENSITIVE);
 	DIS_PAT.add(DIS1);
 	DIS_PAT.add(DIS3);
 	DIS_PAT.add(DIS4);
 	DIS_PAT.add(DIS5);
+	DIS_PAT.add(DIS6);
+	DIS_PAT.add(DIS7);
 	for (Pattern p : DIS_PAT){
 	    Matcher m = p.matcher(article.getOriginalMarkup());
 	    while (m.find()){

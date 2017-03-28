@@ -69,17 +69,14 @@ public class WikiParser {
     /**
      * Here we process he article using a particular order.
      * 
-     * 1-
-     * First of all, we fragment the article in blocks starting 
-     * from its original WikiMarkup content, and using the 
-     * === header === of each section, up to h4. Note, we consider
-     * all the section in a flat order, without keeping their nesting.
+     * (1)	First of all, we fragment the article in blocks starting 
+     * 		from its original WikiMarkup content, and using the 
+     * 		=== header === of each section, up to h4. Note, we consider
+     * 		all the section in a flat order, without keeping their nesting.
      * 
      * 2-
      * Then we extract structured contents that could be of interest
      * such as tables and lists. We consider infoboxes as tables.
-     * We extract them now becuase we remve them from the blocks in the
-     * next stage.
      * 
      * 3-
      * For each block, we use a text parser {@link it.uniroma3.parser.
@@ -106,8 +103,8 @@ public class WikiParser {
      */
     private WikiArticle processArticle(WikiArticle article){
 	/*
-	 * blocks is a map of contents of sections keyed by their header.
-	 * The section in the first position is the #Abstract.
+	 * (1)	blocks is a map of contents of sections keyed by their header.
+	 * 	The section in the first position is the #Abstract.
 	 */
 	Map<String, String> blocks = Lector.getBlockParser().fragmentArticle(article.getOriginalMarkup());
 
@@ -146,7 +143,7 @@ public class WikiParser {
 	 */
 	if (!Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		blocks.put(block.getKey(), Lector.getTextParser().harvestWikilinks(block.getValue(), article));
+		blocks.put(block.getKey(), Lector.getMarkupParser().harvestAllWikilinks(block.getValue(), article));
 	    }
 
 	/*
@@ -168,7 +165,7 @@ public class WikiParser {
 	 */
 	if (Configuration.getOnlyTextWikilinks())
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
-		blocks.put(block.getKey(), Lector.getTextParser().harvestWikilinks(block.getValue(), article));
+		blocks.put(block.getKey(), Lector.getMarkupParser().harvestAllWikilinks(block.getValue(), article));
 	    }
 
 	/*

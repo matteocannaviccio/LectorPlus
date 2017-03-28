@@ -15,7 +15,7 @@ import org.apache.tools.bzip2.CBZip2InputStream;
  * @author matteo
  *
  */
-public class XMLReader {
+public class XMLReader{
     private BufferedReader br;
 
     /**
@@ -28,8 +28,7 @@ public class XMLReader {
 	else
 	    this.br = getReaderXML(file);
     }
-
-
+    
     /**
      * 
      * @param path
@@ -48,6 +47,7 @@ public class XMLReader {
 	}
 	return br;
     }
+
 
     /**
      * 

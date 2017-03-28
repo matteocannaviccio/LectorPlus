@@ -46,7 +46,7 @@ public class MarkupParser {
      * @return
      */
     public String removeAllWikilinks(String originalText) {
-	Pattern WIKILINK = Pattern.compile("[A-Z-]+" + "<([^>]*?)>");
+	Pattern WIKILINK = Pattern.compile("<[A-Z-]+" + "<([^>]*?)>>");
 	Matcher m = WIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	while(m.find()){
@@ -75,7 +75,8 @@ public class MarkupParser {
 	Matcher m = TEMPLATEWIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	while(m.find()){
-	    m.appendReplacement(cleanText, Matcher.quoteReplacement(m.group(1).replaceAll("_", " ").replaceAll("#", " ")));
+	    String toRender = m.group(1).replaceAll("_", " ").replaceAll("#", " ");
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(toRender));
 	}
 	m.appendTail(cleanText);
 	return cleanText.toString();
@@ -90,24 +91,18 @@ public class MarkupParser {
 	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
 	Matcher m = ENTITY.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
-	try {
-	    String rendered;
-	    while(m.find()){
-		if ( m.group(3) != null && m.group(5) != null){
-		    rendered = m.group(3) + m.group(4) + m.group(5);
-		}else if ( m.group(1) != null && m.group(6) != null){
-		    rendered = m.group(1) + m.group(4) + m.group(6);
-		}else{
-		    rendered = m.group(4);
-		}
-		m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+	String rendered;
+	while(m.find()){
+	    if (m.group(3) != null && m.group(5) != null){
+		rendered = m.group(3) + m.group(4) + m.group(5);
+	    }else if ( m.group(1) != null && m.group(6) != null){
+		rendered = m.group(1) + m.group(4) + m.group(6);
+	    }else{
+		rendered = m.group(4);
 	    }
-	    m.appendTail(cleanText);
-
-	} catch (Exception e) {
-	    System.out.println(originalText);
-	    e.printStackTrace();
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 	}
+	m.appendTail(cleanText);
 	return cleanText.toString();
     }
 
@@ -124,12 +119,14 @@ public class MarkupParser {
 	Pattern COMMONSENSE = Pattern.compile("\\[\\[+" + "([^\\]]*\\|)?" + "('')?" + "([a-z][^A-Z].*?)" + "('')?" + "\\]\\]+");
 	Matcher m = COMMONSENSE.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
+	String rendered;
 	while(m.find()){
 	    if (m.group(2) != null && m.group(4) != null){
-		m.appendReplacement(cleanText, m.group(2) + m.group(3) + m.group(4));
+		rendered = m.group(2) + m.group(3) + m.group(4);
 	    }else{
-		m.appendReplacement(cleanText, m.group(3));
+		rendered = m.group(3);
 	    }
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 	}
 	m.appendTail(cleanText);
 	return cleanText.toString();
@@ -144,6 +141,13 @@ public class MarkupParser {
      *  - solve the blank-list entities
      *  
      * 	    [[Byzantine Empire|Byzantines]]  -->   SE-ORG<Byzantines>
+     * 
+     * Note that:
+     *  - we eliminate paragraphs wikilinks. For example:
+     * 	    [[Byzantine Empire#History|Byzantines]]  -->   SE-ORG<Byzantines>
+     * 
+     * - we eliminate only numbers wikilinks. For example:
+     * 	    [[Fifa Word Cup#2002 Korea Japan|2000]]  -->   2000
      * 
      * @param originalText
      * @param article
@@ -175,7 +179,7 @@ public class MarkupParser {
 	String rendered;
 	while(m.find()){
 	    if (m.group(2) != null){
-		wikid = m.group(2).replaceAll(" ", "_").substring(0, m.group(2).length()-1);
+		wikid = m.group(2).replaceAll(" ", "_").substring(0, m.group(2).length()-1).replaceAll("#[^|]+", "");
 		if ( m.group(3) != null && m.group(5) != null){
 		    rendered = m.group(3) + m.group(4) + m.group(5);
 		}else if ( m.group(1) != null && m.group(6) != null){
@@ -185,24 +189,26 @@ public class MarkupParser {
 		}
 	    }else{
 		rendered = m.group(4);
-		wikid = m.group(4).replaceAll(" ", "_");
+		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
 
+	    if (Configuration.solveRedirect())
+		wikid = Lector.getRedirectResolver().resolveRedirect(wikid);
+
 	    /*
-	     * eliminate blaklisted entities 
+	     * eliminate blacklisted entities 
 	     */
-	    if (blacklist.contains(wikid)){
+	    if (blacklist.contains(wikid) || blacklist.contains(rendered.replaceAll(" ", "_"))){
 		m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
-
 	    }else{
-		if (Configuration.solveRedirect())
-		    wikid = Lector.getRedirectResolver().resolveRedirect(wikid);
-
 		if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
 		    if (!wikilinks.containsKey(rendered))
 			wikilinks.put(rendered, new HashSet<String>());
-		    wikilinks.get(rendered).add("SE-AUG<" + wikid +  ">");
-		    m.appendReplacement(cleanText, Matcher.quoteReplacement("SE-ORG<" + wikid + ">"));
+		    // we quote it, for later
+		    wikilinks.get(rendered).add("<" + Matcher.quoteReplacement("SE-AUG<" + wikid +  ">") + ">");
+		    m.appendReplacement(cleanText, "<" + Matcher.quoteReplacement("SE-ORG<" + wikid + ">") + ">");
+		}else{
+		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 		}
 	    }
 	}

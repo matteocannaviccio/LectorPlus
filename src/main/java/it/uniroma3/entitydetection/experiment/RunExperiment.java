@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.ReplacementsFinder;
+import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.entitydetection.experiment.tool.DBPediaSpotlight;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
@@ -32,7 +32,7 @@ public class RunExperiment {
 	/*
 	 * Read the config file and instantiate a Configuration object.
 	 */
-	ReplacementsFinder repFinder = new ReplacementsFinder();
+	ReplFinder repFinder = new ReplFinder();
 	
 	/*
 	 * RECALL, in order to run this experiment you shild include the parser

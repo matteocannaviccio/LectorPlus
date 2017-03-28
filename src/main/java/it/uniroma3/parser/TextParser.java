@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 /**
  * 
@@ -102,18 +101,6 @@ public class TextParser {
 	String cleanBlock = Lector.getMarkupParser().cleanEmptyTemplateWikilinks(block);
 	cleanBlock = Lector.getMarkupParser().removeCommonSenseWikilinks(cleanBlock);
 	return cleanBlock;
-    }
-
-    /**
-     * The method extracts all the wikilinks present in the block, 
-     * and add them to the wikilinks collection of the article.
-     * 
-     * @param block
-     * @param article
-     * @return
-     */
-    public String harvestWikilinks(String block, WikiArticle article){
-	return Lector.getMarkupParser().harvestAllWikilinks(block, article);
     }
 
     /**
@@ -376,7 +363,7 @@ public class TextParser {
      * @param block
      * @return
      */
-    private String removeParenthesis(String block){
+    public String removeParenthesis(String block){
 	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*");	// remove parenthesis and content ( )
 	Matcher m = PARENTHESIS.matcher(block);
 	while(m.find()){

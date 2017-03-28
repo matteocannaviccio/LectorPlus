@@ -59,7 +59,6 @@ public class ExpertNLP {
 	return tagSequence;
     }
 
-
     /**
      * 
      * @return
@@ -84,7 +83,7 @@ public class ExpertNLP {
 		    currentToken = currentToken.append(" " + word);
 		}else if(currentLabel.equals("NNP") || currentLabel.equals("NNPS")){
 		    // add regex and replacement in the map
-		    String regex = "(?![A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>)";
+		    String regex = "(?!<[A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>>)";
 		    String replacement = Matcher.quoteReplacement(currentLabel + "<" + currentToken.toString().trim() + ">");
 		    regexes.add(Pair.make(regex, replacement));
 		    currentToken = new StringBuffer();
@@ -97,7 +96,7 @@ public class ExpertNLP {
 	}
 	if (currentLabel.equals("NNP") || currentLabel.equals("NNPS")){
 	    // add regex and replacement in the map
-	    String regex = "(?![A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>)";
+	    String regex = "(?!<[A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>>)";
 	    String replacement = Matcher.quoteReplacement(currentLabel + "<" + currentToken.toString().trim() + ">");
 	    regexes.add(Pair.make(regex, replacement));
 	}
@@ -159,17 +158,6 @@ public class ExpertNLP {
 	POSModel model = new POSModel(new FileInputStream(Configuration.getPOSModel()));
 	POSTagger sdetector = new POSTaggerME(model);
 	return sdetector;
-    }
-
-
-    public static void main(String[] args){
-	/*
-	 * Read the config file and instanciate a Configuration object.
-	 */
-	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
-	String text = "PE_ALIAS<Alexander_Kerensky> was a Russian lawyer, and Alexander politician who served as the SE_NAME<Minister_of_Justice> in the newly formed SE_ORG<Russian_Provisional_Government>, as SE_ORG<Minister_of_War>, and second SE_ORG<Prime_Minister_of_Russia> of the between July and November 1917. A leader of the moderate-socialist SE_ORG<Trudoviks> faction of the SE_ORG<Socialist_Revolutionary_Party>, Kerensky was a key political figure in the SE_ORG<Russian_Revolution> of 1917. On 7 November, his government was overthrown by the SE_ORG<Vladimir_Lenin>-led SE_ORG<Bolshevik>s in the SE_ORG<October_Revolution>. PE_PRO<Alexander_Kerensky> spent the remainder of his life in exile, in Paris and New York City, but was buried in London.";
-	ExpertNLP expert = new ExpertNLP();
-	System.out.println(expert.tagBlock(text));
     }
 
 }

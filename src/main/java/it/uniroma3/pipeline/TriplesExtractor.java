@@ -8,13 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.entitydetection.ReplAttacher;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.reader.JSONReader;
 
-public class EntityDetection {
-    
+public class TriplesExtractor {
+
     /**
      * Entry point!
      * 
@@ -22,7 +21,7 @@ public class EntityDetection {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-	
+
 	String config;
 	if (args.length == 0){
 	    config = "/Users/matteo/Desktop/data/config.properties";
@@ -33,11 +32,10 @@ public class EntityDetection {
 	/******************************************************************/
 	Configuration.init(config);
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	String input_file = Configuration.getParsedArticlesFile();
+	String input_file = Configuration.getAugmentedArticlesFile();
 	JSONReader reader = new JSONReader(input_file);
-	String output_file = Configuration.getAugmentedArticlesFile();
+	String output_file = Configuration.getTriplifiedArticlesFile();
 	PrintStream out_json = new PrintStream(new FileOutputStream(output_file), false, "UTF-8");
-	ReplAttacher entDet = new ReplAttacher();
 	/******************************************************************/
 	
 	/******************************************************************/
@@ -47,8 +45,9 @@ public class EntityDetection {
 	    long start_time = System.currentTimeMillis();
 
 	    articles.parallelStream()
-	    .map(s -> entDet.augmentEvidence(s))
-	    .forEach(s -> out_json.println(s.toJson()));
+	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
+
+	    Lector.getTriplifier().flushEverything();
 
 	    long end_time = System.currentTimeMillis();
 	    System.out.println("Time: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
@@ -59,5 +58,4 @@ public class EntityDetection {
 	out_json.close();
 	/******************************************************************/
     }
-
 }

@@ -1,4 +1,4 @@
-package it.uniroma3.tools;
+package it.uniroma3.kg;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +19,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -34,21 +33,24 @@ import org.apache.lucene.store.FSDirectory;
  *
  */
 public class KeyValueIndex {
-    private String kvPairsFilePath;
-    private String kvIndexFilePath;
+
     private IndexSearcher indexSearcher;
 
     /**
-     * 
+     * This is the constructor if we need to create the index.
      * @param kvPairsFilePath
      * @param kvIndexPath
-     * @param keyFieldName
-     * @param valueFieldName
      */
     public KeyValueIndex(String kvPairsFilePath, String kvIndexPath){
-	this.kvPairsFilePath = kvPairsFilePath;
-	this.kvIndexFilePath = kvIndexPath;
-	this.createIndexIfNotExists();
+	this.createIndex(kvPairsFilePath, kvIndexPath);
+	this.indexSearcher = createSearcher(kvIndexPath);
+    }
+    
+    /**
+     * This is the constructor if we already have the index.
+     * @param kvIndexPath
+     */
+    public KeyValueIndex(String kvIndexPath){
 	this.indexSearcher = createSearcher(kvIndexPath);
     }
 
@@ -60,6 +62,8 @@ public class KeyValueIndex {
     private IndexWriter createWriter(String kvIndexPath) {
 	IndexWriter writer = null;
 	try {
+	    if (new File(kvIndexPath).exists())
+		new File(kvIndexPath).delete();
 	    FSDirectory dir = FSDirectory.open(Paths.get(kvIndexPath));
 	    IndexWriterConfig config = new IndexWriterConfig(new WhitespaceAnalyzer());
 	    config.setOpenMode(OpenMode.CREATE);
@@ -84,6 +88,7 @@ public class KeyValueIndex {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
+
 	return searcher;
     }
 
@@ -111,43 +116,39 @@ public class KeyValueIndex {
      * 
      * @param pathToPhrases
      */
-    private void createIndexIfNotExists() {
-	if (new File(kvIndexFilePath).exists()){
-	    return;
-	}else{
-	    File kvPairsFile = new File(kvPairsFilePath);
-	    IndexWriter writer = createWriter(kvIndexFilePath);
-	    try {
-		BufferedReader input = new BufferedReader(new FileReader(kvPairsFile));
-		String line = input.readLine();
-		while (line != null){
-		    /*
-		     * we read the key-value file and index the encoded strings
-		     */
-		    String[] field = line.split("\t"); 
-		    String key = encodeBase64(field[0]);
-		    String value = encodeBase64(field[1]);
+    private void createIndex(String kvPairsFilePath, String kvIndexPath) {
+	File kvPairsFile = new File(kvPairsFilePath);
+	IndexWriter writer = createWriter(kvIndexPath);
+	try {
+	    BufferedReader input = new BufferedReader(new FileReader(kvPairsFile));
+	    String line = input.readLine();
+	    while (line != null){
+		/*
+		 * we read the key-value file and index the encoded strings
+		 */
+		String[] field = line.split("\t"); 
+		String key = encodeBase64(field[0]);
+		String value = encodeBase64(field[1]);
 
-		    /*
-		     * indexing key-value pairs using the name of the fields
-		     */
-		    Document doc = new Document();
-		    doc.add(new StringField("key", key, Store.YES));
-		    doc.add(new StringField("value", value, Store.YES));
-		    writer.addDocument(doc);
+		/*
+		 * indexing key-value pairs using the name of the fields
+		 */
+		Document doc = new Document();
+		doc.add(new StringField("key", key, Store.YES));
+		doc.add(new StringField("value", value, Store.YES));
+		writer.addDocument(doc);
 
-		    line = input.readLine();
-		}
-
-		input.close();
-		writer.close();
-
-	    } catch (IOException e) {
-		e.printStackTrace();
+		line = input.readLine();
 	    }
+
+	    input.close();
+	    writer.close();
+
+	} catch (IOException e) {
+	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param value
@@ -192,22 +193,4 @@ public class KeyValueIndex {
 	return values;
     }
 
-
-    /**
-     * 
-     * @param args
-     * @throws IOException
-     * @throws ParseException
-     */
-    public static void main(String[] args) throws IOException, ParseException {
-
-	String INDEX_DIR = "/Users/matteo/Work/lectorplus_data/redirect/index";
-	String DOCUMENT_PATH = "/Users/matteo/Work/lectorplus_data/redirect/redirect_airpedia.tsv";
-
-	// indexing
-	KeyValueIndex index = new KeyValueIndex(DOCUMENT_PATH, INDEX_DIR);
-	
-	System.out.println(index.retrieveValues("Race and ethnicity in the United States Census"));
-
-    }
 }

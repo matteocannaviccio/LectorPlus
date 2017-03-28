@@ -1,7 +1,7 @@
 package it.uniroma3.parser;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.ReplacementsFinder;
+import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.reader.XMLReader;
@@ -13,7 +13,7 @@ public class ParserTest {
 
 	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
 	
-	ReplacementsFinder repFinder = new ReplacementsFinder(); 
+	ReplFinder repFinder = new ReplFinder(); 
 
 	/* ------ PIPELINE COMPONENTS ------ */
 	// reader
