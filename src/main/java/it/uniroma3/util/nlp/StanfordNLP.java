@@ -1,4 +1,4 @@
-package it.uniroma3.util;
+package it.uniroma3.util.nlp;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -15,29 +15,25 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import it.uniroma3.entitydetection.PatternComparator;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo
  *
  */
-public class StanfordExpertNLP {
+public class StanfordNLP {
     private AbstractSequenceClassifier<CoreLabel> classifier;
     private Map<String, String> mapping;
 
     /**
      * 
      */
-    public StanfordExpertNLP(){
-
+    public StanfordNLP(){
 	/********* this code only makes all writes to the System.err stream silent to avoid the print "Loading classifier ... " *****/
 	PrintStream err = System.err;
-	//PrintStream out = System.out;
 	System.setErr(new PrintStream(new OutputStream() {public void write(int b) {}}));
-	//System.setOut(new PrintStream(new OutputStream() {public void write(int b) {}}));
 	this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
-	//this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.muc.7class.distsim.crf.ser.gz");
 	System.setErr(err);
-	//System.setOut(out);
 	/*** and then set everything back to its original state afterwards ***/
 
 	this.mapping = new HashMap<String, String>();
@@ -51,7 +47,6 @@ public class StanfordExpertNLP {
 
 
     public List<String> processBlock(String block){
-
 	List<String> sentenceList = new ArrayList<String>();
 	/*
 	 * classify the sentence:
@@ -61,7 +56,6 @@ public class StanfordExpertNLP {
 	List<List<CoreLabel>> labeledSentences = classifier.classify(block);
 	int start = 0;
 	int end = 0;
-
 
 	// for each sentence ..
 	for (List<CoreLabel> sentence : labeledSentences) {

@@ -29,7 +29,7 @@ public class ReplAttacher {
      * @return
      */
     private String createRegexName(String name){
-	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |\\n)(?:\\w++\\s)?)\\b(" + Pattern.quote(name) + ")\\b(?!\\s[A-Z][a-z]++|-|<| <)";
+	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |, |: |\\n)(?:\\w++\\s)?)\\b(" + Pattern.quote(name) + ")\\b(?!\\s[A-Z][a-z]++|-|<| <)";
     }
 
     /**
@@ -54,7 +54,7 @@ public class ReplAttacher {
 	String pronoun = article.getPronoun();
 	if(pronoun != null){
 	    if (!pronoun.equals("It")){
-		regexes.add(Pair.make("((?<=\\, )(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
+		regexes.add(Pair.make("((?<=\\s)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
 		regexes.add(Pair.make("((?<=\\. |\\n|^)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
 	    }
 	}

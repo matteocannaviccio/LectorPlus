@@ -1,15 +1,12 @@
-package it.uniroma3.util;
+package it.uniroma3.util.nlp;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.PatternComparator;
+import it.uniroma3.util.Token;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
@@ -23,8 +20,7 @@ import opennlp.tools.util.InvalidFormatException;
  * @author matteo
  *
  */
-public class ExpertNLP {
-
+public class OpenNLP {
     private POSTagger posTagger;
     private Tokenizer tokenizer;
     private DictionaryLemmatizer lemmatizer;
@@ -33,7 +29,7 @@ public class ExpertNLP {
      * 
      * @param task
      */
-    public ExpertNLP(){
+    public OpenNLP(){
 	try {
 	    posTagger = obtainPOSTagger();
 	    tokenizer = obtainTokenizer();
@@ -47,11 +43,10 @@ public class ExpertNLP {
      * 
      * @return
      */
-    public Token[] tagFirstSentence(String sentece){
+    public Token[] applyPOSTagger(String sentece){
 	String[] tokens = this.tokenizer.tokenize(sentece);
 	String[] tags = this.posTagger.tag(tokens);
 	Token[] tagSequence = new Token[tokens.length];
-
 	for(int i = 0; i < tokens.length ; i++){
 	    tagSequence[i] = new Token(tokens[i], tags[i]);
 
@@ -59,64 +54,12 @@ public class ExpertNLP {
 	return tagSequence;
     }
 
-    /**
-     * 
-     * @return
-     */
-    public String tagBlock(String block){
-	String[] tokens = block.split("[^<>\\w\\{Punct}]+");
-	String[] tags = this.posTagger.tag(tokens);
-
-	ConcurrentSkipListSet<Pair<String, String>> regexes = new ConcurrentSkipListSet<Pair<String, String>>(new PatternComparator());
-	StringBuffer currentToken = new StringBuffer();
-	String currentLabel = "-";
-
-	for(int i = 0; i < tokens.length ; i++){
-	    String word = tokens[i];
-	    String type = tags[i];
-
-	    //System.out.println(word + "\t" + type);
-	    // Build annotations
-
-	    if (!word.startsWith("SE") && !word.startsWith("PE")){
-		if (type.equals("NNP") || type.equals("NNPS") ){
-		    currentToken = currentToken.append(" " + word);
-		}else if(currentLabel.equals("NNP") || currentLabel.equals("NNPS")){
-		    // add regex and replacement in the map
-		    String regex = "(?!<[A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>>)";
-		    String replacement = Matcher.quoteReplacement(currentLabel + "<" + currentToken.toString().trim() + ">");
-		    regexes.add(Pair.make(regex, replacement));
-		    currentToken = new StringBuffer();
-
-		}else{
-		    currentToken = new StringBuffer();
-		}
-		currentLabel = type;
-	    }
-	}
-	if (currentLabel.equals("NNP") || currentLabel.equals("NNPS")){
-	    // add regex and replacement in the map
-	    String regex = "(?!<[A-Z-]+<)\\b" + Pattern.quote(currentToken.toString().trim()) + "\\b(?![^<]*?>>)";
-	    String replacement = Matcher.quoteReplacement(currentLabel + "<" + currentToken.toString().trim() + ">");
-	    regexes.add(Pair.make(regex, replacement));
-	}
-
-	/*
-	 * Apply all the annotations (regex with the replacements).
-	 */
-	for(Pair<String, String> regex : regexes){
-	    block = block.replaceAll(regex.key, regex.value);
-
-	}
-	return block;
-    }
-
 
     /**
      * 
      * @return
      */
-    public synchronized String getSingular(String word, String postag){
+    public String getSingular(String word, String postag){
 	return lemmatizer.apply(word, postag);
     }
 

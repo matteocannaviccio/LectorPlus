@@ -28,7 +28,7 @@ public class DBPedia {
      */
     public DBPedia(){
 	if (!new File(Configuration.getKGIndex()).exists()){
-	    if (!new File(Configuration.getNormalizedDBPediaFile()).exists()){
+	    if (!new File(Configuration.getDBPediaNormalizedFile()).exists()){
 		System.out.print("Normalizing DBPedia ...");
 		long start_time = System.currentTimeMillis();
 		try {
@@ -41,7 +41,7 @@ public class DBPedia {
 	    }
 	    System.out.print("Creating KG resolver ...");
 	    long start_time = System.currentTimeMillis();
-	    this.indexKG = new KeyValueIndex(Configuration.getNormalizedDBPediaFile(), Configuration.getKGIndex());
+	    this.indexKG = new KeyValueIndex(Configuration.getDBPediaNormalizedFile(), Configuration.getKGIndex());
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 
@@ -108,13 +108,13 @@ public class DBPedia {
 	String pred;
 
 	// first iteration: save second parts
-	RDFReader reader = new RDFReader(Configuration.getMappingBasedDBPediaSourceFile());
+	RDFReader reader = new RDFReader(Configuration.getDBPediaMappingBasedFile(), true);
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
-	Iterator<Triple> iter = reader.readTTLBzip2File();
+	Iterator<Triple> iter = reader.readTTLFile();
 
 	while(iter.hasNext()){
 	    cont++;
-	    if (cont % 1000000 == 0)
+	    if (cont % 6000000 == 0)
 		System.out.println("First iteration:\t" + cont);
 
 	    Triple t = iter.next();
@@ -131,15 +131,15 @@ public class DBPedia {
 	reader.closeReader();
 
 	// second iteration: print clean triples in the following file
-	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(Configuration.getNormalizedDBPediaFile())));
+	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(Configuration.getDBPediaNormalizedFile())));
 
-	reader = new RDFReader(Configuration.getMappingBasedDBPediaSourceFile());
+	reader = new RDFReader(Configuration.getDBPediaMappingBasedFile(), true);
 	cont = 0;
-	iter = reader.readTTLBzip2File();
+	iter = reader.readTTLFile();
 
 	while(iter.hasNext()){
 	    cont++;
-	    if (cont % 1000000 == 0)
+	    if (cont % 6000000 == 0)
 		System.out.println("Second iteration:\t" + cont);
 
 	    Triple t = iter.next();

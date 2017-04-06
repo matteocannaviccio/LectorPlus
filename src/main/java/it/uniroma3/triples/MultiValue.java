@@ -57,7 +57,8 @@ public class MultiValue {
      * 
      */
     public String toString(){
-	return "\"" + this.code + "\",\"" + this.wikid + "\",\"" + this.section + "\",\"" +this.listWikid.toString() + "\"";
+	return "\"" + this.code + "\",\"" + this.wikid + "\",\"" + this.section +
+		"\",\"" +this.listWikid.toString() + "\"";
 
     }
 

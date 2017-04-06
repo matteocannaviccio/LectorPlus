@@ -10,9 +10,9 @@ import java.util.TreeSet;
 import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.util.ExpertNLP;
 import it.uniroma3.util.Reader;
 import it.uniroma3.util.Token;
+import it.uniroma3.util.nlp.OpenNLP;
 /**
  * 
  * @author matteo
@@ -35,14 +35,14 @@ public class SeedFSM {
     private static final List<String> FINAL_LIST = Arrays.asList("VBG", "JJ","CC", ",", "VB", "VBN", "VBD", "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
 
     private FSM finiteStateMachine;
-    private ExpertNLP expert;
+    private OpenNLP expert;
     private Set<String> stopwords; // we need them only for a post-processing filetering
 
     /**
      * 
      * @param expert
      */
-    public SeedFSM(ExpertNLP expert){
+    public SeedFSM(OpenNLP expert){
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
 	this.stopwords = Reader.getLines(Configuration.getStopwordsList());
@@ -154,7 +154,7 @@ public class SeedFSM {
     public List<String> findSeed(String sentence){
 	this.finiteStateMachine.reset();
 	List<String> seeds = new LinkedList<String>();
-	Token[] tokens = cutOutFirstPart(expert.tagFirstSentence(sentence));
+	Token[] tokens = cutOutFirstPart(expert.applyPOSTagger(sentence));
 	String tmpToken = "-";
 	for(Token token : tokens){
 	    this.finiteStateMachine.transition(token.getPOS());

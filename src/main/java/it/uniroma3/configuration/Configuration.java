@@ -1,6 +1,7 @@
 package it.uniroma3.configuration;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
 /**
  * Loads the configuration file and set the parameters.
@@ -29,7 +31,8 @@ public class Configuration {
 	/*
 	 * we need to remove the following instruction when we insert a logger
 	 */
-	org.apache.log4j.BasicConfigurator.configure(new NullAppender());
+	BasicConfigurator.configure(new NullAppender());
+	
 	/*
 	 * start here
 	 */
@@ -64,20 +67,60 @@ public class Configuration {
     }
 
     /***********************************************************************/
-    public static String getExperimentFolder(){
-	return null;
-    } 
-
-    public static String getInputDump50Articles(){
-	return null;
-    } 
-    /***********************************************************************/
-
-    /***********************************************************************/
-    private static String getArticlesFolder(){
-	return keyValue.get("articlesFolder");
+    private static String getDataFolder(){
+	return keyValue.get("dataFile");
     }
+    
+    private static String getArticlesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("articlesFolder");
+	File folder = new File(folderPath); 
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getIndexesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getSourcesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourcesFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getModelsFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("modelsFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getListsFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("listsFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getTriplesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("triplesFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    /***********************************************************************/
 
+    /***********************************************************************/
     public static String getOriginalArticlesFile(){
 	return getArticlesFolder() + "/" + keyValue.get("originalArticles");
     } 
@@ -89,17 +132,13 @@ public class Configuration {
     public static String getParsedArticlesFile(){
 	return getArticlesFolder() + "/" + keyValue.get("parsedArticles");
     } 
-
-    public static String getTriplifiedArticlesFile(){
-	return getArticlesFolder() + "/" + keyValue.get("triplifiedArticles");
+    
+    public static String getDetailArticlesFile(){
+	return getArticlesFolder() + "/" + keyValue.get("detailsArticles");
     } 
     /***********************************************************************/
 
     /***********************************************************************/
-    private static String getIndexesFolder(){
-	return keyValue.get("indexesFolder");
-    }
-
     public static String getTypesIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("typesIndexName");
     } 
@@ -123,42 +162,38 @@ public class Configuration {
     }
 
     public static String getLanguageProperties(){
-	return keyValue.get("languagePropertiesFolder") + "/" 
+	return getDataFolder() + "/" + keyValue.get("languagePropertiesFolder") + "/" 
 		+ keyValue.get("languageUsed") + ".properties";
     }
     /***********************************************************************/
 
     /***********************************************************************/
-    private static String getSourcesFolder(){
-	return keyValue.get("sourcesFolder");
-    }
-
     public static String getRedirectFile(){
 	return getSourcesFolder() + "/" + keyValue.get("redirectFile");
     } 
 
-    public static String getTypesOriginalFile(){
+    public static String getDBPediaTypesFile(){
 	return getSourcesFolder() + "/" + keyValue.get("typesOriginalFile");
     } 
 
-    public static String getAirpediaFile(){
+    public static String getDBPediaAirpediaFile(){
 	return getSourcesFolder() + "/" + keyValue.get("typesAirpediaFile");
     }
 
-    public static String getMappingBasedDBPediaSourceFile(){
+    public static String getDBPediaMappingBasedFile(){
 	return getSourcesFolder() + "/" + keyValue.get("mappingBasedDBpediaSource");
     } 
 
-    public static String getNormalizedDBPediaFile(){
+    public static String getDBPediaNormalizedFile(){
 	return getSourcesFolder() + "/" + keyValue.get("normalizedDBpedia");
+    }
+    
+    public static String getDBPediaOntologyFile(){
+	return getSourcesFolder() + "/" + keyValue.get("ontology");
     } 
     /***********************************************************************/
 
     /***********************************************************************/
-    private static String getModelsFolder(){
-	return keyValue.get("modelsFolder");
-    }
-
     public static String getTokenModel(){
 	return getModelsFolder() + "/" + keyValue.get("tokenModel");
     } 
@@ -173,10 +208,6 @@ public class Configuration {
     /***********************************************************************/
 
     /***********************************************************************/
-    private static String getListsFolder(){
-	return keyValue.get("listsFolder");
-    }
-
     public static String getCurrenciesList(){
 	return getListsFolder() + "/" + keyValue.get("currencies");
     }
@@ -197,6 +228,10 @@ public class Configuration {
 
     /***********************************************************************/
 
+    public static int getNumArticlesToProcess(){
+	return Integer.parseInt(keyValue.get("totArticle"));
+    }
+    
     public static int getChunkSize(){
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
@@ -228,10 +263,6 @@ public class Configuration {
     /***********************************************************************/
 
     /***********************************************************************/
-    private static String getTriplesFolder(){
-	return keyValue.get("triplesFolder");
-    }
-
     public static String getMVLFile(){
 	return getTriplesFolder() + "/" + keyValue.get("multiValuesFile");
     }
@@ -250,6 +281,10 @@ public class Configuration {
 
     public static String getNERTriples(){
 	return getTriplesFolder() + "/" + keyValue.get("nerTriples");
+    }
+    
+    public static String getStatisticsFile(){
+	return getTriplesFolder() + "/" + keyValue.get("stats");
     }
     /***********************************************************************/
 

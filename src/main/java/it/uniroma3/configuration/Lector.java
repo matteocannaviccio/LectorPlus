@@ -5,7 +5,7 @@ import java.io.File;
 import it.uniroma3.entitydetection.SeedFSM;
 import it.uniroma3.kg.DBPedia;
 import it.uniroma3.kg.RedirectResolver;
-import it.uniroma3.kg.TypesResolver;
+import it.uniroma3.kg.ontology.TypesAssigner;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.ArticleTyper;
 import it.uniroma3.parser.BlockParser;
@@ -13,14 +13,14 @@ import it.uniroma3.parser.MarkupParser;
 import it.uniroma3.parser.TextParser;
 import it.uniroma3.parser.XMLParser;
 import it.uniroma3.triples.Triplifier;
-import it.uniroma3.util.ExpertNLP;
-import it.uniroma3.util.StanfordExpertNLP;
+import it.uniroma3.util.nlp.OpenNLP;
+import it.uniroma3.util.nlp.StanfordNLP;
 
 public class Lector {
     
     private static RedirectResolver redirectResolver;
     private static DBPedia kg;
-    private static TypesResolver typesResolver;   
+    private static TypesAssigner typesAssigner;   
     private static MarkupParser markupParser; 
     private static ArticleTyper articleTyper;
     private static XMLParser xmlParser;
@@ -31,8 +31,8 @@ public class Lector {
     /*
      * Each thread uses its own specific object
      */
-    private static ThreadLocal<StanfordExpertNLP> stanfordExpert;
-    private static ThreadLocal<ExpertNLP> openNLPExpert;
+    private static ThreadLocal<StanfordNLP> stanfordExpert;
+    private static ThreadLocal<OpenNLP> openNLPExpert;
     private static ThreadLocal<SeedFSM> fsm;
 
     
@@ -42,7 +42,7 @@ public class Lector {
      */
     public static void init(WikiLanguage lang) {
 	redirectResolver = new RedirectResolver();
-	typesResolver = new TypesResolver();
+	typesAssigner = new TypesAssigner();
 	markupParser = new MarkupParser();
 	articleTyper = new ArticleTyper(lang);
 	xmlParser = new XMLParser();
@@ -51,15 +51,15 @@ public class Lector {
 	triplifier = new Triplifier();
 	kg = new DBPedia();
 	
-	stanfordExpert = new ThreadLocal<StanfordExpertNLP>() {
-	    @Override protected StanfordExpertNLP initialValue() {
-		return new StanfordExpertNLP();
+	stanfordExpert = new ThreadLocal<StanfordNLP>() {
+	    @Override protected StanfordNLP initialValue() {
+		return new StanfordNLP();
 	    }
 	};
 	
-	openNLPExpert = new ThreadLocal<ExpertNLP>() {
-	    @Override protected ExpertNLP initialValue() {
-		return new ExpertNLP();
+	openNLPExpert = new ThreadLocal<OpenNLP>() {
+	    @Override protected OpenNLP initialValue() {
+		return new OpenNLP();
 	    }
 	};
 	
@@ -87,16 +87,16 @@ public class Lector {
     }
 
     /**
-     * @return the typesResolver
+     * @return the typesAssigner
      */
-    public static TypesResolver getTypesResolver() {
-        return typesResolver;
+    public static TypesAssigner getTypesAssigner() {
+        return typesAssigner;
     }
     
     /**
      * @return the typesResolver
      */
-    public static StanfordExpertNLP getNLPExpert() {
+    public static StanfordNLP getNLPExpert() {
         return stanfordExpert.get();
     }
 
@@ -138,7 +138,7 @@ public class Lector {
     /**
      * @return the openNLPExpert
      */
-    public static ThreadLocal<ExpertNLP> getOpenNLPExpert() {
+    public static ThreadLocal<OpenNLP> getOpenNLPExpert() {
         return openNLPExpert;
     }
     

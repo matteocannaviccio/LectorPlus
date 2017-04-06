@@ -1,4 +1,4 @@
-package it.uniroma3.kg;
+package it.uniroma3.kg.ontology;
 
 import java.io.File;
 import java.util.List;
@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
+import it.uniroma3.kg.KeyValueIndex;
 import it.uniroma3.model.WikiLanguage;
 /**
  * 
@@ -25,7 +26,7 @@ public class TypesResolver {
 	if (!new File(Configuration.getTypesIndex()).exists()){
 	    System.out.print("Creating TYPES resolver ...");
 	    long start_time = System.currentTimeMillis();
-	    this.indexOriginal = new KeyValueIndex(Configuration.getTypesOriginalFile(), Configuration.getTypesIndex());
+	    this.indexOriginal = new KeyValueIndex(Configuration.getDBPediaTypesFile(), Configuration.getTypesIndex());
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	}
@@ -35,7 +36,7 @@ public class TypesResolver {
 	if (!new File(Configuration.getAirpediaIndex()).exists()){
 	    System.out.print("Creating AIRPEDIA resolver ...");
 	    long start_time = System.currentTimeMillis();
-	    this.indexAirpedia = new KeyValueIndex(Configuration.getAirpediaFile(), Configuration.getAirpediaIndex());
+	    this.indexAirpedia = new KeyValueIndex(Configuration.getDBPediaAirpediaFile(), Configuration.getAirpediaIndex());
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
 	}
@@ -73,17 +74,21 @@ public class TypesResolver {
      */
     public List<String> assignTypes(String wikid){
 	List<String> types = getTypes(wikid, indexOriginal);
-	types.addAll(getTypes(wikid, indexAirpedia));
+	//types.addAll(getTypes(wikid, indexAirpedia));
 	return types;
     }
 
+    /**
+     * 
+     * @param args
+     */
     public static void main(String[] args){
 	Configuration.init("/Users/matteo/Desktop/data/config.properties");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 
 	TypesResolver t = new TypesResolver();
 
-	String entity = "Steven_Spielberg";
+	String entity = "Žagarė";
 
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypes(entity, t.getIndexOriginal()).forEach(System.out::println);

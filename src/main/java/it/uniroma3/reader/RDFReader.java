@@ -3,6 +3,7 @@ package it.uniroma3.reader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 
 import org.apache.jena.riot.Lang;
@@ -16,13 +17,31 @@ import com.hp.hpl.jena.graph.Triple;
  *
  */
 public class RDFReader{
-    
+
     private InputStream is;
-    
-    public RDFReader(String path){
-	this.is = getInputStreamBZip2(path);
+
+    public RDFReader(String path, boolean isBzip2){
+	if(isBzip2)
+	    this.is = getInputStreamBZip2(path);
+	else
+	    this.is = getInputStream(path);
     }
 
+    /**
+     * 
+     * @param path
+     * @return
+     */
+    private InputStream getInputStream(String path){
+	InputStream is = null;
+	try {
+	    is = new FileInputStream(path);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return is;
+    }
+    
     /**
      * 
      * @param path
@@ -40,16 +59,25 @@ public class RDFReader{
 	}
 	return is;
     }
+
+    /**
+     * 
+     * @param path
+     * @return
+     */
+    public Iterator<Triple> readTTLFile(){
+	return RiotReader.createIteratorTriples(is, Lang.TTL, null);
+    }
     
     /**
      * 
      * @param path
      * @return
      */
-    public Iterator<Triple> readTTLBzip2File(){
-	return RiotReader.createIteratorTriples(is, Lang.TTL, null);
+    public Iterator<Triple> readNTFile(){
+	return RiotReader.createIteratorTriples(is, Lang.NT, null);
     }
-    
+
     /**
      * 
      */

@@ -1,15 +1,23 @@
 package it.uniroma3.triples;
 
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.configuration.Lector;
-
+/**
+ * 
+ * @author matteo
+ *
+ */
 public class Triple {
 
     private String subject;
     private String object;
+
+    private String subjectType;
+    private String objectType;
 
     private String pre;
     private String phrase;
@@ -23,8 +31,10 @@ public class Triple {
      */
     public Triple(String pre, String subject, String phrase, String object, String post){
 	this.subject = subject;
+	this.subjectType = getEntityType(subject);
 	this.phrase = phrase;
 	this.object = object;
+	this.objectType = getEntityType(object);
 	this.pre = pre;
 	this.post = post;
     }
@@ -118,7 +128,7 @@ public class Triple {
      * 
      */
     public String toString(){
-	return this.pre + "\t" + this.subject + "\t" + this.phrase + "\t" + this.object + "\t" + this.post;
+	return this.subject + this.subjectType + "\t" + this.phrase + "\t" + this.object + this.objectType;
     }
 
     /**
@@ -136,13 +146,17 @@ public class Triple {
     }
 
     /**
+     * A triple is a MV triple, if the subject is joinable and the object is a list.
+     * 
      * @return 
      */
     public boolean isMVTriple() {
-	return !isMVLEntity(this.subject) && isMVLEntity(this.object);
+	return isJoinableEntity(this.subject) && isMVLEntity(this.object);
     }
 
     /**
+     * A triple is an NER triple, if the subject or the object are annotated with an NER label.
+     * 
      * @return 
      */
     public boolean isNERTriple() {
@@ -150,13 +164,23 @@ public class Triple {
     }
 
     /**
+     * A triple is joinable only if both the subject and the object:
+     *  (1) are joinable --> they are in DBpedia
+     *  (2) have a type in DBpedia
+     * Indeed, entities annotated with an NER are not joinable.
+     * 
      * @return 
      */
     public boolean isJoinableTriple() {
-	return isJoinableEntity(this.subject) && isJoinableEntity(this.object);
+	return (isJoinableEntity(this.subject) &&
+		isJoinableEntity(this.object) &&
+		!this.subjectType.equals("[none]") &&
+		!this.objectType.equals("[none]"));
     }
 
     /**
+     * Reg-ex that defines an NER entity.
+     * Those annotated entities are the ones that can be found using a NER tool.
      * @return 
      */
     private boolean isNEREntity(String entity) {
@@ -170,32 +194,40 @@ public class Triple {
     }
 
     /**
+     * Reg-ex that defines a multi-values list (MVL) entity.
+     * 
      * @return 
      */
     private boolean isMVLEntity(String entity) {
-	boolean isNER = false;
-	Pattern NEREntity = Pattern.compile("^<(MVL)<[^>]*?>>$");
-	Matcher m = NEREntity.matcher(entity);
+	boolean isMVL = false;
+	Pattern MVLEntity = Pattern.compile("^<(MVL)<[^>]*?>>$");
+	Matcher m = MVLEntity.matcher(entity);
 	if(m.matches()){
-	    isNER = true;
+	    isMVL = true;
 	}
-	return isNER;    
+	return isMVL;    
     }
 
     /**
+     * Reg-ex that defines joinable entities.
+     * An annotated entity is "joinable" if:
+     * 	(1) it has been annotated with a wikid
+     * Indeed, entities annotated with an NER are not joinable.
+     * 
      * @return 
      */
     private boolean isJoinableEntity(String entity) {
-	boolean isNER = false;
-	Pattern NEREntity = Pattern.compile("^<[A-Z]+-[A-Z]+<[^>]*?>>$");
-	Matcher m = NEREntity.matcher(entity);
+	boolean isJoinable = false;
+	Pattern joinableEntity = Pattern.compile("^<[A-Z]+-[A-Z]+<[^>]*?>>$");
+	Matcher m = joinableEntity.matcher(entity);
 	if(m.matches()){
-	    isNER = true;
+	    isJoinable = true;
 	}
-	return isNER;    
+	return isJoinable;    
     }
 
     /**
+     * This method extracts DBPedia names (i.e. Wikipedia ids) from the annotated entities.
      * 
      * @param entity
      * @return
@@ -211,6 +243,7 @@ public class Triple {
     }
 
     /**
+     * This method queries the KG to find possible relations between the entities.
      * 
      * @return
      */
@@ -218,6 +251,39 @@ public class Triple {
 	String dbpediaSubject = getDBPediaName(subject);
 	String dbpediaObject = getDBPediaName(object);
 	return Lector.getKg().getRelations(dbpediaSubject, dbpediaObject);
+    }
+
+
+    /**
+     * This method queries the Types Assigner to find the type for the entities.
+     * It assigns [none] in case of no type.
+     * 
+     * @return
+     */
+    public String getEntityType(String entity) {
+	String dbpediaEntity = getDBPediaName(entity);
+	String type = "[none]";
+	if (isJoinableEntity(entity) && !isMVLEntity(entity) && !isNEREntity(entity)){
+	    List<String> types = Lector.getTypesAssigner().assignTypes(dbpediaEntity);
+	    if (!types.isEmpty()){
+		type = "[" + types.get(0) + "]";
+	    }
+	}
+	return type;
+    }
+
+    /**
+     * @return the subjectType
+     */
+    public String getSubjectType() {
+	return subjectType;
+    }
+
+    /**
+     * @return the objectType
+     */
+    public String getObjectType() {
+	return objectType;
     }
 
 }

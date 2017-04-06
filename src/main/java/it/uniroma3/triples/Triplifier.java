@@ -3,6 +3,7 @@ package it.uniroma3.triples;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ public class Triplifier {
     private Queue<Pair<Pair<String, Triple>, String>> triplesLabeled;
     private Queue<Pair<String, Triple>> triplesUnlabeled;
 
+    private WitnessCounter wc;
+
     private File mvlFile;
     private File mvlTriplesFile;
     private File nerTriplesFile;
@@ -59,11 +62,13 @@ public class Triplifier {
 	this.labledTriplesFile = openFile(Configuration.getLabeledTriples());
 	this.unlabledTriplesFile = openFile(Configuration.getUnlabeledTriples());
 	this.nerTriplesFile = openFile(Configuration.getNERTriples());
+
+	this.wc = new WitnessCounter();
     }
 
     /**
      * It opens a new file from the specified path 
-     * (or create it if it does not exists.)
+     * (or create it if it does not exists).
      * 
      * @param path
      */
@@ -101,8 +106,17 @@ public class Triplifier {
 			    Set<String> labels = t.getLabels();
 			    if (!labels.isEmpty()){
 				this.triplesLabeled.add(Pair.make(Pair.make(article.getWikid(), t), StringUtils.join(labels, ",")));
+				synchronized(wc){
+				    for(String label : labels)
+					//wc.newPhraseAndRelation(t.getSubjectType() + t.getPhrase() + t.getObjectType(), label);
+					wc.newPhraseAndRelation(t.getPhrase(), label);
+				}
 			    }else{
 				this.triplesUnlabeled.add(Pair.make(article.getWikid(), t));
+				synchronized(wc){
+				    //wc.newPhraseAlone(t.getSubjectType() + t.getPhrase() + t.getObjectType());
+				    wc.newPhraseAlone(t.getPhrase());
+				}
 			    }
 			    break;
 			}
@@ -122,9 +136,8 @@ public class Triplifier {
     private String replaceMultiValuedList(String sentence, String section, String wikid){
 	// find entities
 	String taggedEntity = "<[A-Z-][^>]*?>>";
-	String blackEntity = "\\w+(\\s\\w+){0,5}";
 
-	Pattern ENTITIES = Pattern.compile("(" + "(" + taggedEntity + "|" + blackEntity + ")" + "(,)\\s){2,}" + "(" + taggedEntity + "|" + blackEntity + ")" + "((,)?\\sand\\s([A-Za-z0-9 ]+\\s)?" + taggedEntity + ")?");
+	Pattern ENTITIES = Pattern.compile("(" + taggedEntity + "(,)\\s){3,8}" + "((,)?\\sand\\s([A-Za-z0-9 ]+\\s)?" + taggedEntity + ")?");
 	Matcher m = ENTITIES.matcher(sentence);
 	while(m.find()){
 	    MultiValue mv = new MultiValue(m.group(0), section, wikid);
@@ -168,6 +181,10 @@ public class Triplifier {
 	sentence = Lector.getTextParser().removeParenthesis(sentence);
 	sentence = sentence.replaceAll(",,", ",");
 	sentence = sentence.replaceAll("''", "");
+	sentence = sentence.replaceAll("\"", "");
+	sentence = sentence.replaceAll("—", " ");
+	sentence = sentence.replaceAll("=", "");
+	sentence = sentence.trim();
 	return sentence;
     }
 
@@ -216,7 +233,7 @@ public class Triplifier {
 		post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
 		phrase = sentence.substring(subjectEndPos, objectStartPos).trim();
 
-		Triple t = new Triple(pre, subject, phrase, object, post);
+		Triple t = new Triple(preprocess(pre), subject, preprocess(phrase), object, preprocess(post));
 		triples.add(t);
 
 		// change subject now for the next triple
@@ -270,11 +287,9 @@ public class Triplifier {
      * @param s
      * @return
      */
-    public String reverseWords(String s) {
-	if (s == null || s.length() == 0) {
+    private String reverseWords(String s) {
+	if (s == null || s.length() == 0)
 	    return "";
-	}
-
 	// split to words by space
 	String[] arr = s.split(" ");
 	StringBuilder sb = new StringBuilder();
@@ -305,6 +320,53 @@ public class Triplifier {
 
 
     /**
+     * Used for testing.
+     * 
+     * @return
+     */
+    public String printEverything(){
+	StringBuffer sb = new StringBuffer();
+
+	sb.append("\n");sb.append("\n");
+	sb.append(" ------  MULTIVALUE TRIPLES ------ ");
+	sb.append("\n");
+	for (Pair<String, Triple> t : this.triplesMVL){
+	    sb.append(t.key + "\t" + t.value.toString());
+	    sb.append("\n");
+	}
+	this.triplesMVL.clear();
+	
+	sb.append("\n");sb.append("\n");
+	sb.append(" ------  LABELED TRIPLES ------ ");
+	sb.append("\n");
+	for (Pair<Pair<String, Triple>, String> t : this.triplesLabeled){
+	    sb.append(t.key.key + "\t" + t.key.value.toString() + "\t" + t.value);
+	    sb.append("\n");
+	}
+	this.triplesLabeled.clear();
+	
+	sb.append("\n");sb.append("\n");
+	sb.append(" ------  UNLABELED TRIPLES ------ ");
+	sb.append("\n");
+	for (Pair<String, Triple> t : this.triplesUnlabeled){
+	    sb.append(t.key + "\t" + t.value.toString());
+	    sb.append("\n");
+	}
+	this.triplesUnlabeled.clear();
+
+	sb.append("\n");sb.append("\n");
+	sb.append(" ------  NER TRIPLES ------ ");
+	sb.append("\n");
+	for (Pair<String, Triple> t : this.triplesNER){
+	    sb.append(t.key + "\t" + t.value.toString());
+	    sb.append("\n");
+	}
+	this.triplesNER.clear();
+	
+	return sb.toString();
+    }
+
+    /**
      * 
      */
     public void flushEverything(){
@@ -316,7 +378,7 @@ public class Triplifier {
 	    }
 	    bMVL.close();
 	    this.mvl.clear();
-	    
+
 	    BufferedWriter bTRIPLESMVL = new BufferedWriter(new FileWriter(this.mvlTriplesFile, true));
 	    for (Pair<String, Triple> t : this.triplesMVL){
 		bTRIPLESMVL.write(t.key + "\t" + t.value.toString());
@@ -332,7 +394,7 @@ public class Triplifier {
 	    }
 	    bLABELED.close();
 	    this.triplesLabeled.clear();
-	    
+
 	    BufferedWriter bUNLABELED = new BufferedWriter(new FileWriter(this.unlabledTriplesFile, true));
 	    for (Pair<String, Triple> t : this.triplesUnlabeled){
 		bUNLABELED.write(t.key + "\t" + t.value.toString());
@@ -350,6 +412,17 @@ public class Triplifier {
 	    this.triplesNER.clear();  
 
 	}catch(Exception e){
+	    e.printStackTrace();
+	}
+    }
+
+    /**
+     * 
+     */
+    public void printStatistics(){
+	try {
+	    this.wc.printStatistics();
+	} catch (IOException e) {
 	    e.printStackTrace();
 	}
     }

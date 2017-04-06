@@ -364,7 +364,7 @@ public class TextParser {
      * @return
      */
     public String removeParenthesis(String block){
-	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*");	// remove parenthesis and content ( )
+	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\)[^>])'*");	// remove parenthesis and content ( )
 	Matcher m = PARENTHESIS.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");

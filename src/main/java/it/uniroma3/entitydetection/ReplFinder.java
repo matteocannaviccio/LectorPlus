@@ -36,10 +36,11 @@ public class ReplFinder {
     }
 
     /**
-     * Detect the pronoun used in the article to mention the primary entities 
-     * (e.g. find "He" for male person).
+     * Detect the pronoun used in the article to mention 
+     * the primary entities: (e.g. find "He" for male person).
      * 
-     * It uses a pronoun density over the article, matching possible pronouns:
+     * It uses a pronoun density over the article, 
+     * matching possible pronouns:
      * (1) 	at the beginning of the sentence
      * (2)	after a comma
      * 
@@ -113,7 +114,8 @@ public class ReplFinder {
     }
 
     /**
-     * Obtains the longest substring between the title, the aliases and all the sentences.
+     * Obtains the longest substring between the title, 
+     * the aliases and all the sentences.
      * 
      * @param article
      * @param THRESHOLD
@@ -196,8 +198,8 @@ public class ReplFinder {
 
 
     /**
-     * This is the main part of this step: find all possible replacements 
-     * to augment instances of primary entity.
+     * This is the main part of this step: find all possible 
+     * replacements to augment instances of primary entity.
      * 
      * Here we look for the following replacements:
      * - seeds
@@ -206,7 +208,9 @@ public class ReplFinder {
      * 
      * We use this constraint to determine if it is a NE:
      * - the article needs to have at least one alias (bold names)
-     * Also, the subname can not override one of the secondary entities (for constraint).
+     * 
+     * Also, the subname can not override one of the secondary 
+     * entities (for constraint).
      * 
      * 
      * @param article
@@ -222,9 +226,7 @@ public class ReplFinder {
 		    !article.getSeeds().contains(candidateSubname))
 		article.setSubName(candidateSubname);
 	}
-	
 	return article;
-
     }
    
 

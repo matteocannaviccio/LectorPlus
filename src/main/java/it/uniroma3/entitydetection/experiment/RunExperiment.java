@@ -57,7 +57,7 @@ public class RunExperiment {
 	 * From a span of xml text to a WikiArticle object.
 	 */
 	WikiParser parser = new WikiParser(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	String experimentFolder = Configuration.getExperimentFolder();
+	String experimentFolder = null;
 	XMLReader reader = null;
 	String output_lectorED = experimentFolder + "lector_results.tsv";
 	String output_dbsp_file = experimentFolder + "dbpedia_results.tsv";
@@ -86,7 +86,7 @@ public class RunExperiment {
 	    System.out.println("Running for backup json files ... ");
 	    String output_json_file = experimentFolder + "articles_result.json";
 	    PrintStream json = new PrintStream(new FileOutputStream(output_json_file), false, "UTF-8");
-	    reader = new XMLReader(Configuration.getInputDump50Articles(), false);
+	    reader = new XMLReader(null, false);
 	    reader.nextChunk(Configuration.getChunkSize())
 	    .stream()
 	    .map(s -> parser.createArticleFromXml(s))
@@ -103,7 +103,7 @@ public class RunExperiment {
 	if(writeLectorED){
 	    System.out.println("Running for lectorED evaluation ... ");
 	    PrintStream led = new PrintStream(new FileOutputStream(output_lectorED), false, "UTF-8");
-	    reader = new XMLReader(Configuration.getInputDump50Articles(), false);
+	    reader = new XMLReader(null, false);
 	    reader.nextChunk(Configuration.getChunkSize())
 	    .stream()
 	    .map(s -> parser.createArticleFromXml(s))
@@ -121,7 +121,7 @@ public class RunExperiment {
 	if(writeDBPedia){
 	    System.out.println("Running for DBPedia Spotlight evaluation ... ");
 	    PrintStream dbs = new PrintStream(new FileOutputStream(output_dbsp_file), false, "UTF-8");
-	    reader = new XMLReader(Configuration.getInputDump50Articles(), false);
+	    reader = new XMLReader(null, false);
 	    reader.nextChunk(Configuration.getChunkSize())
 	    .stream()
 	    .map(s -> parser.createArticleFromXml(s))
@@ -144,7 +144,7 @@ public class RunExperiment {
 	 */
 	if(writeStats){
 	    System.out.println("Calculating and writing results ... ");
-	    String gt_file = Configuration.getExperimentFolder() + "gt.tsv";
+	    String gt_file = null + "gt.tsv";
 	    GT gt = new GT(gt_file);
 	    Outcome lectorEDOutcome = new Outcome(output_lectorED, "LectorED");
 	    Outcome dpsOutcome = new Outcome(output_dbsp_file, "DBPediaSpotlight");

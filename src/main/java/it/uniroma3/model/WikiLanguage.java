@@ -25,13 +25,16 @@ public class WikiLanguage {
     public WikiLanguage(String code, String langProperties) {
 	properties = new Properties();
 	try {
+	    
 	    this.code = code;
 	    properties.load(new FileInputStream(langProperties));
-	
+
 	} catch (IOException e) {
+	    System.out.println("Language not found.");
+	    e.printStackTrace();
 	    System.exit(-1);
 	}
-	
+
     }
 
 
@@ -78,7 +81,7 @@ public class WikiLanguage {
     public List<String> getRedirectIdentifiers() {
 	return getValues("redirect");
     }
-    
+
     /**
      * 
      * @return
@@ -86,7 +89,7 @@ public class WikiLanguage {
     public List<String> getDisambiguationIdentifiers() {
 	return getValues("disambiguation");
     }
-    
+
     /**
      * 
      * @return
@@ -102,7 +105,7 @@ public class WikiLanguage {
     public List<String> getCategoryIdentifiers() {
 	return getValues("category");
     }
-    
+
     /**
      * 
      * @return
@@ -110,7 +113,7 @@ public class WikiLanguage {
     public List<String> getTemplateIdentifiers() {
 	return getValues("template");
     }
-    
+
     /**
      * 
      * @return
@@ -118,7 +121,7 @@ public class WikiLanguage {
     public List<String> getDiscussionIdentifiers() {
 	return getValues("discussion");
     }
-    
+
 
     /**
      * 
@@ -127,7 +130,7 @@ public class WikiLanguage {
     public List<String> getImageIdentifiers() {
 	return getValues("image");
     }
-    
+
     /**
      * 
      * @return
@@ -135,7 +138,7 @@ public class WikiLanguage {
     public List<String> getPortalIdentifiers() {
 	return getValues("portal");
     }
-    
+
     /**
      * 
      * @return
@@ -143,7 +146,7 @@ public class WikiLanguage {
     public List<String> getFileIdentifiers() {
 	return getValues("file");
     }
-    
+
     /**
      * 
      * @return
@@ -152,7 +155,7 @@ public class WikiLanguage {
 	return getValues("help");
     }
 
-    
+
     /**
      * 
      * @return
@@ -167,7 +170,7 @@ public class WikiLanguage {
      * @return the code
      */
     public String getCode() {
-        return code;
+	return code;
     }
 
 }

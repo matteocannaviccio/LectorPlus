@@ -9,7 +9,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.util.ExpertNLP;
+import it.uniroma3.entitydetection.SeedFSM;
+import it.uniroma3.util.nlp.OpenNLP;
 
 public class SeedFSMTest {
     
@@ -18,7 +19,7 @@ public class SeedFSMTest {
     @BeforeClass
     public static void runOnceBeforeClass() {
 	Configuration.init("/Users/matteo/Desktop/data/config.properties");
-	fsm = new SeedFSM(new ExpertNLP());
+	fsm = new SeedFSM(new OpenNLP());
     }
     
     @Test

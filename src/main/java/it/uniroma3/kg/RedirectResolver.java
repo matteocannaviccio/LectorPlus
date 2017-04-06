@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.configuration.Configuration;
+import it.uniroma3.configuration.Lector;
+import it.uniroma3.model.WikiLanguage;
 
 public class RedirectResolver {
 
@@ -37,5 +39,22 @@ public class RedirectResolver {
 	if (target.isPresent())
 	    targetPage = target.get();
 	return targetPage;
+    }
+    
+    /**
+     * 
+     * @param args
+     */
+    public static void main(String[] args){
+	Configuration.init("/Users/matteo/Desktop/data/config.properties");
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
+
+	RedirectResolver t = new RedirectResolver();
+
+	String entity = "Žagarė";
+
+	System.out.println("\nRedirect of: ");
+	System.out.println(t.resolveRedirect(entity));
+
     }
 }
