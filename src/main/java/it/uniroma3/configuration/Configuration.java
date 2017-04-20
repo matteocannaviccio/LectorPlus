@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +16,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
 /**
- * Loads the configuration file and set the parameters.
+ * Loads the configuration file and set all the parameters.
  * 
  * @author matteo
  *
@@ -27,12 +30,23 @@ public class Configuration {
      * 
      * @param configFile
      */
-    public static void init(String configFile){
+    public static void init(String[] args){
 	/*
-	 * we need to remove the following instruction when we insert a logger
+	 * get the config file
+	 */
+	String configFile;
+	if (args.length == 0){
+	    configFile = "src/main/resources/config.properties";
+	}else{
+	    configFile = args[0];
+	}
+
+	/*
+	 * remove the following instruction when we insert a logger
+	 * we keep it for now to silence all the loggers.
 	 */
 	BasicConfigurator.configure(new NullAppender());
-	
+
 	/*
 	 * start here
 	 */
@@ -70,7 +84,7 @@ public class Configuration {
     private static String getDataFolder(){
 	return keyValue.get("dataFile");
     }
-    
+
     private static String getArticlesFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("articlesFolder");
 	File folder = new File(folderPath); 
@@ -78,7 +92,7 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
+
     private static String getIndexesFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder");
 	File folder = new File(folderPath);
@@ -86,15 +100,39 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
-    private static String getSourcesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("sourcesFolder");
+
+    private static String getNormalizedFilesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("normalizedFolder");
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
+
+    private static String getTypesFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("typesFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+
+    private static String getRelationsFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("relationsFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+
+    private static String getOntologyFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("ontologyFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+
     private static String getModelsFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("modelsFolder");
 	File folder = new File(folderPath);
@@ -102,7 +140,7 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
+
     private static String getListsFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("listsFolder");
 	File folder = new File(folderPath);
@@ -110,7 +148,7 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
+
     private static String getTriplesFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("triplesFolder");
 	File folder = new File(folderPath);
@@ -132,15 +170,32 @@ public class Configuration {
     public static String getParsedArticlesFile(){
 	return getArticlesFolder() + "/" + keyValue.get("parsedArticles");
     } 
-    
+
     public static String getDetailArticlesFile(){
 	return getArticlesFolder() + "/" + keyValue.get("detailsArticles");
-    } 
+    }
+    
+    public static Set<String> getPipelineSteps(){
+	return new HashSet<String>(Arrays.asList(keyValue.get("pipeline").split(",")));
+    }
+    
     /***********************************************************************/
 
     /***********************************************************************/
     public static String getTypesIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("typesIndexName");
+    } 
+    
+    public static String getSDTypesIndex(){
+	return getIndexesFolder() + "/" + keyValue.get("sdtypedIndexName");
+    } 
+    
+    public static String getLHDTypesIndex(){
+	return getIndexesFolder() + "/" + keyValue.get("lhdIndexName");
+    } 
+    
+    public static String getDBTaxTypesIndex(){
+	return getIndexesFolder() + "/" + keyValue.get("dbtaxIndexName");
     } 
 
     public static String getAirpediaIndex(){
@@ -162,34 +217,63 @@ public class Configuration {
     }
 
     public static String getLanguageProperties(){
-	return getDataFolder() + "/" + keyValue.get("languagePropertiesFolder") + "/" 
-		+ keyValue.get("languageUsed") + ".properties";
+	return getDataFolder() + "/languages/" + getLanguageCode() + ".properties";
     }
     /***********************************************************************/
 
     /***********************************************************************/
-    public static String getRedirectFile(){
-	return getSourcesFolder() + "/" + keyValue.get("redirectFile");
+    public static String getIndexableRedirectFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("redirectFile");
     } 
 
-    public static String getDBPediaTypesFile(){
-	return getSourcesFolder() + "/" + keyValue.get("typesOriginalFile");
-    } 
-
-    public static String getDBPediaAirpediaFile(){
-	return getSourcesFolder() + "/" + keyValue.get("typesAirpediaFile");
+    public static String getIndexableDBPediaAirpediaFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("typesAirpediaFile");
     }
 
-    public static String getDBPediaMappingBasedFile(){
-	return getSourcesFolder() + "/" + keyValue.get("mappingBasedDBpediaSource");
+    public static String getIndexableDBPediaSDTypedFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("typesSDTypedFile");
+    }
+
+    public static String getIndexableDBPediaLHDFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("typesLHDFile");
+    }
+
+    public static String getIndexableDBPediaDBTaxFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("typesDBTaxFile");
+    }
+
+    public static String getIndexableDBPediaNormalizedTypesFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("normalizedDBpediaTypes");
+    }
+
+    public static String getIndexableDBPediaNormalizedRelationsFile(){
+	return getNormalizedFilesFolder() + "/" + keyValue.get("normalizedDBpediaRelations");
+    }
+
+    /*********************************/
+
+    public static String getSourceMainInstanceTypes(){
+	return getTypesFolder() + "/" + keyValue.get("mainInstanceType");
     } 
 
-    public static String getDBPediaNormalizedFile(){
-	return getSourcesFolder() + "/" + keyValue.get("normalizedDBpedia");
-    }
-    
+    public static String getSourceDBTaxInstanceTypes(){
+	return getTypesFolder() + "/" + keyValue.get("dbtaxInstanceType");
+    } 
+
+    public static String getSourceLHDInstanceTypes(){
+	return getTypesFolder() + "/" + keyValue.get("lhdInstanceType");
+    } 
+
+    public static String getSourceSDTypedInstanceTypes(){
+	return getTypesFolder() + "/" + keyValue.get("sdtypedInstanceType");
+    } 
+
+    public static String getSourceMappingBasedFile(){
+	return getRelationsFolder() + "/" + keyValue.get("mappingBasedDBpediaSource");
+    } 
+
     public static String getDBPediaOntologyFile(){
-	return getSourcesFolder() + "/" + keyValue.get("ontology");
+	return getOntologyFolder() + "/" + keyValue.get("ontology");
     } 
     /***********************************************************************/
 
@@ -231,7 +315,7 @@ public class Configuration {
     public static int getNumArticlesToProcess(){
 	return Integer.parseInt(keyValue.get("totArticle"));
     }
-    
+
     public static int getChunkSize(){
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
@@ -274,15 +358,19 @@ public class Configuration {
     public static String getLabeledTriples(){
 	return getTriplesFolder() + "/" + keyValue.get("labeledTriples");
     }
-    
-    public static String getUnlabeledTriples(){
-   	return getTriplesFolder() + "/" + keyValue.get("unlabeledTriples");
-       }
 
-    public static String getNERTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("nerTriples");
+    public static String getUnlabeledTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("unlabeledTriples");
     }
-    
+
+    public static String getTotalNERTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("nerTotalTriples");
+    }
+
+    public static String getPartialNERTriples(){
+	return getTriplesFolder() + "/" + keyValue.get("nerPartialTriples");
+    }
+
     public static String getStatisticsFile(){
 	return getTriplesFolder() + "/" + keyValue.get("stats");
     }

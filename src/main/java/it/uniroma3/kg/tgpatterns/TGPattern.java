@@ -1,4 +1,4 @@
-package it.uniroma3.kg.ontology;
+package it.uniroma3.kg.tgpatterns;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -132,6 +132,14 @@ public class TGPattern {
      */
     public int getInstances() {
         return instances;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public int getDepth(){
+	return this.path.size();
     }
 
 }

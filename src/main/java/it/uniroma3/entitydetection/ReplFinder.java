@@ -72,7 +72,7 @@ public class ReplFinder {
 	 */
 	for (Map.Entry<String, List<String>> regexes : regexesPronouns.entrySet()){
 	    for (String pattern : regexes.getValue()){
-		Matcher m = Pattern.compile(pattern).matcher(article.getOriginalMarkup());
+		Matcher m = Pattern.compile(pattern).matcher(article.getWholeText());
 		while(m.find())
 		    pronounsStatsTmp.add(regexes.getKey());
 	    }
@@ -139,7 +139,7 @@ public class ReplFinder {
 	}
 	return subName;
     }
-    
+
     /**
      * 
      * @param article
@@ -165,7 +165,7 @@ public class ReplFinder {
 	}
 	return subnamesStats;
     }
-    
+
     /**
      * 
      * @param s
@@ -173,28 +173,44 @@ public class ReplFinder {
      * @return
      */
     private Set<String> longestCommonSubstrings(String s, String t) {
-   	String[] sAr = s.toLowerCase().split("\\s");
-   	String[] tAr = t.toLowerCase().split("\\s");
-   	int[][] table = new int[sAr.length][tAr.length];
-   	int longest = 0;
-   	Set<String> result = new HashSet<String>();
+	String[] sAr = s.toLowerCase().split("\\s");
+	String[] tAr = t.toLowerCase().split("\\s");
+	int[][] table = new int[sAr.length][tAr.length];
+	int longest = 0;
+	Set<String> result = new HashSet<String>();
 
-   	for (int i = 0; i < sAr.length; i++) {
-   	    for (int j = 0; j < tAr.length; j++) {
-   		if (!sAr[i].equals(tAr[j])) {
-   		    continue;
-   		}
-   		table[i][j] = (i == 0 || j == 0) ? 1 : 1 + table[i - 1][j - 1];
-   		if (table[i][j] > longest) {
-   		    longest = table[i][j];
-   		    result.clear();
-   		}
-   		if (table[i][j] == longest)
-   		    result.add(String.join(" ", Arrays.copyOfRange(s.split("\\s"), i - longest + 1, i + 1)));
-   	    }
-   	}
-   	return result;
-       }
+	for (int i = 0; i < sAr.length; i++) {
+	    for (int j = 0; j < tAr.length; j++) {
+		if (!sAr[i].equals(tAr[j])) {
+		    continue;
+		}
+		table[i][j] = (i == 0 || j == 0) ? 1 : 1 + table[i - 1][j - 1];
+		if (table[i][j] > longest) {
+		    longest = table[i][j];
+		    result.clear();
+		}
+		if (table[i][j] == longest)
+		    result.add(String.join(" ", Arrays.copyOfRange(s.split("\\s"), i - longest + 1, i + 1)));
+	    }
+	}
+	return result;
+    }
+
+
+    /**
+     * 
+     * @param wikid
+     * @return
+     */
+    private String getDisambiguation(String wikid){
+	String disambiguation = null;
+	Pattern DISAMBIGATION = Pattern.compile("_\\(.*\\)$");
+	Matcher m = DISAMBIGATION.matcher(wikid);
+	if (m.find()){
+	    disambiguation = m.group(0).replaceAll("(_\\(|\\))*", "").trim();
+	}
+	return disambiguation;
+    }
 
 
     /**
@@ -217,17 +233,40 @@ public class ReplFinder {
      * @return
      */
     public WikiArticle increaseEvidence(WikiArticle article){
-	article.setSeeds(findSeeds(article));
-	article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
-	if (!article.getAliases().isEmpty()){
-	    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
-	    if (!article.getWikilinks().containsKey(candidateSubname) &&
-		    !article.getTitle().equals(candidateSubname) &&
-		    !article.getSeeds().contains(candidateSubname))
-		article.setSubName(candidateSubname);
+	try{
+	    
+	    /*
+	     * Store the first clean sentence of the article and clean it, 
+	     * in order to extract seed types and run NLP tools.
+	     */
+	    String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
+	    article.setFirstSentence(firstSentence);
+	    /* ********************* */
+
+	    if (!article.getFirstSentence().equals("-"))
+		article.setSeeds(findSeeds(article));
+	    article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
+	    article.setDisambiguation(getDisambiguation(article.getWikid()));
+
+	    /*
+	     * we assign subnames only to articles that describe named entities.
+	     * we check it using the presence of an alias in the first sentence.
+	     */
+	    if (!article.getAliases().isEmpty()){
+		String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
+		if (!article.getWikilinks().containsKey(candidateSubname) &&
+			!article.getTitle().equals(candidateSubname) &&
+			!article.getSeeds().contains(candidateSubname))
+		    article.setSubName(candidateSubname);
+	    }
+
+	}catch(Exception e){
+	    e.printStackTrace();
+	    System.out.println("Error in Entity Detection(finding replacements) article:  " + article.getWikid());
 	}
+
 	return article;
     }
-   
+
 
 }

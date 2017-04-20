@@ -1,5 +1,7 @@
 package it.uniroma3.pipeline;
 
+import java.io.File;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -11,19 +13,21 @@ import it.uniroma3.model.WikiLanguage;
  * @author matteo
  *
  */
-public class FactsExtractorTest {
-
-   private static FactsExtractor fe;
+public class FullTest {
     
+
     @BeforeClass
     public static void runOnceBeforeClass() {
-	Configuration.init("/Users/matteo/Desktop/data/config.properties");
+	Configuration.init(new String[0]);
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	fe = new FactsExtractor("src/test/resources/gisele_augmented.json");
     }
     
     @Test
     public void factsExtractorTest(){
-	fe.process(true);
+	ClassLoader classLoader = getClass().getClassLoader();
+	File file = new File(classLoader.getResource("NEXT.xml").getFile());
+	Full.pipelinedProcess(file.getAbsolutePath());
+	
+	
     }
 }

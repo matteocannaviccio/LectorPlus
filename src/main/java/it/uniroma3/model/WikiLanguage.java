@@ -81,6 +81,14 @@ public class WikiLanguage {
     public List<String> getRedirectIdentifiers() {
 	return getValues("redirect");
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public List<String> getDayArticleIdentifiers() {
+	return getValues("day_article");
+    }
 
     /**
      * 
@@ -122,6 +130,14 @@ public class WikiLanguage {
 	return getValues("discussion");
     }
 
+    
+    /**
+     * 
+     * @return
+     */
+    public List<String> getListIdentifiers() {
+	return getValues("list");
+    }
 
     /**
      * 

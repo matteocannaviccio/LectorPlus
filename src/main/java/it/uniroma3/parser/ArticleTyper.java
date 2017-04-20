@@ -1,7 +1,5 @@
 package it.uniroma3.parser;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,11 +33,14 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsRedirect(WikiArticle article){
-	Pattern REDIRECT = Pattern.compile("#redirect", Pattern.CASE_INSENSITIVE);
-	Matcher m = REDIRECT.matcher(article.getOriginalMarkup());
-	if (m.find())
-	    return true;
+	for(String red : lang.getRedirectIdentifiers()){
+	    Pattern REDIRECT = Pattern.compile("#" + red, Pattern.CASE_INSENSITIVE);
+	    Matcher m = REDIRECT.matcher(article.getOriginalMarkup());
+	    if (m.find())
+		return true;
+	}
 	return false;
+
     }
 
     /**
@@ -49,9 +50,9 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsDate(WikiArticle article){
-	if (article.getOriginalMarkup().contains("{{Day}}") 
-		|| article.getOriginalMarkup().contains("{{Year article header|")){
-	    return true;
+	for (String da_id : lang.getDayArticleIdentifiers()){
+	    if (article.getOriginalMarkup().contains(da_id))
+		return true;
 	}
 	return false;
     }
@@ -65,27 +66,10 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsDisambiguation(WikiArticle article){
-	List<Pattern> DIS_PAT = new ArrayList<Pattern>();
-	Pattern DIS1 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(disambiguation)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	Pattern DIS3 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(disamb)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	Pattern DIS4 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(disambig)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	Pattern DIS5 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(hndis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	Pattern DIS6 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(geodis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	Pattern DIS7 = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(numberdis)\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
-		Pattern.CASE_INSENSITIVE);
-	DIS_PAT.add(DIS1);
-	DIS_PAT.add(DIS3);
-	DIS_PAT.add(DIS4);
-	DIS_PAT.add(DIS5);
-	DIS_PAT.add(DIS6);
-	DIS_PAT.add(DIS7);
-	for (Pattern p : DIS_PAT){
-	    Matcher m = p.matcher(article.getOriginalMarkup());
+	for (String p : lang.getDisambiguationIdentifiers()){
+	    Pattern DIS = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(" + p + ")\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
+		    Pattern.CASE_INSENSITIVE);
+	    Matcher m = DIS.matcher(article.getOriginalMarkup());
 	    while (m.find()){
 		if (!m.group(2).contains("needed")){
 		    return true;
@@ -154,14 +138,10 @@ public class ArticleTyper {
 	    }
 
 	/* Filter to capture LIST articles */
-	if (article.getWikid().startsWith("List_of_")){
-	    return ArticleType.LIST;
-	}
-
-	/* Filter to capture OUTLINE articles */
-	if (article.getWikid().startsWith("Outline_of_")){
-	    return ArticleType.OUTLINE;
-	}
+	for (String listHook : lang.getListIdentifiers())
+	    if (article.getWikid().startsWith(listHook)){
+		return ArticleType.LIST;
+	    }
 
 	return ArticleType.ARTICLE;
     }

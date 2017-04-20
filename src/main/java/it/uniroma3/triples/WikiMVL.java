@@ -5,29 +5,60 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import it.uniroma3.configuration.Lector;
 /**
  * 
  * @author matteo
  *
  */
-public class MultiValue {
-    
+public class WikiMVL {
+
     private String code;
     private String section;
     private String wikid;
     private List<String> listWikid;
-    
+    private String type;
+
     /**
      * 
      * @param spanOfText
      */
-    public MultiValue(String spanOfText, String section, String wikid){
+    public WikiMVL(String spanOfText, String section, String wikid){
 	this.wikid = wikid;
 	this.section = section;
 	this.listWikid = extractList(spanOfText);
 	this.code = getId();
+	this.type = mineType();
     }
     
+    /**
+     * Check that the entries of a MVL have all the same type.
+     * 
+     * @return
+     */
+    public String mineType(){
+	String type = Lector.getKg().getType(this.listWikid.get(0));
+	for (String entity : this.listWikid){
+	    if (!Lector.getKg().getType(entity).equals(type)){
+		type = "[none]";
+		break;
+	    }
+	}
+	return type;
+    }
+    
+    /**
+     * Reg. Ex. used to detect MVL in sentences.
+     * 
+     * @return
+     */
+    public static Pattern getRegexMVL(){
+	String taggedEntity = "<[A-Z-][^>]*?>>";
+	Pattern regEx = Pattern.compile("(" + taggedEntity + "(,)\\s){3,8}" + "((,)?\\sand\\s([A-Za-z0-9 ]+\\s)?" + taggedEntity + ")?");
+	return regEx;
+    }
+
     /**
      * 
      * @param spanOfText
@@ -44,7 +75,7 @@ public class MultiValue {
 	}
 	return wikids;
     }
-    
+
     /**
      * 
      * @return
@@ -52,7 +83,7 @@ public class MultiValue {
     private String getId(){
 	return UUID.randomUUID().toString();
     }
-    
+
     /**
      * 
      */
@@ -84,7 +115,7 @@ public class MultiValue {
 	    return false;
 	if (getClass() != obj.getClass())
 	    return false;
-	MultiValue other = (MultiValue) obj;
+	WikiMVL other = (WikiMVL) obj;
 	if (code == null) {
 	    if (other.code != null)
 		return false;
@@ -97,21 +128,35 @@ public class MultiValue {
      * @return the code
      */
     public String getCode() {
-        return code;
+	return code;
     }
 
     /**
      * @return the wikid
      */
     public String getWikid() {
-        return wikid;
+	return wikid;
     }
 
     /**
      * @return the listWikid
      */
     public List<String> getListWikid() {
-        return listWikid;
+	return listWikid;
+    }
+
+    /**
+     * @return the section
+     */
+    public String getSection() {
+	return section;
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType() {
+        return type;
     }
 
 }

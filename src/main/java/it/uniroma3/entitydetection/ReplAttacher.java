@@ -68,10 +68,12 @@ public class ReplAttacher {
      */
     private List<Pair<String, String>> getSeedRegex(WikiArticle article){
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
-	for(String seed : article.getSeeds()){
-	    if (seed != null){
-		regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
-		regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
+	if (article.getSeeds() != null){
+	    for(String seed : article.getSeeds()){
+		if (seed != null){
+		    regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
+		    regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
+		}
 	    }
 	}
 	return regexes;
@@ -139,7 +141,7 @@ public class ReplAttacher {
 	    Pattern p = Pattern.compile(pattern);
 	    Matcher m = p.matcher(sentence);
 	    while (m.find()){
-		// we attached the part of thext before the entities (m.group(1)) and then the entity replaced.
+		// we attached the part of text before the entities (m.group(1)) and then the entity replaced.
 		m.appendReplacement(tmp, Matcher.quoteReplacement(m.group(1)) + Matcher.quoteReplacement(replacement));
 	    }
 	    m.appendTail(tmp);
@@ -158,63 +160,71 @@ public class ReplAttacher {
      * @return
      */
     public WikiArticle augmentEvidence(WikiArticle article){
-	/*
-	 * Collect all the patterns for Primary Entity (PE)
-	 */
-	List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
-	Set<Pair<String, String>> primaryEntityNames = new HashSet<Pair<String, String>>();
-	primaryEntityNames.addAll(getNameRegex(article));
-	primaryEntityNames.addAll(getPronounRegex(article));
-	primaryEntityNames.addAll(getSeedRegex(article));
-	primaryEntityNames.addAll(getDisambiguationRegex(article));
-	regex2entity.addAll(primaryEntityNames);
 
-	/*
-	 * Adds a Secondary Entity (SE) only if it does not have a conflict of name with the primary entity! 
-	 */
-	for (Pair<String, String> secondaryEntity : getSecondaryEntitiesRegex(article)){
-	    boolean createsConflict = false;
-	    for (Pair<String, String> possiblePrimaryEntityName : primaryEntityNames){
-		if (secondaryEntity.key.equals(possiblePrimaryEntityName.key)){
-		    createsConflict = true;
-		    break;
-		}
-	    }
-	    if(!createsConflict){
-		regex2entity.add(secondaryEntity);
-	    }
-	}
+	try{
 
-	/*
-	 * Sort them.
-	 */
-	Collections.sort(regex2entity, new PatternComparator()); 
-
-	/*
-	 * Run everything!
-	 */
-	for(Map.Entry<String, String> block : article.getBlocks().entrySet()){
-	    for(Pair<String, String> regex : regex2entity){
-		try{
-
-		    //System.out.println(regex.key + "\t" + regex.value);
-		    article.getBlocks().put(block.getKey(), applyRegex(article, block.getValue(), regex.value, regex.key));
-
-		}catch(Exception e){
-		    System.out.println("Exception in:	" + article.getWikid());
-		    System.out.println("Sentence:	" + block.getValue());
-		    System.out.println("occurred for entity:	" + regex.value);
-		    System.out.println("using the regex:	" + regex.key);
-		    System.out.println("--------------------------------------------------");
-		    break;
-		}
-	    }
 	    /*
-	     * Apply a Named Entity Recognition to find instances of the remaining entities
+	     * Collect all the patterns for Primary Entity (PE)
 	     */
-	    article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
+	    List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
+	    Set<Pair<String, String>> primaryEntityNames = new HashSet<Pair<String, String>>();
+	    primaryEntityNames.addAll(getNameRegex(article));
+	    primaryEntityNames.addAll(getPronounRegex(article));
+	    primaryEntityNames.addAll(getSeedRegex(article));
+	    primaryEntityNames.addAll(getDisambiguationRegex(article));
+	    regex2entity.addAll(primaryEntityNames);
 
+	    /*
+	     * Adds a Secondary Entity (SE) only if it does not have a conflict of name with the primary entity! 
+	     */
+	    for (Pair<String, String> secondaryEntity : getSecondaryEntitiesRegex(article)){
+		boolean createsConflict = false;
+		for (Pair<String, String> possiblePrimaryEntityName : primaryEntityNames){
+		    if (secondaryEntity.key.equals(possiblePrimaryEntityName.key)){
+			createsConflict = true;
+			break;
+		    }
+		}
+		if(!createsConflict){
+		    regex2entity.add(secondaryEntity);
+		}
+	    }
+
+	    /*
+	     * Sort them.
+	     */
+	    Collections.sort(regex2entity, new PatternComparator()); 
+
+	    /*
+	     * Run everything!
+	     */
+	    for(Map.Entry<String, String> block : article.getBlocks().entrySet()){
+		for(Pair<String, String> regex : regex2entity){
+		    try{
+
+			//System.out.println(regex.key + "\t" + regex.value);
+			article.getBlocks().put(block.getKey(), applyRegex(article, block.getValue(), regex.value, regex.key));
+
+		    }catch(Exception e){
+			System.out.println("Exception in:	" + article.getWikid());
+			System.out.println("Sentence:	" + block.getValue());
+			System.out.println("occurred for entity:	" + regex.value);
+			System.out.println("using the regex:	" + regex.key);
+			System.out.println("--------------------------------------------------");
+			break;
+		    }
+		}
+		/*
+		 * Apply a Named Entity Recognition to find instances of the remaining entities
+		 */
+		article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
+
+	    }
+	}catch(Exception e){
+	    e.printStackTrace();
+	    System.out.println("Error in Entity Detection(apply replacements) on article:  " + article.getWikid());
 	}
+
 	return article;
 
     }

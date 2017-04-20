@@ -1,4 +1,4 @@
-package it.uniroma3.kg.ontology;
+package it.uniroma3.kg.tgpatterns;
 
 /**
  * 

@@ -19,7 +19,7 @@ public class SeedFSMTest {
 
     @BeforeClass
     public static void runOnceBeforeClass() {
-	Configuration.init("/Users/matteo/Desktop/data/config.properties");
+	Configuration.init(new String[0]);
 	fsm = new SeedFSM(new OpenNLP());
     }
     

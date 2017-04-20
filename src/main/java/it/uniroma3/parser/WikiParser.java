@@ -36,6 +36,7 @@ public class WikiParser {
      * @return
      */
     public WikiArticle createArticleFromXml(String page){
+
 	/*
 	 * Obtain the title and metadata of the article from the xml and create a WikiArticle.
 	 */
@@ -46,21 +47,28 @@ public class WikiParser {
 	String originalMarkup = Lector.getXmlParser().getWikiMarkup(page);
 	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang.getCode(), originalMarkup);
 
-	/*
-	 * Process only WikiArticle of type ARTICLE.
-	 * (we could extend the process to other kind of articles here...)
-	 */
-	ArticleType type = Lector.getArticleTyper().findArticleType(article);
-	switch(type){
+	try{
+	    /*
+	     * Process only WikiArticle of type ARTICLE.
+	     * (we could extend the process to other kind of articles here...)
+	     */
+	    ArticleType type = Lector.getArticleTyper().findArticleType(article);
+	    switch(type){
 
-	case ARTICLE:
-	    article.setType(type);
-	    processArticle(article);
-	    break;
+	    case ARTICLE:
+		article.setType(type);
+		processArticle(article);
+		break;
 
-	default:
-	    article.setType(type);
-	    break;
+	    default:
+		article.setType(type);
+		break;
+	    }
+	    
+	}catch(Exception e){
+	    article.setType(ArticleType.ERROR);
+	    System.out.println("Error in processing article: " + article.getWikid());
+	    e.printStackTrace();
 	}
 	return article;
     }
@@ -74,29 +82,6 @@ public class WikiParser {
      * 		=== header === of each section, up to h4. Note, we consider
      * 		all the section in a flat order, without keeping their nesting.
      * 
-     * 2-
-     * Then we extract structured contents that could be of interest
-     * such as tables and lists. We consider infoboxes as tables.
-     * 
-     * 3-
-     * For each block, we use a text parser {@link it.uniroma3.parser.
-     * TextParser} to clean most of noisy contents, replacing the clean 
-     * block in the map. In particular, we replace each "structured" 
-     * content (table, list, template,..) with empty content. In this way,
-     * a block that contains only tables would be empty.
-     * 
-     * 4-
-     * In this stage we filter out blocks that we do not want to process.
-     * We remove the empty blocks obtained above and we also filter out
-     * undesired blocks using matching with specific headers declared in 
-     * the config file. 
-     * 
-     * 5-
-     * Later, after checking that it is not an redirect article, we extract 
-     * some others information from wikid and the text. We then extract the 
-     * aliases and only after we can finish to clean the text removing bold 
-     * tokens and content inside parenthesis.
-     * 
      * 
      * @param article
      * @return
@@ -107,6 +92,8 @@ public class WikiParser {
 	 * 	The section in the first position is the #Abstract.
 	 */
 	Map<String, String> blocks = Lector.getBlockParser().fragmentArticle(article.getOriginalMarkup());
+
+	/* ********************* */
 
 	/*
 	 * Extract structured contents from the WikiMarkup.
@@ -121,35 +108,32 @@ public class WikiParser {
 	if(Configuration.extractLists())
 	    article.setLists(Lector.getBlockParser().extractLists(blocks));
 
-	/*
-	 * Removing the noise.
-	 */
-	for (Map.Entry<String, String> block : blocks.entrySet()){
-	    String blockContent = Lector.getTextParser().fixSomeTemplates(block.getValue());
-	    blockContent = Lector.getTextParser().removeNoise(blockContent, lang); // lang is needed for categories
-	    blockContent = Lector.getTextParser().removeUselessWikilinks(blockContent); // commonsense and blacklist
-	    blocks.put(block.getKey(), blockContent);
-	}
+	/* ********************* */
 
 	/*
-	 * Store the first clean sentence of the article and clean it, 
-	 * in order to extract seed types and run NLP tools.
+	 * Remove the noise.
 	 */
-	article.setFirstSentence(Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(blocks)));
+	for (Map.Entry<String, String> block : blocks.entrySet()){
+	    String blockContent = Lector.getTextParser().fixSomeTemplates(block.getValue()); 	// we try to fix easy templates
+	    blockContent = Lector.getTextParser().removeNoise(blockContent, lang); 		// lang is needed for categories
+	    blockContent = Lector.getTextParser().removeUselessWikilinks(blockContent); 	// commonsense wikilinks
+	    blocks.put(block.getKey(), blockContent);
+	}
+	/* ********************* */
 
 	/*
 	 * Harvest all the wikilinks from the WHOLE article, 
 	 * setting the variable in the WikiArticle object.
 	 */
-	if (!Configuration.getOnlyTextWikilinks())
+	if (!Configuration.getOnlyTextWikilinks()){
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
 		blocks.put(block.getKey(), Lector.getMarkupParser().harvestAllWikilinks(block.getValue(), article));
 	    }
+	}
+	/* ********************* */
 
 	/*
 	 * Textual cleaning of the articles from, essentially from:
-	 *  - <refs>
-	 *  - [[File:]]
 	 *  - lists 
 	 *  - tables
 	 *  - infobox
@@ -158,30 +142,32 @@ public class WikiParser {
 	for (Map.Entry<String, String> block : blocks.entrySet()){
 	    blocks.put(block.getKey(), Lector.getTextParser().removeStructuredContents(block.getValue()));
 	}
+	/* ********************* */
 
 	/*
 	 * Harvest all the wikilinks from the TEXT article, 
 	 * setting the variable in the WikiArticle object.
 	 */
-	if (Configuration.getOnlyTextWikilinks())
+	if (Configuration.getOnlyTextWikilinks()){
 	    for (Map.Entry<String, String> block : blocks.entrySet()){
 		blocks.put(block.getKey(), Lector.getMarkupParser().harvestAllWikilinks(block.getValue(), article));
 	    }
+	}
+	/* ********************* */
 
 	/*
 	 * Finally we remove undesired sections, expressed in the WikiLanguage file.
 	 */
 	Lector.getBlockParser().removeUndesiredBlocks(blocks, lang);
+	/* ********************* */
 
-	/* Finally, we:
-	 * (1) extract the disambiguation text from the wikid. For example, Cold_war_(movie) --> "movie"
-	 * (2) extract the aliases from the abstract section (token in bold characters).
-	 * (3) assign blocks to the article performing some further cleaning (normalize spaces between token 
-	 * 								and sentences, remove bold text, etc.)
+	/* 
+	 * Finally, we assign blocks to the article performing some further cleaning 
+	 * (normalize spaces between token and sentences, remove bold text, etc.)
 	 */
-	article.setDisambiguation(Lector.getTextParser().getDisambiguation(article.getWikid()));
 	article.setAliases(Lector.getTextParser().getAlias(Lector.getBlockParser().getAbstractSection(blocks)));
 	article.setBlocks(Lector.getTextParser().finalCleanText(blocks));
+	/* ********************* */
 
 	return article;
     }

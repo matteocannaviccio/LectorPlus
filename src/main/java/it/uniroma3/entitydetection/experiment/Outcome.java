@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.ListUtils;
 
-import it.uniroma3.util.Reader;
+import it.uniroma3.util.reader.TSVReader;
 
 public class Outcome {
     
@@ -35,7 +35,7 @@ public class Outcome {
      */
     @SuppressWarnings("unchecked")
     public void fillMaps(String path){
-	for (String entry : Reader.getLines(path)){
+	for (String entry : TSVReader.getLines(path)){
 	    String[] fields = entry.split("\t");
 	    String wikid = fields[0];
 	    

@@ -11,8 +11,8 @@ import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.entitydetection.experiment.tool.DBPediaSpotlight;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
-import it.uniroma3.reader.XMLReader;
 import it.uniroma3.util.Pair;
+import it.uniroma3.util.reader.XMLReader;
 /**
  * 
  * 
@@ -38,7 +38,7 @@ public class RunExperiment {
 	 * RECALL, in order to run this experiment you shild include the parser
 	 * to extract clean text from the articles. Now removed.
 	 */
-	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	Configuration.init(args);
 
 	/* ********************************
 	 * *******  STEP PIPELINE  ********

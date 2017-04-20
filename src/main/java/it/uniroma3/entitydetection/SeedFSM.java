@@ -10,9 +10,9 @@ import java.util.TreeSet;
 import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.util.Reader;
 import it.uniroma3.util.Token;
 import it.uniroma3.util.nlp.OpenNLP;
+import it.uniroma3.util.reader.TSVReader;
 /**
  * 
  * @author matteo
@@ -45,7 +45,7 @@ public class SeedFSM {
     public SeedFSM(OpenNLP expert){
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
-	this.stopwords = Reader.getLines(Configuration.getStopwordsList());
+	this.stopwords = TSVReader.getLines(Configuration.getStopwordsList());
     }
 
 

@@ -1,4 +1,4 @@
-package it.uniroma3.reader;
+package it.uniroma3.util.reader;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -54,6 +56,28 @@ public class JSONReader {
 	    e.printStackTrace();
 	}
 	return s;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public Set<String> getProcessedWikid(){
+	Set<String> wikid = new HashSet<String>();
+	try {
+	    String article;
+	    while((article=br.readLine())!=null){
+		try{
+		    wikid.add(gson.fromJson(article, WikiArticle.class).getWikid());
+		} catch (JsonSyntaxException e) {
+		    e.printStackTrace();
+		    System.out.println(article);
+		}
+	    }
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return wikid;
     }
 
     /**

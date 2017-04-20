@@ -1,0 +1,275 @@
+<page>
+<title>Tim Berners-Lee</title>
+    <ns>0</ns>
+    <id>30034</id>
+    <revision>
+      <id>755378576</id>
+      <parentid>753322686</parentid>
+      <timestamp>2016-12-17T17:44:29Z</timestamp>
+      <contributor>
+        <username>Bender the Bot</username>
+        <id>28903366</id>
+      </contributor>
+      <minor />
+      <comment>/* Current work */clean up; http&amp;rarr;https for [[The Guardian]] using [[Project:AWB|AWB]]</comment>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+      <text xml:space="preserve">{{pp-move-indef}}
+{{pp-semi-vandalism|small=yes}}{{Infobox scientist
+| name = Sir Tim Berners-Lee
+| image = Tim_Berners-Lee-Knight-crop.jpg
+| image_size = 220px
+| caption = Berners-Lee in 2008
+| birth_name = Timothy John Berners-Lee
+| Other_names = TimBL
+| birth_date = {{birth date and age|1955|6|8|df=y}}&lt;ref name=&quot;whoswho&quot;/&gt;
+| birth_place = [[London|London, England]], UK
+| workplaces = {{Plainlist|
+* [[World Wide Web Consortium]]
+* [[University of Southampton]]
+* [[Plessey]]
+* [[Massachusetts Institute of Technology|MIT]]
+}}
+| alma_mater = [[The Queen's College, Oxford]] (BA)
+| occupation = [[Computer scientist]]
+| spouse = {{Plainlist|
+* {{marriage|Nancy Carlson|1990|2011|end=div}}
+* {{marriage|Rosemary Leith|2014}}}}
+| children = 2
+| parents = {{Plainlist|
+* [[Conway Berners-Lee]]
+* [[Mary Lee Woods]]}}
+| awards = {{Plainlist|
+* [[Member of the Order of Merit|OM]] (2007)
+* [[Knight Commander of the Order of the British Empire|KBE]] (2004)
+* [[Fellow of the Royal Society|FRS]] (2001)&lt;ref name=frs/&gt;
+* [[Fellow of the Royal Academy of Engineering|FREng]] (2001)
+* [[Fellow of the Royal Society of Arts|FRSA]] (2001)
+* [[DFBCS]] (1995)
+* [[Awards and honours presented to Tim Berners-Lee|See full list of honours]]}}
+| web site = {{Url|http://www.w3.org/People/Berners-Lee}}
+}}
+
+'''Sir Timothy John Berners-Lee''' {{postnominals|country=GBR|OM|KBE|FRS|FREng|FRSA|FBCS}} (born 8 June 1955),&lt;ref name=&quot;whoswho&quot; /&gt; also known as '''TimBL''', is an English [[computer science|computer scientist]], best known as the inventor of the [[World Wide Web]]. He made a proposal for an information management system in March 1989,&lt;ref&gt;{{cite web|url=http://info.cern.ch/Proposal.html |title=info.cern.ch – Tim Berners-Lee's proposal |publisher=Info.cern.ch |accessdate=21 December 2011}}&lt;/ref&gt; and he implemented the first successful communication between a [[Hypertext Transfer Protocol|Hypertext Transfer Protocol (HTTP)]] client and server via the Internet sometime around mid-November of that same year.&lt;ref&gt;Tim Berners Lee's own reference. The exact date is unknown.&lt;/ref&gt;&lt;ref name=&quot;weavingtheweb&quot;&gt;{{cite book | title = [[Weaving the Web: The Original Design and Ultimate Destiny of the World Wide Web by its inventor]] | first = Tim | last = Berners-Lee | author2 = Mark Fischetti | location = Britain | publisher=Orion Business | year = 1999 | isbn = 0-7528-2090-7}}&lt;/ref&gt;&lt;ref&gt;{{Cite journal
+ | doi = 10.1038/scientificamerican1210-80
+ | last1 = Berners-Lee | first1 = T.
+ | title = Long Live the Web
+ | journal = Scientific American
+ | volume = 303
+ | issue = 6
+ | pages = 80–85
+ | year = 2010
+ | pmid = 21141362
+}}&lt;/ref&gt;&lt;ref&gt;{{Cite journal
+ | doi = 10.1038/scientificamerican1008-76
+ | last1 = Shadbolt | first1 = N.
+| authorlink1 = Nigel Shadbolt
+ | last2 = Berners-Lee | first2 = T.
+| authorlink2 = Tim Berners-Lee
+ | title = Web science emerges
+ | journal = Scientific American
+ | volume = 299
+ | issue = 4
+ | pages = 76–81
+ | year = 2008
+ | pmid = 18847088
+}}&lt;/ref&gt;&lt;ref&gt;{{Cite journal
+ | last1 = Berners-Lee | first1 = T.
+| authorlink1 = Tim Berners-Lee
+ | last2 = Hall | first2 = W.
+|authorlink2 = Wendy Hall
+ | last3 = Hendler | first3 = J.
+| authorlink3 = James Hendler
+ | last4 = Shadbolt | first4 = N.
+|authorlink4 = Nigel Shadbolt
+ | last5 = Weitzner | first5 = D.
+ | title = Computer Science: Enhanced: Creating a Science of the Web
+| url = http://eprints.soton.ac.uk/262615/
+ | doi = 10.1126/science.1126902
+ | journal = Science
+ | volume = 313
+ | issue = 5788
+ | pages = 769–771
+ | year = 2006
+ | pmid = 16902115
+}}&lt;/ref&gt;
+
+Berners-Lee is the director of the [[World Wide Web Consortium]] (W3C), which oversees the continued development of the Web. He is also the founder of the [[World Wide Web Foundation]], and is a senior researcher and holder of the [[Professors in the United States#Special academic ranks (tenured)|founders chair]] at the [[MIT Computer Science and Artificial Intelligence Laboratory]] (CSAIL).&lt;ref&gt;{{cite web|title=Draper Prize|url=http://web.mit.edu/newsoffice/2007/draper-prize.html|publisher=[[Massachusetts Institute of Technology]]|accessdate=25 May 2008}}&lt;/ref&gt;
+He is a director of the [[Web Science Research Initiative]] (WSRI),&lt;ref&gt;{{cite web|url=http://webscience.org/about/people/ |accessdate=17 January 2011|title=People|publisher=The Web Science Research Initiative |archiveurl = https://web.archive.org/web/20080628052526/http://webscience.org/about/people/ |archivedate = 28 June 2008}}&lt;/ref&gt; and a member of the advisory board of the [[MIT Center for Collective Intelligence]].&lt;ref&gt;{{cite web|url=http://cci.mit.edu |title=MIT Center for Collective Intelligence (homepage) |publisher=Cci.mit.edu |accessdate=15 August 2010}}&lt;/ref&gt;&lt;ref&gt;{{cite web|url=http://cci.mit.edu/people/index.html |title=MIT Center for Collective Intelligence (people) |publisher=Cci.mit.edu |accessdate=15 August 2010}}&lt;/ref&gt; In 2011, he was named as a member the board of trustees of the [[Ford Foundation]].&lt;ref&gt;[http://www.fordfoundation.org/newsroom/news-from-ford/544 &quot;Tim Berners-Lee and Martin Eakes Join Ford Foundation Board&quot;], Ford Foundation, 29 September 2011.&lt;/ref&gt;
+
+In 2004, Berners-Lee was [[Order of the British Empire|knighted]] by queen [[Elizabeth II]] for his pioneering work.&lt;ref name=&quot;tecb&quot;&gt;{{cite news  | title =Web's inventor gets a knighthood |publisher=[[BBC News]]
+  |date=31 December 2003
+  | url =http://news.bbc.co.uk/1/hi/technology/3357073.stm
+  | accessdate=10 November 2015 }}&lt;/ref&gt;&lt;ref name=&quot;knighted&quot;&gt;{{cite news
+  | title =Creator of the web turns knight
+  |publisher=[[BBC News]]
+  |date=16 July 2004
+  | url =http://news.bbc.co.uk/1/hi/technology/3899723.stm
+  | accessdate=10 November 2015 }}&lt;/ref&gt;  In April 2009, he was elected a foreign associate of the [[United States National Academy of Sciences]].&lt;ref&gt;{{cite web|title=Timothy Berners-Lee Elected to National Academy of Sciences|url=http://www.ddj.com/217200450|publisher=[[Dr. Dobb's Journal]]|accessdate=9 June 2009}}&lt;/ref&gt;&lt;ref&gt;{{cite press release|accessdate=17 January 2011|date=28 April 2009|title=72 New Members Chosen By Academy|publisher=United States National Academy of Sciences|url=http://www8.nationalacademies.org/onpinews/newsitem.aspx?RecordID=04282009}}&lt;/ref&gt; Named in ''[[Time (magazine)|Time]]'' magazine's list of the [[Time 100: The Most Important People of the Century |100 Most Important People of the 20th century]], Berners-Lee has received a [[Awards and honours presented to Tim Berners-Lee|number of other accolades]] for his invention.&lt;ref name=&quot;Time&quot;&gt;{{cite news | title= Tim Berners Lee—Time 100 People of the Century |url= http://www.time.com/time/magazine/article/0,9171,990627,00.html
+ | work=Time Magazine |quote= He wove the World Wide Web and created a mass medium for the 21st century. The World Wide Web is Berners-Lee's alone. He designed it. He loosed it on the world. And he more than anyone else has fought to keep it open, nonproprietary and free |first=Joshua |last=Quittner | date=29 March 1999}}&lt;/ref&gt; He was honoured as the &quot;Inventor of the World Wide Web&quot; during the [[2012 Summer Olympics opening ceremony]], in which he appeared in person, working with a vintage [[NeXT Computer]] at the [[Olympic Stadium (London)|London Olympic Stadium]].&lt;ref name=&quot;Friar&quot; /&gt; He [[Twitter|tweeted]] &quot;This is for everyone&quot;,&lt;ref name=&quot;OlympicsTweet&quot;&gt;{{cite web|author=Berners-Lee, Tim|title=This is for everyone| url=https://twitter.com/timberners_lee/status/228960085672599552 | publisher=Twitter|date=27 July 2012|accessdate=28 July 2012}}&lt;/ref&gt; which instantly was spelled out in [[LCD]] lights attached to the chairs of the 80,000 people in the audience.&lt;ref name=&quot;Friar&quot;&gt;{{cite news |title=Sir Tim Berners-Lee stars in Olympics opening ceremony |first=Karen |last=Friar |url=http://www.zdnet.com/uk/sir-tim-berners-lee-stars-in-olympics-opening-ceremony-7000001744/ |newspaper=ZDNet |date=28 July 2012 |accessdate=28 July 2012}}&lt;/ref&gt;
+
+==Early life and education==
+Berners-Lee was born in London, England, United Kingdom,&lt;ref name=&quot;W3Bio&quot;&gt;{{cite web|url=http://www.w3.org/People/Berners-Lee/Longer.html|title=Berners-Lee Longer Biography|publisher=World Wide Web Consortium|accessdate=18 January 2011}}&lt;/ref&gt; one of four children born to [[Mary Lee Woods]] and [[Conway Berners-Lee]]. His parents worked on the first commercially-built computer, the [[Ferranti Mark 1]]. He attended Sheen Mount Primary School, and then went on to attend south west London's [[Emanuel School]] from 1969 to 1973, at the time a [[direct grant grammar school]], which became an [[independent school]] in 1975.&lt;ref name=&quot;whoswho&quot;&gt;{{Who's Who | surname = BERNERS-LEE | othernames = Sir Timothy (John)  | id = U12699 | volume = 2015 | edition = online [[Oxford University Press]]}} {{subscription required}}&lt;/ref&gt;&lt;ref name=&quot;tecb&quot; /&gt; A keen [[trainspotter]] as a child, he learnt about electronics from tinkering with a model railway.&lt;ref&gt;{{cite web|url=http://www.ft.com/cms/s/0/b022ff6c-f673-11e1-9fff-00144feabdc0.html#axzz25mg7CPq7|title=Lunch with the FT: Tim Berners-Lee|work=Financial Times}}&lt;/ref&gt; He studied at [[The Queen's College, Oxford]] from 1973 to 1976, where he received a [[British undergraduate degree classification#First-class honours|first-class]] [[bachelor of arts]] degree in physics.&lt;ref name=&quot;whoswho&quot;/&gt;&lt;ref name=&quot;W3Bio&quot; /&gt;
+
+==Career==
+[[File:Tim Berners-Lee.jpg|thumb|right|Berners-Lee, 2005]]
+After graduation, Berners-Lee worked as an engineer at the telecommunications company [[Plessey]] in [[Poole]], Dorset.&lt;ref name=&quot;W3Bio&quot; /&gt; In 1978, he joined D. G. Nash in [[Ferndown]], Dorset, where he helped create type-setting software for printers.&lt;ref name=&quot;W3Bio&quot; /&gt;
+
+Berners-Lee worked as an [[independent contractor]] at [[CERN]] from June to December 1980. While in [[Geneva]], he proposed a project based on the concept of [[hypertext]], to facilitate sharing and updating information among researchers.&lt;ref&gt;{{cite web|title=Berners-Lee's original proposal to CERN|publisher=World Wide Web Consortium|date=March 1989|url=http://www.w3.org/History/1989/proposal.html|accessdate=25 May 2008}}&lt;/ref&gt; To demonstrate it, he built a prototype system named [[ENQUIRE]].&lt;ref name=&quot;linvinginternet&quot;&gt;{{cite web|last=Stewart|first=Bill|title=Tim Berners-Lee, Robert Cailliau, and the World Wide Web|url=http://www.livinginternet.com/w/wi_lee.htm|accessdate=22 July 2010}}&lt;/ref&gt;
+
+After leaving CERN in late 1980, he went to work at John Poole's Image Computer Systems, Ltd, in Bournemouth, Dorset.&lt;ref name=&quot;faq&quot;&gt;{{cite web|title=Frequently asked questions|url=http://www.w3.org/People/Berners-Lee/FAQ.html|publisher=World Wide Web Consortium|accessdate=22 July 2010|author=Tim Berners-Lee}}&lt;/ref&gt; He ran the company's technical side for three years.&lt;ref&gt;{{cite news|last=Grossman|first=Wendy|title=All you never knew about the Net ...|newspaper=The Independent|date=15 July 1996}}&lt;/ref&gt; The project he worked on was a &quot;[[real-time computing|real-time]] [[remote procedure call]]&quot; which gave him experience in [[computer network]]ing.&lt;ref name=&quot;faq&quot; /&gt; In 1984, he returned to CERN as a fellow.&lt;ref name=&quot;linvinginternet&quot; /&gt;
+
+In 1989, CERN was the largest Internet node in Europe, and Berners-Lee saw an opportunity to join hypertext with the Internet:
+{{quotation| &quot;I just had to take the hypertext idea and connect it to the [[Transmission Control Protocol]] and [[domain name system]] ideas and—ta-da!—the World Wide Web&lt;ref&gt;{{cite web|author=Tim Berners-Lee|title=Answers for Young People|publisher=World Wide Web Consortium|url=http://www.w3.org/People/Berners-Lee/Kids|accessdate=25 May 2008}}&lt;/ref&gt; ... Creating the web was really an act of desperation, because the situation without it was very difficult when I was working at CERN later. Most of the technology involved in the web, like the hypertext, like the Internet, multifont text objects, had all been designed already. I just had to put them together. It was a step of generalising, going to a higher level of abstraction, thinking about all the documentation systems out there as being possibly part of a larger imaginary documentation system.&quot;&lt;ref&gt;{{cite web|url=http://www.achievement.org/autodoc/page/ber1int-1 |title=Biography and Video Interview of Timothy Berners-Lee at Academy of Achievement |publisher=Achievement.org |accessdate=21 December 2011}}&lt;/ref&gt;}}
+
+[[File:First Web Server.jpg|thumb|This [[NeXT Computer]] was used by Berners-Lee at CERN and became the world's first web server]]
+Berners-Lee wrote his proposal in March 1989 and, in 1990, redistributed it. It then was accepted by his manager, Mike Sendall.&lt;ref&gt;{{cite web|title=Ten Years Public Domain for the Original Web Software|url=http://tenyears-www.web.cern.ch/tenyears-www/Story/WelcomeStory.html|publisher=CERN|accessdate=21 July 2010}}&lt;/ref&gt; He used similar ideas to those underlying the ENQUIRE system to create the World Wide Web, for which he designed and built the first [[Web browser]]. His software also functioned as an editor (called [[WorldWideWeb]], running on the [[NeXTSTEP]] operating system), and the first Web server, [[CERN HTTPd]] (short for Hypertext Transfer Protocol [[Daemon (computer software)|daemon]]).
+
+{{quotation| &quot;Mike Sendall buys a NeXT cube for evaluation, and gives it to Tim [Berners-Lee]. Tim's prototype implementation on NeXTStep is made in the space of a few months, thanks to the qualities of the NeXTStep software development system. This prototype offers [[WYSIWYG]] browsing/authoring! Current Web browsers used in &quot;surfing the Internet&quot; are mere passive windows, depriving the user of the possibility to contribute. During some sessions in the CERN cafeteria, Tim and I try to find a catching name for the system. I was determined that the name should not yet again be taken from Greek mythology..... Tim proposes &quot;World-Wide Web&quot;. I like this very much, except that it is difficult to pronounce in French...&quot; by [[Robert Cailliau]], 2 November 1995.&lt;ref name=&quot;Ben&quot;&gt;[http://www.netvalley.com/cgi-bin/intval/net_history.pl?chapter=4 Roads and Crossroads of Internet History] Chapter 4: Birth of the Web&lt;/ref&gt; }}
+
+[[File:TimBL-112003-Shin-Yokohama.jpg|thumb|right|upright=.75|Berners-Lee using his laptop in 2003]]
+The first web site built was at CERN within the border of France,&lt;ref&gt;{{cite web|title=Tim Berners-Lee. Confirming The Exact Location Where the Web Was Invented|url=http://davidgalbraith.org/uncategorized/the-exact-location-where-the-web-was-invented/2343/}}&lt;/ref&gt; and was put online on 6 August 1991 for the first time:
+
+{{quotation|'''info.cern.ch''' was the address of the world's first-ever web site and web server, running on a NeXT computer at CERN. The first web page address was http://info.cern.ch/hypertext/WWW/TheProject.html, which centred on information regarding the WWW project. Visitors could learn more about hypertext, technical details for creating their own webpage, and even an explanation on how to search the Web for information. There are no screenshots of this original page and, in any case, changes were made daily to the information available on the page as the WWW project developed. You may find a later copy (1992) on the World Wide Web Consortium website.&lt;ref&gt;{{cite web|url=http://info.cern.ch/hypertext/WWW/TheProject.html|title=The World Wide Web project|author=|date=|work=cern.ch|accessdate=29 March 2016}}&lt;/ref&gt;}}
+
+It provided an explanation of what the World Wide Web was, and how one could use a browser and set up a web server.&lt;ref&gt;{{cite web|title=Welcome to info.cern.ch, the website of the world's first-ever web server|publisher=CERN|url=http://info.cern.ch/|accessdate=25 May 2008}}&lt;/ref&gt;&lt;ref&gt;{{cite web|title=World Wide Web—Archive of world's first website|publisher=World Wide Web Consortium|url=http://www.w3.org/History/19921103-hypertext/hypertext/WWW/TheProject.html|accessdate=25 May 2008}}&lt;/ref&gt;&lt;ref&gt;{{cite web|title=World Wide Web—First mentioned on USENET|publisher=Google|date=6 August 1991|url=http://groups.google.co.uk/group/alt.hypertext/msg/06dad279804cb3ba?dmode=source&amp;hl=en|accessdate=25 May 2008}}&lt;/ref&gt;&lt;ref&gt;{{cite web|title=The original post to alt.hypertalk describing the WorldWideWeb Project|publisher=Google|work=[[Google Groups]]|date=9 August 1991|url =http://groups.google.com/group/comp.archives/browse_thread/thread/9fb079523583d42/37bb6783d03a3b0d?lnk=st&amp;q=&amp;rnum=2&amp;hl=en#37bb6783d03a3b0d|accessdate=25 May 2008}}&lt;/ref&gt; In a list of 80 cultural moments that shaped the world, chosen by a panel of 25 eminent scientists, academics, writers and world leaders, the invention of the World Wide Web was ranked number one, with the entry stating, &quot;The fastest growing communications medium of all time, the Internet has changed the shape of modern life forever. We can connect with each other instantly, all over the world&quot;.&lt;ref&gt;{{cite web|title= 80 moments that shaped the world |url= https://www.britishcouncil.org/80moments/?_e_pi_=7%2CPAGE_ID10%2C5655166218 |publisher= [[British Council]] |accessdate= May 13, 2016}}&lt;/ref&gt;
+
+In 1994, Berners-Lee founded the W3C at the [[Massachusetts Institute of Technology]]. It comprised various companies that were willing to create standards and recommendations to improve the quality of the Web. Berners-Lee made his idea available freely, with no patent and no royalties due. The World Wide Web Consortium decided that its standards should be based on royalty-free technology, so that they easily could be adopted by anyone.&lt;ref&gt;{{cite web|title=Patent Policy—5&amp;nbsp;February&amp;nbsp;2004|publisher=World Wide Web Consortium|date=5 February 2004|url=http://www.w3.org/Consortium/Patent-Policy-20040205/|accessdate=25 May 2008}}&lt;/ref&gt;
+
+In 2001, Berners-Lee became a patron of the East Dorset Heritage Trust, having previously lived in [[Colehill]] in [[Wimborne Minster|Wimborne]], [[East Dorset]].&lt;ref&gt;John W. Klooster (2009) [https://books.google.com/books?id=WKuG-VIwID8C&amp;pg=PA611&amp;dq=tim+berners+lee++-+east+dorset+heritage+trust&amp;hl=en&amp;ei=0cE9TtyhIcyo8QPQx_zgDA&amp;sa=X&amp;oi=book_result&amp;ct=result&amp;resnum=1&amp;ved=0CCoQ6AEwAA#v=onepage&amp;q=tim%20berners%20lee%20%20-%20east%20dorset%20heritage%20trust&amp;f=false Icons of invention: the makers of the modern world from Gutenberg to Gates] p.611. ABC-CLIO, 2009&lt;/ref&gt; In December 2004, he accepted a chair in computer science at the School of Electronics and Computer Science, [[University of Southampton]], Hampshire, to work on the [[Semantic Web]].&lt;ref&gt;{{Cite journal | last1 = Berners-Lee | first1 = T. | authorlink1 = Tim Berners-Lee| last2 = Hendler | first2 = J. | authorlink2 = James Hendler| last3 = Lassila | first3 = O. | authorlink3 = Ora Lassila| doi = 10.1038/scientificamerican0501-34 | title = The Semantic Web | journal = [[Scientific American]] | volume = 2841| issue = 5 | pages = 34 | year = 2001 | url = http://www.scientificamerican.com/article.cfm?id=the-semantic-web| pmid =  | pmc = }}&lt;/ref&gt;&lt;ref&gt;{{cite web| title = Tim Berners-Lee, World Wide Web inventor, to join ECS| publisher=World Wide Web Consortium|date= 2 December 2004| url = http://www.ecs.soton.ac.uk/news/658| accessdate=25 May 2008 }}&lt;/ref&gt;
+
+In a ''[[The Times|Times]]'' article in October 2009, Berners-Lee admitted that [[URI scheme#Generic syntax|the initial pair of slashes]] (&quot;//&quot;) in a web address were &quot;unnecessary&quot;. He told the newspaper that he easily could have designed web addresses without the slashes. &quot;There you go, it seemed like a good idea at the time,&quot; he said in his lighthearted apology.&lt;ref&gt;{{cite news|url=http://news.bbc.co.uk/1/hi/technology/8306631.stm|title=Berners-Lee 'sorry' for slashes|publisher=BBC |date= 14 October 2009|accessdate=14 October 2009}}&lt;/ref&gt;
+
+==Current work==
+[[File:timbernerslee.jpg|thumb|right|Tim Berners-Lee at the [[Home Office]], London, on 11 March 2010]]
+In June 2009, then-British Prime Minister [[Gordon Brown]] announced Berners-Lee would work with the [[UK government]] to help make data more open and accessible on the Web, building on the work of the Power of Information Task Force.&lt;ref&gt;{{cite web| title = Tim Berners-Lee| publisher=World Wide Web Consortium|date= 10 June 2009| url = http://www.w3.org/News/2009#item98| accessdate=10 July 2009 }}&lt;/ref&gt; Berners-Lee and Professor [[Nigel Shadbolt]] are the two key figures behind [[data.gov.uk]], a UK government project to open up almost all data acquired for official purposes for free re-use. Commenting on the opening up of [[Ordnance Survey]] data in April 2010 Berners-Lee said that: &quot;The changes signal a wider cultural change in government based on an assumption that information should be in the public domain unless there is a good reason not to—not the other way around.&quot; He went on to say &quot;Greater openness, accountability and transparency in Government will give people greater choice and make it easier for individuals to get more directly involved in issues that matter to them.&quot;&lt;ref&gt;{{cite news| title = Ordnance Survey offers free data access |publisher=BBC News |date= 1 April 2010| url = http://news.bbc.co.uk/1/hi/technology/8597779.stm| accessdate=3 April 2009 }}&lt;/ref&gt;
+
+In November 2009, Berners-Lee launched the [[World Wide Web Foundation]] in order to &quot;advance the Web to empower humanity by launching transformative programs that build local capacity to leverage the Web as a medium for positive change.&quot;&lt;ref&gt;[http://www.webfoundation.org/about/faq/ FAQ—World Wide Web Foundation] Retrieved 18 January 2011&lt;/ref&gt;
+[[File:This is for Everyone.jpg|thumb|right|Berners-Lee's tweet, &quot;This is for everyone&quot;,&lt;ref name=&quot;OlympicsTweet&quot; /&gt; at the [[2012 Summer Olympics opening ceremony#Frankie and June say...thanks Tim (21:52–22:09)|2012 Summer Olympic Games]] in London]]
+Berners-Lee is one of the pioneer voices in favour of [[net neutrality]],&lt;ref&gt;{{cite news|url=http://news.bbc.co.uk/2/hi/technology/7613201.stm|title=Web creator rejects net tracking|publisher=BBC |date= 15 September 2008|accessdate=15 September 2008|quote=Warning sounded on web's future.|first=Pallab|last=Ghosh}}&lt;/ref&gt; and has expressed the view that [[ISP]]s should supply &quot;connectivity with no strings attached,&quot; and should neither control nor monitor the browsing activities of customers without their expressed consent.&lt;ref&gt;{{cite news|url=http://news.bbc.co.uk/1/hi/technology/7299875.stm|title=Web creator rejects net tracking|publisher=BBC |date= March 2008|accessdate=25 May 2008|quote=Sir Tim rejects net tracking like Phorm.|first=Rory|last=Cellan-Jones}}&lt;/ref&gt;&lt;ref&gt;{{cite news|url=http://www.telegraph.co.uk/news/uknews/1581938/Web-inventor%27s-warning-on-spy-software.html|title=Web inventor's warning on spy software|work=The Daily Telegraph |location=London |date= March 2008|accessdate=25 May 2008|quote=Sir Tim rejects net tracking like Phorm.
+| first=Stephen|last=Adams}}&lt;/ref&gt; He advocates the idea that net neutrality is a kind of human network right: &quot;Threats to the Internet, such as companies or governments that interfere with or snoop on Internet traffic, compromise basic human network rights.&quot;&lt;ref&gt;{{cite web|last=Berners |first=Tim |url=http://www.scientificamerican.com/article.cfm?id=long-live-the-web |title=Tim Berners-Lee, Long Live the Web: A Call for Continued Open Standards and Neutrality, Scientific American Magazine, December 2010 |work=Scientific American |date=4 May 2011 |accessdate=21 December 2011}}&lt;/ref&gt;
+
+Berners-Lee joined the board of advisors of start-up [[State (website)|State.com]], based in London.&lt;ref name=&quot;state&quot;&gt;{{cite web
+ | title = State.com/about/people
+ | url = https://state.com/about/people
+ | accessdate = 9 September 2013
+}}
+&lt;/ref&gt; As of May 2012, Berners-Lee is president of the [[Open Data Institute]].&lt;ref&gt;{{cite news| url=https://www.theguardian.com/government-computing-network/2012/may/23/open-data-institute-plans-published-cabinet-office?newsfeed=true |work=The Guardian | first=Government | last=Computing | title=Government commits £10m to Open Data Institute | date=23 May 2012}}&lt;/ref&gt;
+
+The [[Alliance for Affordable Internet]] (A4AI) was launched in October 2013 and Berners-Lee is leading the coalition of public and private organisations that includes [[Google]], [[Facebook]], [[Intel]], and [[Microsoft]]. The A4AI seeks to make Internet access more affordable so that access is broadened in the developing world, where only 31% of people are online. Berners-Lee will work with those aiming to decrease internet access prices so that they fall below the [[Broadband Commission for Digital Development|UN Broadband Commission]]'s worldwide target of 5% of monthly income.&lt;ref&gt;{{cite news|title=Sir Tim Berners-Lee and Google lead coalition for cheaper internet|url=https://www.theguardian.com/technology/2013/oct/07/google-berners-lee-alliance-broadband-africa?CMP=EMCNEWEML6619I2&amp;et_cid=51918&amp;et_rid=7107573&amp;Linkid=http%3a%2f%2fwww.theguardian.com%2ftechnology%2f2013%2foct%2f07%2fgoogle-berners-lee-alliance-broadband-africa|accessdate=8 October 2013|newspaper=The Guardian|date=7 October 2013|author=Samuel Gibbs}}&lt;/ref&gt;
+
+Berners-Lee holds the founders chair in Computer Science at the Massachusetts Institute of Technology, where he heads the Decentralized Information Group and is leading Solid, a joint project with the [[Qatar Computing Research Institute]] that aims to radically change the way Web applications work today, resulting in true data ownership as well as improved privacy.&lt;ref&gt;[http://www.digitaltrends.com/web/ways-to-decentralize-the-web/ &quot;How the father of the World Wide Web plans to reclaim it from Facebook and Google&quot;]. Digital Trends. Retrieved 31 October 2016&lt;/ref&gt; In October 2016, he joined the [[Department of Computer Science, University of Oxford|Department of Computer Science]] at [[Oxford University]] as a professor&lt;ref&gt;{{cite web |url=http://www.ox.ac.uk/news/2016-10-27-sir-tim-berners-lee-joins-oxfords-department-computer-science# |title=Sir Tim Berners-Lee joins Oxford's Department of Computer Science |publisher=[[University of Oxford]] | location=UK | date=27 October 2016 }}&lt;/ref&gt; and as a [[Fellow (college)|fellow]] of [[Christ Church, Oxford|Christ Church]], one of the Oxford colleges.&lt;ref&gt;{{cite web| url=http://www.chch.ox.ac.uk/news/research-and-academia/TBLpress-release | title=Sir Tim Berners-Lee joins Oxford's Department of Computer Science and Christ Church | date=27 October 2016 | publisher=[[Christ Church, Oxford]] | location=UK | accessdate=14 November 2016 }}&lt;/ref&gt;
+
+==Awards and honours==
+{{main|Awards and honours presented to Tim Berners-Lee}}
+{{Quote box|width=30%|align=right|quote=&quot;He wove the World Wide Web and created a mass medium for the 21st century. The World Wide Web is Berners-Lee's alone. He designed it. He loosed it on the world. And he more than anyone else has fought to keep it open, nonproprietary and free.&quot;|source=—Tim Berners-Lee's entry in ''Time'' magazine's list of the [[Time 100: The Most Important People of the Century |100 Most Important People of the 20th century]], March 1999.&lt;ref name=&quot;Time&quot;/&gt;}}
+
+Berners-Lee has received many awards and honours. He was [[Orders, decorations, and medals of the United Kingdom|knighted]] in 2004 when he was promoted to [[Order of the British Empire|Knight Commander of the Order of the British Empire]] (KBE) in the [[New Year Honours]] &quot;for services to the global development of the Internet&quot;, and was invested formally on 16 July 2004.&lt;ref name=&quot;tecb&quot; /&gt;&lt;ref name=&quot;knighted&quot; /&gt;
+
+On 13 June 2007, he received the [[Order of Merit]], becoming one of only 24 living members entitled to hold the honour, and to use the post-nominals 'O.M.' after their name.&lt;ref&gt;{{cite news|accessdate=25 May 2008|url=http://news.bbc.co.uk/1/hi/technology/6750395.stm|title=Web inventor gets Queen's honour|publisher=BBC |date=13 June 2007}}&lt;/ref&gt; Bestowing the Order of Merit is within the personal purview of the Queen, and does not require recommendation by ministers or the Prime Minister. He was elected a [[List of Fellows of the Royal Society elected in 2001|Fellow of the Royal Society (FRS) in 2001]].&lt;ref name=frs&gt;{{cite web|title=Fellowship of the Royal Society 1660-2015|url=https://docs.google.com/spreadsheets/d/1RVVZY00MZNrK2YCTTzVrbTFH2t3RxoAZah128gQR-NM/pubhtml|publisher=[[Royal Society]]|location=London|archiveurl=http://www.webcitation.org/6a2i9QICV|archivedate=2015-07-15}}&lt;/ref&gt; He has received honorary degrees from a number of Universities around the world, including [[University of Manchester|Manchester]] (his parents worked on the [[Manchester Mark 1]] in the 1940s), [[Harvard University|Harvard]] and [[Yale University|Yale]].&lt;ref&gt;{{Cite news |title=Scientific pioneers honoured by The University of Manchester |url=http://www.manchester.ac.uk/aboutus/news/display/?id=4216 |work=manchester.ac.uk |date=2 December 2008 |accessdate=28 May 2016}}&lt;/ref&gt;&lt;ref&gt;[http://news.yale.edu/2014/05/19/yale-awards-12-honorary-degrees-2014-graduation &quot;Yale awards 12 honorary degrees at 2014 graduation&quot;]. Yale News. Retrieved 28 May 2016&lt;/ref&gt;&lt;ref&gt;[http://news.harvard.edu/gazette/story/2011/05/harvard-to-award-nine-honorary-degrees/#berners-lee Harvard awards 9 honorary degrees] ''news.harvard.edu'' Retrieved 28 May 2016&lt;/ref&gt;
+
+In 2012, Berners-Lee was among the [[Culture of the United Kingdom|British cultural icons]] selected by artist Sir [[Peter Blake (artist)|Peter Blake]] to appear in a new version of his most famous artwork – the Beatles' ''[[Sgt. Pepper's Lonely Hearts Club Band]]'' album cover – to celebrate the British cultural figures of his life that he most admires to mark his 80th birthday.&lt;ref&gt;{{cite news|title=New faces on Sgt Pepper album cover for artist Peter Blake's 80th birthday|url= https://www.theguardian.com/artanddesign/2012/apr/02/peter-blake-sgt-pepper-cover-revisited|agency=The Guardian|date=5 October 2016}}&lt;/ref&gt;&lt;ref&gt;{{cite news|title=Sir Peter Blake's new Beatles' Sgt Pepper's album cover|url=http://www.bbc.co.uk/news/entertainment-arts-17583026|agency=BBC|date=9 November 2016}}&lt;/ref&gt;
+
+==Personal life==
+Berners-Lee was married to Nancy Carlson in 1990; they had two children and divorced in 2011. In 2014 Berners-Lee married Rosemary Leith at [[St. James's Palace]] in London.&lt;ref&gt;[http://webfoundation.org/tim-berners-lee-married-rosemary-leith/ &quot;“Ms Rosemary Leith and Sir Tim Berners-Lee are delighted to announce that they celebrated their marriage on 20 June 2014....&quot;] World Wide Web Foundation.&lt;/ref&gt; Leith is director of the [[World Wide Web Foundation]] and a fellow at [[Harvard University]]'s Berkman Center. Previously, she was  [[World Economic Forum]] Global Agenda Council Chair of the Future of Internet Security&lt;ref&gt;[http://www.weforum.org/global-agenda-councils/rosemary-leith Rosemary Leith biography], World Economic Forum.&lt;/ref&gt; and now is on the board of YouGov.&lt;ref&gt;[http://www.iii.co.uk/stockmarketwire/218625/yougov-strengthens-its-board &quot;YouGov strengthens its board&quot;], ''Interactive Investor'', 21 January 2015.&lt;/ref&gt;
+
+Berners-Lee was raised as an [[Anglican]], but in his youth, he turned away from religion. After he became a parent, he became a [[Unitarian Universalist]] (UU).&lt;ref&gt;{{cite web |url=http://news.bbc.co.uk/2/hi/uk_news/magazine/3142618.stm |title=Faces of the week|archiveurl= http://news.bbc.co.uk/2/hi/uk_news/magazine/3142618.stm |archivedate=26 September 2003}}&lt;/ref&gt; He has stated: &quot;Like many people, I had a religious upbringing which I rejected as a teenager... Like many people, I came back to religion when we had children&quot;.&lt;ref name=&quot;auto&quot;&gt;Bernees-Lee, Tim. 1998. ''[http://www.w3.org/People/Berners-Lee/UU.html The World Wide Web and the &quot;Web of Life&quot;]''.&lt;/ref&gt; He and his wife wanted to teach spirituality to his children, and after hearing a Unitarian minister and visiting the UU Church, they opted for it.&lt;ref&gt;Stephanie Sammartino McPherson. 2009. &quot;Tim Berners-Lee: Inventor of the World Wide Web''. Twenty-First Century Books.  p. 83: &quot;A Church Like The Web&quot;&lt;/ref&gt; He is an active member of that church,&lt;ref&gt;Eden, Richard. 2011. ''[http://www.telegraph.co.uk/technology/news/8528304/Internet-pioneer-Sir-Tim-Berners-Lee-casts-a-web-of-intrigue-with-his-love-life.html Internet pioneer Sir Tim Berners-Lee casts a web of intrigue with his love life]''. The Telegraph&lt;/ref&gt; to which he adheres because he perceives it as a tolerant and liberal belief. He also has recognized the value of other faiths, stating: &quot;I believe that much of the philosophy of life associated with many religions is much more sound than the dogma which comes along with it. So I do respect them.&quot;&lt;ref name=&quot;auto&quot;/&gt;
+
+==See also==
+{{div col|width=30em}}
+* [[Robert Cailliau]]
+* [[Vannevar Bush]]
+* [[Douglas Engelbart]]
+* [[Ted Nelson]]
+* [[Ian Ritchie (entrepreneur)|Ian Ritchie]]
+* [[Eelco van Asperen]]
+* [[History of the World Wide Web]]
+* [[Kevin Hughes (Internet pioneer)|Kevin Hughes]]
+* [[libwww]]
+* [[Mundaneum]]
+* [[Network neutrality]]
+* [[Paul Otlet]]
+* [[Semantic Web]]
+* [[Robert Taylor (computer scientist)|Bob Taylor]]
+* [[Nicola Pellow]]
+* [[NeXTcube]]
+{{div col end}}
+
+==References==
+{{Reflist|colwidth=30em}}
+
+==Further reading==
+* ''Tim Berners-Lee and the Development of the World Wide Web (Unlocking the Secrets of Science)'' (Mitchell Lane Publishers, 2001), ISBN 1-58415-096-3
+* ''Tim Berners-Lee: Inventor of the World Wide Web (Ferguson's Career Biographies)'', Melissa Stewart (Ferguson Publishing Company, 2001), ISBN 0-89434-367-X children's biography
+* ''How the Web was Born: The Story of the World Wide Web'', Robert Cailliau, James Gillies, R. Cailliau (Oxford University Press, 2000), ISBN 0-19-286207-3
+* ''Weaving the Web: The Original Design and Ultimate Destiny of the World Wide Web by Its Inventor'', Tim Berners-Lee, Mark Fischetti (Paw Prints, 2008)
+* [http://computemagazine.com/man-who-invented-world-wide-web-gives-new-definition/ &quot;Man Who Invented the World Wide Web Gives it New Definition&quot;], ''Compute Magazine'', 11 February 2011
+* [http://news.bbc.co.uk/2/hi/technology/4132752.stm BBC2 Newsnight – Transcript of video interview of Berners-Lee on the read/write Web] &lt;!-- {{Dead link|url=https://web.archive.org/web/20080202115128/http://www.kayotix.com/tmp/newsfeeds/10.08.05/timbernerslee/|date=September 2008}} --&gt;
+* [http://www.technologyreview.com/Infotech/13784/ ''Technology Review'' interview]
+
+==External links==
+{{commons category}}
+{{Wikiquote}}
+* {{Twitter}}
+* {{TED speaker}}
+* {{IMDb name|3805083}}
+* {{Worldcat id|lccn-no99-10609}}
+* [http://www.w3.org/People/Berners-Lee/ Tim Berners-Lee] on the W3C site
+* [http://www.w3.org/History/19921103-hypertext/hypertext/WWW/TheProject.html First World Wide Web page]
+* [http://videolectures.net/iswc06_lee_itbl/ Interview with Tim Berners Lee]
+* {{youtube|OM6XIICm_qo|Tim Berners-Lee: &quot;The next Web of open, linked data&quot; - presented his Semantic Web ideas about Linked Data (2009), Ted Talks.}}
+* {{C-SPAN|Tim Berners Lee}}
+
+{{s-start}}
+{{s-bef|before = First recipient}}
+{{s-ttl|title = [[Millennium Technology Prize]] winner|years = 2004 (for the [[World Wide Web]])}}
+{{s-aft|after = [[Shuji Nakamura]]}}
+{{s-end}}
+{{Telecommunications}}
+{{Internet Hall of Fame}}
+{{FRS 2001}}
+
+{{Use dmy dates|date=October 2012}}
+{{Use British English|date=October 2012}}
+
+{{Authority control}}
+
+{{DEFAULTSORT:Berners-Lee, Tim}}
+[[Category:1955 births]]
+[[Category:Living people]]
+[[Category:People from Barnes, London]]
+[[Category:People educated at Emanuel School]]
+
+[[Category:Alumni of The Queen's College, Oxford]]
+[[Category:Academics of the University of Southampton]]
+[[Category:Fellows of Christ Church, Oxford]]
+[[Category:Members of the Department of Computer Science, University of Oxford]]
+[[Category:People associated with CERN]]
+[[Category:English computer scientists]]
+[[Category:English expatriates in the United States]]
+[[Category:English inventors]]
+[[Category:English Unitarians]]
+[[Category:Fellows of the American Academy of Arts and Sciences]]
+[[Category:Fellows of the British Computer Society]]
+[[Category:Fellows of The Queen's College, Oxford]]
+[[Category:Fellows of the Royal Academy of Engineering]]
+[[Category:Fellows of the Royal Society]]
+[[Category:Hypertext Transfer Protocol]]
+[[Category:Internet pioneers]]
+[[Category:Knights Commander of the Order of the British Empire]]
+[[Category:MacArthur Fellows]]
+[[Category:Massachusetts Institute of Technology staff]]
+[[Category:Members of the Order of Merit]]
+[[Category:Members of the United States National Academy of Engineering]]
+[[Category:Members of the United States National Academy of Sciences]]
+[[Category:Royal Medal winners]]
+[[Category:Semantic Web people]]
+[[Category:UNESCO Niels Bohr Medal recipients]]
+[[Category:Unitarian Universalists]]
+[[Category:Former Anglicans]]
+[[Category:Webby Award winners]]
+[[Category:World Wide Web Consortium]]
+[[Category:Freemen of the City of London]]</text>
+      <sha1>mcuubk05ykz6it7tyysck7ny9gqylto</sha1>
+    </revision>
+  </page>

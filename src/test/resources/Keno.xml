@@ -1,0 +1,103 @@
+<page>
+    <title>Keno</title>
+    <ns>0</ns>
+    <id>16744</id>
+    <revision>
+      <id>754659086</id>
+      <parentid>754658988</parentid>
+      <timestamp>2016-12-13T20:42:25Z</timestamp>
+      <contributor>
+        <username>Widr</username>
+        <id>13975403</id>
+      </contributor>
+      <minor />
+      <comment>Reverted edits by [[Special:Contribs/2602:306:30D1:77D0:39D8:2584:8F2F:7078|2602:306:30D1:77D0:39D8:2584:8F2F:7078]] ([[User talk:2602:306:30D1:77D0:39D8:2584:8F2F:7078|talk]]) to last version by Oknazevad</comment>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+      <text xml:space="preserve">{{Other uses}}
+
+'''Keno''' {{IPAc-en|k|iː|n|oʊ}} is a [[lottery]]-like gambling game often played at modern [[casino]]s, and also offered as a game in some lotteries.  [[File:Veikkaus Keno.jpg|thumb|A set of keno betting slips]]
+
+Players wager by choosing numbers ranging from 1 through (usually) 80. After all players make their wagers, 20 numbers (some variants draw fewer numbers) are drawn at random, either with a ball machine similar to ones used for lotteries and [[bingo (U.S.)|bingo]], or with a [[random number generator]] (RNG).
+
+Each casino sets its own series of payouts, called &quot;paytables&quot;. The player is paid based on how many numbers were chosen (either player selection, or the terminal picking the numbers), the number of matches out of those chosen, and the wager. 
+
+There are a wide variety of keno paytables depending on the casino, usually with a larger &quot;[[house edge]]&quot; than other games offered by that casino. The house edge ranges from less than 4 percent&lt;ref&gt;[http://www.beatingbonuses.com/keno.htm Online Keno odds]&lt;/ref&gt; to over 35 percent.&lt;ref name=&quot;WizardOfOdds&quot;&gt;{{Cite web| last = Shackleford | first = Michael | title = Keno - Strategy and Odds by The Wizard of Odds | publisher = Wizard Of Odds Consulting, Inc. | url = http://wizardofodds.com/keno  | accessdate = 21 July 2010}}&lt;/ref&gt; The typical house edge for non-slot casino games is under 5%.&lt;ref&gt;[http://www.insidervlv.com/CasinoOdds.html Casino advantages for various games]&lt;/ref&gt;
+
+==History==
+{{seealso|Pakapoo}}
+The word &quot;keno&quot; has [[French language|French]] or [[Latin]] roots (Fr. ''quine'' &quot;five winning numbers&quot;, L. ''quini'' &quot;five each&quot;), but by all accounts the game originated in [[China]]. Legend has it that the invention of the game saved an ancient city in time of war, and its widespread popularity helped raise funds to build the [[Great Wall of China]]. In modern China, the idea of using [[lottery|lotteries]] to fund a public institution was not accepted before the late 19th century.&lt;ref&gt;{{cite web |url=http://www.kenoonline.org/history/ |title=Keno History |website=kenoonline.org |publisher= |access-date= 9 June 2015}}&lt;/ref&gt;
+
+Chinese lottery is not documented before 1847 when the Portuguese government of [[Macau|Macao]] decided to grant a licence to lottery operators. According to some, results of keno games in great cities were sent to outlying villages and hamlets by [[carrier pigeon]]s, resulting in its Chinese name 白鸽票 ''báigē piào'', literally &quot;white dove ticket&quot;, pronounced ''baak-gap-piu'' in [[Cantonese]] (on which the Western spelling 'pak-ah-pu' / '[[pakapoo]]' was based).
+
+The Chinese played the game using sheets printed with [[Chinese characters]], often the first 80 characters of the ''[[Thousand Character Classic]]'', from which the winning characters were selected.&lt;ref name=&quot;ccc&quot;&gt;Melanie Yap, Dianne Leong Man. ''Colour, confusion and concessions'', pp.240-241.&lt;/ref&gt;&lt;ref name=&quot;nyt&quot;&gt;{{cite news| url=http://query.nytimes.com/mem/archive-free/pdf?_r=1&amp;res=9D0DE1DC173AE033A25756C0A9649C94699FD7CF | work=The New York Times | title=Chinese Gambling Games; Mysteries Of Fan Tan And Boc Hop Bu. Two Popular Games In The Chinese Quarters Of American Cities-- Superstitions Of The Players. Boc Hop Bu. Superstitions | date=5 February 1888}}&lt;/ref&gt;  Eventually, Chinese immigrants introduced keno to the West when they sailed across the [[Pacific Ocean]] to help build the [[First Transcontinental Railroad]] in the 19th century,&lt;ref&gt;[http://www.bigwinscasino.com/rules/keno.html Keno History]&lt;/ref&gt; where the name was Westernized into '''boc hop bu'''&lt;ref name=&quot;nyt&quot;/&gt; and '''puck-apu'''.&lt;ref name=&quot;ccc&quot;/&gt;  By 1866 it had already become a widely popular gambling game in Houston, Texas, under the name 'Keno'.&lt;ref&gt;{{cite journal|title=New York Times|date=29 July 1866}}&lt;/ref&gt;
+
+==Probabilities==
+Keno payouts are based on how many numbers the player chooses and how many of those numbers are &quot;hit&quot;, multiplied by the proportion of the player's original wager to the &quot;base rate&quot; of the paytable. Typically, the more numbers a player chooses and the more numbers hit, the greater the payout, although some paytables pay for hitting a lesser number of spots. For example, it is not uncommon to see casinos paying $500 or even $1,000 for a “catch” of 0 out of 20 on a 20 spot ticket with a $5.00 wager. Payouts vary widely by casino. Most casinos allow paytable wagers of 1 through 20 numbers, but some limit the choice to only 1 through 10, 12 and 15 numbers, or &quot;spots&quot; as keno aficionados call the numbers selected.&lt;ref&gt;{{cite web|url=http://www.gamblinginfo.com/18_Keno.htm|title=Tutorial - How to play Keno|publisher=Gambling Info|accessdate=27 June 2011}}&lt;/ref&gt;
+
+The [[probability]] of a player hitting all 20 numbers on a 20 spot ticket is approximately 1 in 3.5 [[quintillion]] (1 in 3,535,316,142,212,174,336 to be exact).&lt;ref&gt;[http://www.mathproblems.info/gam470/games/keno/prob-keno.html Probabilities in keno]&lt;/ref&gt;
+
+Even though it is virtually impossible to hit all 20 numbers on a 20 spot ticket, the same player would typically also get paid for hitting “catches” 0, 1, 2, 3, and 7 through 19 out of 20, often with the 17 through 19 catches paying the same as the solid 20 hit.  Some of the other paying &quot;catches&quot; on a 20 spot ticket or any other ticket with high &quot;solid catch&quot; odds are in reality very possible to hit:
+
+{| class=&quot;wikitable&quot;
+! Hits !! Probability
+|-
+| 0    || 1 in 843.380 (0.11857057%)
+|-
+| 1    || 1 in 86.446 (1.15678605%)
+|-
+| 2    || 1 in 20.115 (4.97142576%)
+|-
+| 3    || 1 in 8.009 (12.48637168%)
+|-
+| 4    || 1 in 4.877 (20.50318987%)
+|-
+| 5    || 1 in 4.287 (23.32807380%)
+|-
+| 6    || 1 in 5.258 (19.01745147%)
+|-
+| 7    || 1 in 8.826 (11.32954556%)
+|-
+| 8    || 1 in 20.055 (4.98618021%)
+|-
+| 9    || 1 in 61.420 (1.62814048%)
+|-
+| 10   || 1 in 253.801 (0.39401000%)
+|-
+| 11   || 1 in 1,423.822 (0.07023351%)
+|-
+| 12   || 1 in 10,968.701 (0.00911685%)
+|-
+| 13   || 1 in 118,084.920 (0.00084685%)
+|-
+| 14   || 1 in 1,821,881.628 (0.00005489%)
+|-
+| 15   || 1 in 41,751,453.986 (0.00000240%)
+|-
+| 16   || 1 in 1,496,372,110.872 (0.00000007%)
+|-
+| 17   || 1 in 90,624,035,964.712
+|-
+| 18   || 1 in 10,512,388,171,906.553
+|-
+| 19   || 1 in 2,946,096,785,176,811.500
+|-
+| 20   || 1 in 3,535,316,142,212,173,800.000
+|}
+
+Probabilities change significantly based on the number of spots that are picked on each ticket.
+
+==References==
+{{Reflist}}
+{{Use dmy dates|date=September 2010}}
+
+
+
+{{Gambling}}
+
+[[Category:Bingo]]
+[[Category:Lotteries]]
+[[Category:Gambling games]]</text>
+      <sha1>hqczhbkdzyw2y0jrtljsuhoraqhaw47</sha1>
+    </revision>
+  </page>

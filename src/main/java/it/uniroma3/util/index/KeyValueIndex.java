@@ -1,4 +1,4 @@
-package it.uniroma3.kg;
+package it.uniroma3.util.index;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -119,6 +119,8 @@ public class KeyValueIndex {
     private void createIndex(String kvPairsFilePath, String kvIndexPath) {
 	File kvPairsFile = new File(kvPairsFilePath);
 	IndexWriter writer = createWriter(kvIndexPath);
+	int count_bad = 0;
+	int count_ok = 0;
 	try {
 	    BufferedReader input = new BufferedReader(new FileReader(kvPairsFile));
 	    String line = input.readLine();
@@ -126,7 +128,17 @@ public class KeyValueIndex {
 		/*
 		 * we read the key-value file and index the encoded strings
 		 */
-		String[] field = line.split("\t"); 
+		String[] field = line.split("\t");
+		
+		// skip bad-formatted lines
+		if (field.length != 2){
+		    count_bad ++;
+		    line = input.readLine();
+		    continue;
+		}else{
+		    count_ok ++;
+		}
+		
 		String key = encodeBase64(field[0]);
 		String value = encodeBase64(field[1]);
 
@@ -143,10 +155,12 @@ public class KeyValueIndex {
 
 	    input.close();
 	    writer.close();
-
+	    
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
+	
+	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
     }
 
     /**

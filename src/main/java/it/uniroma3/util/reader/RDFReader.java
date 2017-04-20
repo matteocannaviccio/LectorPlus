@@ -1,4 +1,4 @@
-package it.uniroma3.reader;
+package it.uniroma3.util.reader;
 
 import java.io.FileInputStream;
 import java.io.IOException;

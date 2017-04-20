@@ -268,12 +268,12 @@ public class Cleaner {
 	}
 	return cur;
     }
-    
- 
+
+
     /* ***********************************************************************************
      * 				REMOVE - RETRIEVE TABLES
      * ***********************************************************************************/
-    
+
     /**
      * 
      * @param blocks
@@ -290,7 +290,7 @@ public class Cleaner {
 
 	return tablesContent;
     }
-    
+
     /**
      * This method needs improvements. For now, we are limiting to retrieve all the entry of the lists
      * in each section and put them together.
@@ -318,7 +318,7 @@ public class Cleaner {
     /* ***********************************************************************************
      * 				REMOVE - RETRIEVE LIST
      * ***********************************************************************************/
-    
+
     /**
      * 
      * https://regex101.com/r/JhwkQh/2
@@ -326,8 +326,15 @@ public class Cleaner {
      * @param blocks
      * @return
      */
-    public String removeLists(String block){
-	return block.replaceAll("(?m)^(;|#|\\*|:)(?:(?!\\n).)*+", "");
+    public String replaceListsWithNormalSentences(String block){
+	Pattern LIST_CONTENT = Pattern.compile("(?m)^(;|#|\\*|:)+((?!\\n).+)++");
+	Matcher m = LIST_CONTENT.matcher(block);
+	StringBuffer sb = new StringBuffer();
+	while(m.find()){
+	    m.appendReplacement(sb, Matcher.quoteReplacement(m.group(2).trim() + ".\n"));
+	}
+	m.appendTail(sb);
+	return sb.toString();
     }
 
 

@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiLanguage;
 /**
@@ -38,21 +39,6 @@ public class TextParser {
 	wikid = wikid.replaceAll("_", " ");
 	wikid = wikid.replaceAll(" \\(\\w+\\)$", "");
 	return wikid;
-    }
-    
-    /**
-     * 
-     * @param wikid
-     * @return
-     */
-    public String getDisambiguation(String wikid){
-	String disambiguation = null;
-	Pattern DISAMBIGATION = Pattern.compile("_\\(.*\\)$");
-	Matcher m = DISAMBIGATION.matcher(wikid);
-	if (m.find()){
-	    disambiguation = m.group(0).replaceAll("(_\\(|\\))*", "").trim();
-	}
-	return disambiguation;
     }
 
     /**
@@ -85,7 +71,6 @@ public class TextParser {
 	cleanBlock = removeHtmlComments(cleanBlock);
 	cleanBlock = removeHtmlTags(cleanBlock);
 	cleanBlock = removeIndentation(cleanBlock);
-	cleanBlock = cleaner.cleanBlockOfContent(cleanBlock, "{{", "}}");			// removes templates
 	cleanBlock = cleaner.cleanBlockOfContentFromSpecific(cleanBlock, "[[", "image", "]]"); 	// removes media
 	return cleanBlock;
     }
@@ -104,15 +89,16 @@ public class TextParser {
     }
 
     /**
-     * This method extracts structured contents such as tables, infobox, lists,
+     * This method extracts structured contents such as tables, infobox,
      * using the stack-based method of the cleaner.
      * 
      * @param block
      * @return
      */
     public String removeStructuredContents(String block){
-	String cleanBlock = cleaner.cleanBlockOfContent(block, "{|", "|}"); 	// removes tables
-	cleanBlock = cleaner.removeLists(cleanBlock);				// remove lists
+	String cleanBlock = cleaner.cleanBlockOfContent(block, "{{", "}}");			// removes templates
+	cleanBlock = cleaner.cleanBlockOfContent(cleanBlock, "{|", "|}"); 			// removes tables
+	cleanBlock = cleaner.replaceListsWithNormalSentences(cleanBlock);			// replace lists
 	return cleanBlock;
     }
 
@@ -264,30 +250,6 @@ public class TextParser {
      * ***********************************************************************************/
 
     /**
-     * 
-     * @param text
-     * @return
-     */
-    public String removeLinks(String text){
-	return Lector.getMarkupParser().removeAllWikilinks(text);
-    }
-
-    /**
-     * Splits the paragraphs in sentences.
-     * 
-     * @param paragraphs
-     * @return
-     */
-    public static List<String> splitSentences(String text){
-	List<String> sentences = new LinkedList<String>();
-	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
-	for(String sent : text.split(regex)){
-	    sentences.add(sent);
-	}
-	return sentences;
-    }
-
-    /**
      * We extract the bold names that are in the first block.
      * We take into account the italics and we distinguish them from the normal keywords.
      * E.g. we distinguish ''Batman'' from Batman.
@@ -364,7 +326,7 @@ public class TextParser {
      * @return
      */
     public String removeParenthesis(String block){
-	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\)[^>])'*");	// remove parenthesis and content ( )
+	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*(?!>)");// detect parenthesis and content
 	Matcher m = PARENTHESIS.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");
@@ -374,20 +336,44 @@ public class TextParser {
     }
 
     /**
+     * It return the first sentence of the article, after
+     * cleaning it in order to use with the seed FSM in the next step.
+     * 
      * 
      * @param abstractSection
      * @return
      */
     public String obtainCleanFirstSentence(String abstractSection) {
 	String firstSentence = removeParenthesis(abstractSection);
+	
 	firstSentence = removeEmphasis(firstSentence, false);
 	firstSentence = firstSentence.replaceAll("\"", "");		// remove ""
 	firstSentence = firstSentence.replaceAll(" {2,}", " ");		// remove double spaces
 	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");	// remove double new lines
 	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();	// remove space before commma
-	firstSentence = Lector.getMarkupParser().cleanAllWikilinks(firstSentence); 
-	firstSentence = splitSentences(firstSentence).get(0);
-	return removeLinks(firstSentence);
+	
+	if(!Configuration.getOnlyTextWikilinks())
+	    firstSentence = Lector.getMarkupParser().cleanAllWikilinks(firstSentence);
+	else
+	    firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);
+	
+	// here we use a "light" sentence splitter
+	return stupidSplitOfSentences(firstSentence).get(0);
+    }
+    
+    /**
+     * Splits the paragraphs in sentences.
+     * 
+     * @param paragraphs
+     * @return
+     */
+    private static List<String> stupidSplitOfSentences(String text){
+	List<String> sentences = new LinkedList<String>();
+	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
+	for(String sent : text.split(regex)){
+	    sentences.add(sent);
+	}
+	return sentences;
     }
 
 

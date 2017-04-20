@@ -1,4 +1,4 @@
-package it.uniroma3.util;
+package it.uniroma3.util.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Reader {
+public class TSVReader {
     
     /**
      * 

@@ -145,6 +145,13 @@
 			<version>2.10.0</version>
 		</dependency>
 
+		<!-- for storing the model -->
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.15.1</version>
+		</dependency>
+
 
 
 	</dependencies>

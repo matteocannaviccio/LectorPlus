@@ -1,8 +1,7 @@
-package it.uniroma3.kg;
+package it.uniroma3.kg.tgpatterns;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,20 +9,13 @@ import java.util.Map;
 
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.kg.ontology.TGPattern;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.util.Pair;
 
 public class ExperimentSchemaCreator {
 
     public static void main(String[] args) throws IOException{
-	String configFile;
-	if (args.length == 0){
-	    configFile = "/Users/matteo/Desktop/data/config.properties";
-	}else{
-	    configFile = args[0];
-	}
-	Configuration.init(configFile);
+	Configuration.init(args);
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 
 
@@ -32,7 +24,7 @@ public class ExperimentSchemaCreator {
 	Map<String, Pair<TGPattern, TGPattern>> relation2tgpattern = new HashMap<String, Pair<TGPattern, TGPattern>>();
 	Map<String, Pair<Integer, Integer>> relation2counts = new HashMap<String, Pair<Integer, Integer>>();
 
-	BufferedReader br = new BufferedReader(new FileReader(new File(Configuration.getDBPediaNormalizedFile())));
+	BufferedReader br = new BufferedReader(new FileReader(new File(Configuration.getIndexableDBPediaNormalizedRelationsFile())));
 	String line;
 	int cont = 0;
 	while((line = br.readLine()) != null){
@@ -46,8 +38,8 @@ public class ExperimentSchemaCreator {
 		String relation = line.split("\t")[1];
 
 
-		TGPattern subjectTGP = Lector.getTypesAssigner().assignTGPattern(subject);
-		TGPattern objectTGP = Lector.getTypesAssigner().assignTGPattern(object);
+		TGPattern subjectTGP = Lector.getKg().getTGPattern(subject);
+		TGPattern objectTGP = Lector.getKg().getTGPattern(object);
 
 		if (subjectTGP != null && objectTGP != null){
 		    if(!relation2counts.containsKey(relation)){

@@ -58,7 +58,8 @@ public class WikiArticle {
 	    .create();
 
     public enum ArticleType {
-	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, DATE, OUTLINE, LIST, PROJECT, PORTAL, FILE, HELP
+	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, 
+	DATE, OUTLINE, LIST, PROJECT, PORTAL, FILE, HELP, ERROR
     };
 
     /**
@@ -120,6 +121,18 @@ public class WikiArticle {
 	if (this.sentences == null)
 	    this.sentences = new LinkedHashMap<String, List<String>>();
 	return sentences;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getWholeText(){
+	StringBuffer sb = new StringBuffer();
+	for (Map.Entry<String, String> block : blocks.entrySet()){
+	    sb.append(block + "\n");
+	}
+	return sb.toString();
     }
 
     /**

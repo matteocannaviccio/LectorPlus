@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
-import it.uniroma3.util.Reader;
+import it.uniroma3.util.reader.TSVReader;
 
 /**
  * 
@@ -29,9 +29,9 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
-	this.blacklist.addAll(Reader.getLines(Configuration.getCurrenciesList()));
-	this.blacklist.addAll(Reader.getLines(Configuration.getNationalitiesList()));
-	this.blacklist.addAll(Reader.getLines(Configuration.getProfessionsList()));
+	this.blacklist.addAll(TSVReader.getLines(Configuration.getCurrenciesList()));
+	this.blacklist.addAll(TSVReader.getLines(Configuration.getNationalitiesList()));
+	this.blacklist.addAll(TSVReader.getLines(Configuration.getProfessionsList()));
     }
 
     /**
@@ -83,6 +83,9 @@ public class MarkupParser {
     }
 
     /**
+     * Remove any wikilink from the input markup text.
+     * 
+     * e.g. [[any wikilink|wikilinkAnchorText]] -> wikilinkAnchorText
      * 
      * @param originalText
      * @return
@@ -105,19 +108,59 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
+    
+    /**
+     * 
+     * @param originalText
+     * @return
+     */
+    public String removeCommonSenseWikilinks(String originalText){
+	String noCommonSenseWikilink = removeLowerCaseWikilinks(originalText);
+	noCommonSenseWikilink = removeListofWikilinks(noCommonSenseWikilink);
+	return noCommonSenseWikilink;
+    }
 
 
     /**
-     * Detect commonsense entities with pipes, and transform them in normal entities.
+     * Remove only commonsense wikilinks.
+     * We chose commonsense wikilinks using the following heuristic:
+     * 
+     * 		none upper case characters in the anchor text. 
+     * 
+     * So the following will be not commonsense wikilinks:
+     *  * iPhone
+     *  * Real madrid
      * 
      *  e.g. [[multinational corporation|multinational]] -> multinational
      * 
      * @param originalText
      * @return
      */
-    public String removeCommonSenseWikilinks(String originalText){
+    private String removeLowerCaseWikilinks(String originalText){
 	Pattern COMMONSENSE = Pattern.compile("\\[\\[+" + "([^\\]]*\\|)?" + "('')?" + "([a-z][^A-Z].*?)" + "('')?" + "\\]\\]+");
 	Matcher m = COMMONSENSE.matcher(originalText);
+	StringBuffer cleanText = new StringBuffer();
+	String rendered;
+	while(m.find()){
+	    if (m.group(2) != null && m.group(4) != null){
+		rendered = m.group(2) + m.group(3) + m.group(4);
+	    }else{
+		rendered = m.group(3);
+	    }
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+	}
+	m.appendTail(cleanText);
+	return cleanText.toString();
+    }
+    
+    /**
+     * 
+     * @param originalText
+     * @return
+     */
+    private String removeListofWikilinks(String originalText){
+	Pattern LISTOF = Pattern.compile("\\[\\[+" + "(List of [^|]*+\\|)" + "('')?" + "([^]]+?)" + "('')?" + "\\]\\]++");
+	Matcher m = LISTOF.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
 	while(m.find()){
@@ -192,28 +235,35 @@ public class MarkupParser {
 		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
 
-	    if (Configuration.solveRedirect())
-		wikid = Lector.getRedirectResolver().resolveRedirect(wikid);
+	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
 
-	    /*
-	     * eliminate blacklisted entities 
-	     */
-	    if (blacklist.contains(wikid) || blacklist.contains(rendered.replaceAll(" ", "_"))){
-		m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
-	    }else{
-		if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
-		    if (!wikilinks.containsKey(rendered))
-			wikilinks.put(rendered, new HashSet<String>());
-		    // we quote it, for later
-		    wikilinks.get(rendered).add("<" + Matcher.quoteReplacement("SE-AUG<" + wikid +  ">") + ">");
-		    m.appendReplacement(cleanText, "<" + Matcher.quoteReplacement("SE-ORG<" + wikid + ">") + ">");
-		}else{
+		if (Configuration.solveRedirect())
+		    wikid = Lector.getKg().getRedirect(wikid);
+
+		/*
+		 * eliminate blacklisted entities 
+		 */
+		if (blacklist.contains(wikid) || blacklist.contains(rendered.replaceAll(" ", "_"))){
 		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+
+		}else{
+		    if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
+			if (!wikilinks.containsKey(rendered))
+			    wikilinks.put(rendered, new HashSet<String>());
+			// we quote it, for later
+			wikilinks.get(rendered).add("<" + Matcher.quoteReplacement("SE-AUG<" + wikid +  ">") + ">");
+			m.appendReplacement(cleanText, "<" + Matcher.quoteReplacement("SE-ORG<" + wikid + ">") + ">");
+		    }else{
+			m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+		    }
 		}
 	    }
 	}
+
 	m.appendTail(cleanText);
 	article.addWikilinks(wikilinks);
+
+
 	return cleanText.toString();
     }
 }

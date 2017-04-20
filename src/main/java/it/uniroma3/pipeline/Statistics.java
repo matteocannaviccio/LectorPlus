@@ -29,7 +29,7 @@ public class Statistics {
      * 
      * @param a
      */
-    public WikiArticle addArticleToStats(WikiArticle a){
+    public synchronized WikiArticle addArticleToStats(WikiArticle a){
 	ArticleType type = a.getType();
 	if(!countTypes.containsKey(type))
 	    countTypes.put(type, new LinkedList<String>());

@@ -2,15 +2,16 @@ package it.uniroma3.configuration;
 
 import java.io.File;
 
+import it.uniroma3.entitydetection.ReplAttacher;
+import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.entitydetection.SeedFSM;
-import it.uniroma3.kg.DBPedia;
-import it.uniroma3.kg.RedirectResolver;
-import it.uniroma3.kg.ontology.TypesAssigner;
+import it.uniroma3.kg.KGEndPoint;
 import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.ArticleTyper;
 import it.uniroma3.parser.BlockParser;
 import it.uniroma3.parser.MarkupParser;
 import it.uniroma3.parser.TextParser;
+import it.uniroma3.parser.WikiParser;
 import it.uniroma3.parser.XMLParser;
 import it.uniroma3.triples.Triplifier;
 import it.uniroma3.util.nlp.OpenNLP;
@@ -18,9 +19,8 @@ import it.uniroma3.util.nlp.StanfordNLP;
 
 public class Lector {
     
-    private static RedirectResolver redirectResolver;
-    private static DBPedia kg;
-    private static TypesAssigner typesAssigner;   
+    
+    private static WikiParser wikiParser;
     private static MarkupParser markupParser; 
     private static ArticleTyper articleTyper;
     private static XMLParser xmlParser;
@@ -28,6 +28,11 @@ public class Lector {
     private static TextParser textParser;
     private static Triplifier triplifier;
     
+    private static ReplFinder entitiesFinder;
+    private static ReplAttacher entitiesTagger;
+    
+    private static KGEndPoint kg;
+        
     /*
      * Each thread uses its own specific object
      */
@@ -41,15 +46,16 @@ public class Lector {
      * @param config
      */
     public static void init(WikiLanguage lang) {
-	redirectResolver = new RedirectResolver();
-	typesAssigner = new TypesAssigner();
+	wikiParser = new WikiParser(lang);
+	kg = new KGEndPoint();
 	markupParser = new MarkupParser();
 	articleTyper = new ArticleTyper(lang);
 	xmlParser = new XMLParser();
 	blockParser = new BlockParser(lang);
 	textParser = new TextParser(lang);
 	triplifier = new Triplifier();
-	kg = new DBPedia();
+	entitiesFinder = new ReplFinder();
+	entitiesTagger = new ReplAttacher();
 	
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
@@ -72,25 +78,12 @@ public class Lector {
 	initMVLFile();
     }
 
-    /**
-     * @return the redirectResolver
-     */
-    public static RedirectResolver getRedirectResolver() {
-        return redirectResolver;
-    }
     
     /**
      * @return the redirectResolver
      */
     public static MarkupParser getMarkupParser() {
         return markupParser;
-    }
-
-    /**
-     * @return the typesAssigner
-     */
-    public static TypesAssigner getTypesAssigner() {
-        return typesAssigner;
     }
     
     /**
@@ -142,6 +135,9 @@ public class Lector {
         return openNLPExpert;
     }
     
+    /**
+     * 
+     */
     private static void initMVLFile(){
 	File file = new File(Configuration.getMVLFile());
 	if(file.exists()){
@@ -159,9 +155,32 @@ public class Lector {
     /**
      * @return the kg
      */
-    public static DBPedia getKg() {
+    public static KGEndPoint getKg() {
         return kg;
     }
+
+    /**
+     * @return the wikiParser
+     */
+    public static WikiParser getWikiParser() {
+        return wikiParser;
+    }
+
+    /**
+     * @return the entitiesFinder
+     */
+    public static ReplFinder getEntitiesFinder() {
+        return entitiesFinder;
+    }
+
+    /**
+     * @return the entitiesTagger
+     */
+    public static ReplAttacher getEntitiesTagger() {
+        return entitiesTagger;
+    }
+
+
     
     
 

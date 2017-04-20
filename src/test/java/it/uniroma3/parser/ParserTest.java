@@ -4,14 +4,14 @@ import it.uniroma3.configuration.Configuration;
 import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.model.WikiLanguage;
-import it.uniroma3.reader.XMLReader;
+import it.uniroma3.util.reader.XMLReader;
 
 public class ParserTest {
 
 
     public static void main(String[] args) {
 
-	Configuration.init("/Users/matteo/Work/Repository/java/lectorplus/config.properties");
+	Configuration.init(new String[0]);
 	
 	ReplFinder repFinder = new ReplFinder(); 
 

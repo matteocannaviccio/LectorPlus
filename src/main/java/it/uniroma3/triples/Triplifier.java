@@ -1,148 +1,125 @@
 package it.uniroma3.triples;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.util.StringUtils;
-import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
 import it.uniroma3.model.WikiArticle;
 import it.uniroma3.util.Pair;
+import it.uniroma3.util.index.DBlite;
 
 /**
- * This module extracts triples from articles.
+ * This module extracts triples from the articles a put them in the db.
  * 
- * Before to extract the triple we pre-process the sentence:
- * - remove parenthesis
- * - we do not consider triples where the object is followed by 's
- * - we do not consider triples with phrases that end with "that"
+ * Before to extract the triple we pre-process the sentence and perform
+ * some text filtering such as:
+ * - removing parenthesis
+ * - removing triples where the object is followed by 's
+ * - removing triples with phrases that end with "that"
  * 
  * @author matteo
  *
  */
 public class Triplifier {
 
-    private Queue<MultiValue> mvl;
-    private Queue<Pair<String, Triple>> triplesNER;
-    private Queue<Pair<String, Triple>> triplesMVL;
-    private Queue<Pair<Pair<String, Triple>, String>> triplesLabeled;
-    private Queue<Pair<String, Triple>> triplesUnlabeled;
+    private DBlite db;
+    private Map<String, Integer> stats;
+    private Queue<Pair<WikiTriple, String>> labeled_triples;
+    private Queue<WikiTriple> unlabeled_triples;
 
-    private WitnessCounter wc;
-
-    private File mvlFile;
-    private File mvlTriplesFile;
-    private File nerTriplesFile;
-    private File labledTriplesFile;
-    private File unlabledTriplesFile;
 
     /**
      * 
      */
     public Triplifier() {
-	this.mvl = new ConcurrentLinkedQueue<MultiValue>();
+	db = new DBlite();
+	db.createDB();
+	stats = new ConcurrentHashMap<String, Integer>();
+	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
+	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 
-	this.triplesLabeled = new ConcurrentLinkedQueue<Pair<Pair<String, Triple>, String>>();
-	this.triplesUnlabeled = new ConcurrentLinkedQueue<Pair<String, Triple>>();
-	this.triplesNER = new ConcurrentLinkedQueue<Pair<String, Triple>>();
-	this.triplesMVL = new ConcurrentLinkedQueue<Pair<String, Triple>>();
-
-	this.mvlFile = openFile(Configuration.getMVLFile());
-	this.mvlTriplesFile = openFile(Configuration.getMVLTriples());
-	this.labledTriplesFile = openFile(Configuration.getLabeledTriples());
-	this.unlabledTriplesFile = openFile(Configuration.getUnlabeledTriples());
-	this.nerTriplesFile = openFile(Configuration.getNERTriples());
-
-	this.wc = new WitnessCounter();
     }
 
     /**
-     * It opens a new file from the specified path 
-     * (or create it if it does not exists).
+     * Dispatch the triple in the DB, with the right label on it.
      * 
-     * @param path
+     * @param t
      */
-    private File openFile(String path){
-	File file = new File(path);
-	if(file.exists()){
-	    file.delete();
-	}
-	return file;
+    public void processTriple(WikiTriple t){
+	switch(t.getType()){
+	
+	// it is a joinable triple only if both the subject
+	// and object are wiki entities with a type
+	case JOINABLE: 
+	    Set<String> labels = t.getLabels();
+	    if (!labels.isEmpty()){
+		for (String relation : t.getLabels()){
+		    labeled_triples.add(Pair.make(t, relation));
+		    String key = t.getPhrase() + "\t" + t.getSubjectType()+ "\t" +  t.getObjectType()+ "\t" + relation;
+		    if (!stats.containsKey(key))
+			stats.put(key, 0);
+		    stats.put(key, stats.get(key) + 1);
+			
+		}
+	    }else{
+		unlabeled_triples.add(t);
+	    }
+	    break;
 
+	case MVL:
+	case SBJNER:
+	case OBJNER:
+	case BOTHNER:
+	case DROP:
+	case JOINABLENOTYPES:
+	    unlabeled_triples.add(t);
+	    break;
+
+	}
     }
 
-
     /**
-     * Given the article, extract the triples from the sentences.
+     * Given the article, iterate all te sentences and extract the triples.
+     * Here we pre-process them and we extract list of entities.
+     * 
      * 
      * @param article
      */
     public void extractTriples(WikiArticle article) {
-	for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
-	    for (String sentence : sentenceCollection.getValue()) {
-		sentence = preprocess(sentence);
-		sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
-		for (Triple t : createTriples(sentence)) {
-		    if(isCorrectTriple(t)){
-			if(t.isMVTriple()){
-			    this.triplesMVL.add(Pair.make(article.getWikid(), t));
-			    break;
-			}
-			if(t.isNERTriple()){
-			    this.triplesNER.add(Pair.make(article.getWikid(), t));
-			    break;
-			}
-			if(t.isJoinableTriple()){
-			    Set<String> labels = t.getLabels();
-			    if (!labels.isEmpty()){
-				this.triplesLabeled.add(Pair.make(Pair.make(article.getWikid(), t), StringUtils.join(labels, ",")));
-				synchronized(wc){
-				    for(String label : labels)
-					//wc.newPhraseAndRelation(t.getSubjectType() + t.getPhrase() + t.getObjectType(), label);
-					wc.newPhraseAndRelation(t.getPhrase(), label);
-				}
-			    }else{
-				this.triplesUnlabeled.add(Pair.make(article.getWikid(), t));
-				synchronized(wc){
-				    //wc.newPhraseAlone(t.getSubjectType() + t.getPhrase() + t.getObjectType());
-				    wc.newPhraseAlone(t.getPhrase());
-				}
-			    }
-			    break;
-			}
+	try{
+	    for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
+		for (String sentence : sentenceCollection.getValue()) {
+		    sentence = preprocess(sentence);
+		    sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
+		    for (WikiTriple t : createTriples(article, sentence)) {
+			processTriple(t);
 		    }
 		}
 	    }
+	}catch(Exception e){
+	    e.printStackTrace();
 	}
     }
 
-
-
     /**
+     * Replace all the MVL lists that are present in the sentence.
      * 
      * @param sentence
      * @return
      */
     private String replaceMultiValuedList(String sentence, String section, String wikid){
-	// find entities
-	String taggedEntity = "<[A-Z-][^>]*?>>";
-
-	Pattern ENTITIES = Pattern.compile("(" + taggedEntity + "(,)\\s){3,8}" + "((,)?\\sand\\s([A-Za-z0-9 ]+\\s)?" + taggedEntity + ")?");
-	Matcher m = ENTITIES.matcher(sentence);
+	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
 	while(m.find()){
-	    MultiValue mv = new MultiValue(m.group(0), section, wikid);
-	    this.mvl.add(mv);
-	    sentence = m.replaceAll("<MVL<" + mv.getCode() + ">>");
+	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
+	    db.insertMVList(mv);
+	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
 	}
 	return sentence;
     }
@@ -152,23 +129,24 @@ public class Triplifier {
      * @param triple
      * @return
      */
-    private boolean isCorrectTriple(Triple triple){
-	boolean isCorrect = true;
-
-	// we remove triples with possessive objects ('s)
-	if(triple.getPost().startsWith("'s"))
-	    isCorrect = false;
-
-	// we remove triples with objects intoduced with "that"
-	if(triple.getPhrase().endsWith(" that"))
-	    isCorrect = false;
-
-	// we remove triples with phrase longer than 10
-	if (triple.getPhrase().split(" ").length > 10){
-	    isCorrect = false;
+    private List<WikiTriple> filterUncorrectTriple(List<WikiTriple> triples){
+	List<WikiTriple> filteredTriples = new ArrayList<WikiTriple>(triples.size());
+	boolean isCorrect;
+	for (WikiTriple t : triples){
+	    isCorrect = true;
+	    // we remove triples with possessive objects ('s)
+	    if(t.getPost().startsWith("'s"))
+		isCorrect = false;
+	    // we remove triples with objects intoduced with "that"
+	    if(t.getPhrase().endsWith(" that"))
+		isCorrect = false;
+	    // we remove triples with phrase longer than 10
+	    if (t.getPhrase().split(" ").length > 10)
+		isCorrect = false;
+	    if (isCorrect)
+		filteredTriples.add(t);
 	}
-
-	return isCorrect;
+	return filteredTriples;
     }
 
     /**
@@ -194,14 +172,14 @@ public class Triplifier {
      * @param sentence
      * @return
      */
-    private List<Triple> createTriples(String sentence) {
-	List<Triple> triples = new ArrayList<Triple>();
+    public List<WikiTriple> createTriples(WikiArticle article, String sentence) {
+	List<WikiTriple> triples = new ArrayList<WikiTriple>();
 
 	// find entities
 	Pattern ENTITIES = Pattern.compile("<[A-Z-][^>]*?>>");
 	Matcher m = ENTITIES.matcher(sentence);
 
-	// condition
+	// initial condition
 	boolean foundSubject = false;
 
 	// entities
@@ -217,13 +195,13 @@ public class Triplifier {
 	int objectStartPos = 0;
 	int objectEndPos = 0;
 
-
 	while(m.find()){
 	    if (!foundSubject) {
 		foundSubject = true;
 		subject = m.group(0);
 		subjectStartPos = m.start(0);
 		subjectEndPos = m.end(0);
+
 	    }else{
 		object = m.group(0);
 		objectStartPos = m.start(0);
@@ -233,7 +211,11 @@ public class Triplifier {
 		post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
 		phrase = sentence.substring(subjectEndPos, objectStartPos).trim();
 
-		Triple t = new Triple(preprocess(pre), subject, preprocess(phrase), object, preprocess(post));
+		pre = preprocess(pre);
+		post = preprocess(post);
+		phrase = preprocess(phrase);
+
+		WikiTriple t = new WikiTriple(article.getWikid(), pre, subject, phrase, object, post);
 		triples.add(t);
 
 		// change subject now for the next triple
@@ -242,7 +224,8 @@ public class Triplifier {
 		subjectEndPos = objectEndPos;
 	    }
 	}
-	return triples;
+
+	return filterUncorrectTriple(triples);
     }
 
     /**
@@ -318,6 +301,35 @@ public class Triplifier {
 	return buf.toString();
     }
 
+    /**
+     * 
+     */
+    public void endConnection(){
+	db.closeConnection();
+    }
+    
+    /**
+     * 
+     */
+    public void updateBlock(){
+	for (Pair<WikiTriple, String> pair : this.labeled_triples){
+	    db.insertLabeledTriple(pair.key, pair.value);
+	}
+	
+	for(WikiTriple t : this.unlabeled_triples){
+	    db.insertUnlabeledTriple(t);
+	}
+	
+	for (Map.Entry<String, Integer> entry : this.stats.entrySet()){
+	    String[] fields = entry.getKey().split("\t");
+	    db.updateModelStats(fields[0], fields[1], fields[2], fields[3], entry.getValue());
+	}
+	
+	this.unlabeled_triples.clear();
+	this.labeled_triples.clear();
+	this.stats.clear();
+    }
+
 
     /**
      * Used for testing.
@@ -325,106 +337,29 @@ public class Triplifier {
      * @return
      */
     public String printEverything(){
+	db = new DBlite();
 	StringBuffer sb = new StringBuffer();
 
 	sb.append("\n");sb.append("\n");
-	sb.append(" ------  MULTIVALUE TRIPLES ------ ");
-	sb.append("\n");
-	for (Pair<String, Triple> t : this.triplesMVL){
-	    sb.append(t.key + "\t" + t.value.toString());
-	    sb.append("\n");
-	}
-	this.triplesMVL.clear();
-	
-	sb.append("\n");sb.append("\n");
 	sb.append(" ------  LABELED TRIPLES ------ ");
 	sb.append("\n");
-	for (Pair<Pair<String, Triple>, String> t : this.triplesLabeled){
-	    sb.append(t.key.key + "\t" + t.key.value.toString() + "\t" + t.value);
+	for (Pair<WikiTriple, String> lt : db.selectLabeledTriple()){
+	    sb.append(lt.key.toString() + "\t" + lt.value);
 	    sb.append("\n");
 	}
-	this.triplesLabeled.clear();
-	
+
 	sb.append("\n");sb.append("\n");
 	sb.append(" ------  UNLABELED TRIPLES ------ ");
 	sb.append("\n");
-	for (Pair<String, Triple> t : this.triplesUnlabeled){
-	    sb.append(t.key + "\t" + t.value.toString());
+	for (WikiTriple lt : db.selectUnlabeledTriple()){
+	    sb.append(lt.getType() + "\t "  + lt.toString());
 	    sb.append("\n");
 	}
-	this.triplesUnlabeled.clear();
-
-	sb.append("\n");sb.append("\n");
-	sb.append(" ------  NER TRIPLES ------ ");
-	sb.append("\n");
-	for (Pair<String, Triple> t : this.triplesNER){
-	    sb.append(t.key + "\t" + t.value.toString());
-	    sb.append("\n");
-	}
-	this.triplesNER.clear();
-	
+	db.closeConnection();
 	return sb.toString();
     }
 
-    /**
-     * 
-     */
-    public void flushEverything(){
-	try{
-	    BufferedWriter bMVL = new BufferedWriter(new FileWriter(this.mvlFile, true));
-	    for (MultiValue mv : this.mvl){
-		bMVL.write(mv.toString());
-		bMVL.write("\n");
-	    }
-	    bMVL.close();
-	    this.mvl.clear();
 
-	    BufferedWriter bTRIPLESMVL = new BufferedWriter(new FileWriter(this.mvlTriplesFile, true));
-	    for (Pair<String, Triple> t : this.triplesMVL){
-		bTRIPLESMVL.write(t.key + "\t" + t.value.toString());
-		bTRIPLESMVL.write("\n");
-	    }
-	    bTRIPLESMVL.close();
-	    this.triplesMVL.clear();
 
-	    BufferedWriter bLABELED = new BufferedWriter(new FileWriter(this.labledTriplesFile, true));
-	    for (Pair<Pair<String, Triple>, String> t : this.triplesLabeled){
-		bLABELED.write(t.key.key + "\t" + t.key.value.toString() + "\t" + t.value);
-		bLABELED.write("\n");
-	    }
-	    bLABELED.close();
-	    this.triplesLabeled.clear();
-
-	    BufferedWriter bUNLABELED = new BufferedWriter(new FileWriter(this.unlabledTriplesFile, true));
-	    for (Pair<String, Triple> t : this.triplesUnlabeled){
-		bUNLABELED.write(t.key + "\t" + t.value.toString());
-		bUNLABELED.write("\n");
-	    }
-	    bUNLABELED.close();
-	    this.triplesUnlabeled.clear();
-
-	    BufferedWriter bNER = new BufferedWriter(new FileWriter(this.nerTriplesFile, true));
-	    for (Pair<String, Triple> t : this.triplesNER){
-		bNER.write(t.key + "\t" + t.value.toString());
-		bNER.write("\n");
-	    }
-	    bNER.close();
-	    this.triplesNER.clear();  
-
-	}catch(Exception e){
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * 
-     */
-    public void printStatistics(){
-	try {
-	    this.wc.printStatistics();
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
 
 }

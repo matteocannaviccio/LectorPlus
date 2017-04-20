@@ -5,3 +5,4 @@ target/
 .project
 .settings/
 javadoc
+lector.db

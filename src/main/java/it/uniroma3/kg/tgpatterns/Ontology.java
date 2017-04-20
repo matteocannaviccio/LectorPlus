@@ -1,4 +1,4 @@
-package it.uniroma3.kg.ontology;
+package it.uniroma3.kg.tgpatterns;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,7 +11,7 @@ import java.util.Set;
 import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.reader.RDFReader;
+import it.uniroma3.util.reader.RDFReader;
 /**
  * 
  * @author matteo
@@ -68,7 +68,10 @@ public class Ontology {
      * @param object
      */
     public TGPattern getTGPattern(String node){
-
+	
+	if (node.equals("[none]")){
+	    return TGPattern.make(null, 0);
+	}
 	List<List<Node>> levels = new LinkedList<List<Node>>();
 	List<Node> levelLeaf = new LinkedList<Node>();
 	levelLeaf.add(Node.make(node));
@@ -95,6 +98,15 @@ public class Ontology {
 	    }
 	}
 	return TGPattern.make(levels, 1);
+    }
+    
+    /**
+     * 
+     * @param node
+     * @return
+     */
+    public int depthNode(String node){
+	return getTGPattern(node).getDepth();
     }
 
 }
