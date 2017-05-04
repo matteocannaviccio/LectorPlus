@@ -5,10 +5,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import it.uniroma3.bean.WikiArticle;
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle;
-import it.uniroma3.model.WikiLanguage;
 
 public class MarkupParserTest {
 
@@ -37,6 +37,7 @@ public class MarkupParserTest {
 		+ "as well as a record number of FIFA World Player of the Year. Xavi in 2010, together with two "
 		+ "other players who came through the club's youth academy ([[Lionel Messi]], [[Andrés Iniesta]]) "
 		+ "were chosen as the three best players in the world";
+	System.out.println(Lector.getMarkupParser().cleanEmptyTemplateWikilinks(raw));
 	assertEquals(Lector.getMarkupParser().cleanEmptyTemplateWikilinks(raw), clean);
     }
 
@@ -95,24 +96,25 @@ public class MarkupParserTest {
     public void harvestAllWikilinksBadformattedTest(){
 	WikiArticle article = WikiArticle.makeDummyArticle();
 
-	String raw = "test 1 - a [[wikilink|Jh]] molecule that is described.\n"
-		+ "test 2 - a [[wikilink|@A]] molecule that is described.\n"
-		+ "test 3 - a [[wikilink|Rend[ered]]] molecule that is described.\n"
-		+ "test 4 - a [[[wikilink|Rendered]]] molecule that is described.\n"
-		+ "test 5 - a [wikilink|[rend[ered]]]] molecule that is described.\n"
+	String raw = "test 1 - a [[strangewikilink|Jh]] molecule that is described.\n"
+		+ "test 2 - a [[strangewikilink|@A]] molecule that is described.\n"
+		+ "test 3 - a [[strangewikilink|Rend[ered]]] molecule that is described.\n"
+		+ "test 4 - a [[[strangewikilink|Rendered]]] molecule that is described.\n"
+		+ "test 5 - a [strangewikilink|[rend[ered]]]] molecule that is described.\n"
 		+ "test 6 - a [[Wikilink))|Wikilik))]] molecule that is described.\n"
-		+ "test 7 - a [[wikilink#specific|rendered]] molecule that is described.\n"
-		+ "test 8 - a [[wikilink#specific|2001]] molecule that is described.";
+		+ "test 7 - a [[strangewikilink#specific|rendered]] molecule that is described.\n"
+		+ "test 8 - a [[strangewikilink#specific|2001]] molecule that is described.";
 
-	String clean = "test 1 - a <SE-ORG<wikilink>> molecule that is described.\n"
-		+ "test 2 - a <SE-ORG<wikilink>> molecule that is described.\n"
-		+ "test 3 - a <SE-ORG<wikilink>> molecule that is described.\n"
-		+ "test 4 - a <SE-ORG<wikilink>> molecule that is described.\n"
-		+ "test 5 - a [wikilink|[rend[ered]]]] molecule that is described.\n"
+	String clean = "test 1 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
+		+ "test 2 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
+		+ "test 3 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
+		+ "test 4 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
+		+ "test 5 - a [strangewikilink|[rend[ered]]]] molecule that is described.\n"
 		+ "test 6 - a <SE-ORG<Wikilink))>> molecule that is described.\n"
-		+ "test 7 - a <SE-ORG<wikilink>> molecule that is described.\n"
+		+ "test 7 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
 		+ "test 8 - a 2001 molecule that is described.";
 
+	System.out.println(Lector.getMarkupParser().harvestAllWikilinks(raw, article));
 	assertEquals(Lector.getMarkupParser().harvestAllWikilinks(raw, article), clean);
 	assertEquals(article.getWikilinks().size(), 6);
     }

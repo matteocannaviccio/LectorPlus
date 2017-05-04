@@ -3,9 +3,9 @@ package it.uniroma3.util;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiLanguage;
 
 public class StanfordExpertNLPTest {
     

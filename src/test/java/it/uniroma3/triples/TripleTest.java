@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.triples.WikiTriple.TType;
 
 public class TripleTest {
@@ -36,9 +36,9 @@ public class TripleTest {
     
     @Test
     public void isTypeTripleTest() {
-	assertEquals(tripleNER1.getType(), TType.OBJNER);
-	assertEquals(tripleNER2.getType(), TType.BOTHNER);
-	assertEquals(tripleNER3.getType(), TType.SBJNER);
+	assertEquals(tripleNER1.getType(), TType.NER_OBJ);
+	assertEquals(tripleNER2.getType(), TType.NER_BOTH);
+	assertEquals(tripleNER3.getType(), TType.NER_SBJ);
 	assertEquals(tripleJoinable1.getType(), TType.JOINABLE);
 	assertEquals(tripleJoinableWrong.getType(), TType.JOINABLE);
     }
