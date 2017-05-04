@@ -14,7 +14,7 @@ import java.util.Set;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
-import it.uniroma3.model.WikiArticle;
+import it.uniroma3.bean.WikiArticle;
 
 public class JSONReader {
 

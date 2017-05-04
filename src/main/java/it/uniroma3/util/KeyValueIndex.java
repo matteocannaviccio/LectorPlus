@@ -1,4 +1,4 @@
-package it.uniroma3.util.index;
+package it.uniroma3.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -173,7 +173,7 @@ public class KeyValueIndex {
 	String encodedValue = this.encodeBase64(value);
 	Query query = new TermQuery(new Term("value", encodedValue));
 	try {
-	    TopDocs hits = this.indexSearcher.search(query, 20);
+	    TopDocs hits = this.indexSearcher.search(query, 10000);
 	    for (ScoreDoc sd : hits.scoreDocs) {
 		Document d = this.indexSearcher.doc(sd.doc);
 		String decodedKey = this.decodeBase64(d.getField("key").stringValue());
