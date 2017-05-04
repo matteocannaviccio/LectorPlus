@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.bean.WikiLanguage;
 /**
  * 
  * @author matteo

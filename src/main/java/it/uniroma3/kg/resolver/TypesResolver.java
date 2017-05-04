@@ -11,7 +11,7 @@ import it.uniroma3.configuration.Configuration;
 import it.uniroma3.kg.normalizer.TypesNormalizer;
 import it.uniroma3.kg.tgpatterns.Ontology;
 import it.uniroma3.kg.tgpatterns.TGPattern;
-import it.uniroma3.util.index.KeyValueIndex;
+import it.uniroma3.util.KeyValueIndex;
 /**
  * 
  * @author matteo
@@ -198,7 +198,7 @@ public class TypesResolver {
 
 	TypesResolver t = new TypesResolver();
 
-	String entity = "Euclidean_geometry";
+	String entity = "2010_in_Strikeforce";
 	System.out.println("USED --> " + t.assignTypes(entity));
 
 	System.out.println("\nTypes in orginal mapping: ");

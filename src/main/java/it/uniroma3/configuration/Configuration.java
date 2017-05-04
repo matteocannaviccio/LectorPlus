@@ -346,34 +346,14 @@ public class Configuration {
 
     /***********************************************************************/
 
-    /***********************************************************************/
-    public static String getMVLFile(){
-	return getTriplesFolder() + "/" + keyValue.get("multiValuesFile");
-    }
-
-    public static String getMVLTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("multiValuesTriples");
-    }
-
-    public static String getLabeledTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("labeledTriples");
-    }
-
-    public static String getUnlabeledTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("unlabeledTriples");
-    }
-
-    public static String getTotalNERTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("nerTotalTriples");
-    }
-
-    public static String getPartialNERTriples(){
-	return getTriplesFolder() + "/" + keyValue.get("nerPartialTriples");
-    }
-
     public static String getStatisticsFile(){
 	return getTriplesFolder() + "/" + keyValue.get("stats");
     }
+    
+    public static String getFactsProducedFile(){
+	return getTriplesFolder() + "/" + keyValue.get("facts");
+    }
+    
     /***********************************************************************/
 
 

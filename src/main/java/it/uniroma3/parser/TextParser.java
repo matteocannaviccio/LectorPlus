@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiLanguage;
 /**
  * 
  * @author matteo

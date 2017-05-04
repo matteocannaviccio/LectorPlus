@@ -16,6 +16,9 @@ public class WikiTriple {
 
     private String subject;
     private String object;
+    
+    private String wikiSubject;
+    private String wikiObject;
 
     private String subjectType;
     private String objectType;
@@ -27,7 +30,15 @@ public class WikiTriple {
     private TType type;
 
     public enum TType {
-	MVL, BOTHNER, SBJNER, OBJNER, JOINABLE, JOINABLENOTYPES, DROP
+	MVL,
+	JOINABLE,
+	JOINABLE_NOTYPE_BOTH,
+	JOINABLE_NOTYPE_SBJ,
+	JOINABLE_NOTYPE_OBJ,
+	NER_BOTH,
+	NER_SBJ,
+	NER_OBJ,
+	DROP
     }
 
     /**
@@ -42,14 +53,16 @@ public class WikiTriple {
      * @param articleType
      */
     public WikiTriple(String wikid, String phrase, String subject,  String object, 
-	    String subjectType, String objectType, String articleType){
+	    String subjectType, String objectType, String tripleType){
 	this.wikid = wikid;
 	this.subject = subject;
+	this.wikiSubject = getWikipediaName(subject);
 	this.subjectType = subjectType;
 	this.phrase = phrase;
 	this.object = object;
+	this.wikiObject = getWikipediaName(object);
 	this.objectType = objectType;
-	this.type = TType.valueOf(articleType);
+	this.type = TType.valueOf(tripleType);
     }
 
     /**
@@ -65,9 +78,11 @@ public class WikiTriple {
     public WikiTriple(String wikid, String pre, String subject, String phrase, String object, String post){
 	this.wikid = wikid;
 	this.subject = subject;
+	this.wikiSubject = getWikipediaName(subject);
 	this.subjectType = getEntityType(subject);
 	this.phrase = phrase;
 	this.object = object;
+	this.wikiObject = getWikipediaName(object);
 	this.objectType = getEntityType(object);
 	this.pre = pre;
 	this.post = post;
@@ -78,31 +93,46 @@ public class WikiTriple {
      * Assign the type based on the entities involved.
      */
     private void assignType(){
+	
 	if (isWikiEntity(this.subject) && isMVLEntity(this.object)){
 	    this.type = TType.MVL;
 	    return;
 	}
+	
 	if (isWikiEntity(this.subject) && isWikiEntity(this.object)){
 	    if (!getSubjectType().equals("[none]") && !getObjectType().equals("[none]")){
 		this.type = TType.JOINABLE;
 		return;
-	    }else{
-		this.type = TType.JOINABLENOTYPES;
+	    }
+	    if (getSubjectType().equals("[none]") && getObjectType().equals("[none]")){
+		this.type = TType.JOINABLE_NOTYPE_BOTH;
+		return;
+	    }
+	    if (!getSubjectType().equals("[none]") && getObjectType().equals("[none]")){
+		this.type = TType.JOINABLE_NOTYPE_OBJ;
+		return;
+	    }
+	    if (getSubjectType().equals("[none]") && !getObjectType().equals("[none]")){
+		this.type = TType.JOINABLE_NOTYPE_SBJ;
 		return;
 	    }
 	}
+	
 	if (isNEREntity(this.subject) && isNEREntity(this.object)){
-	    this.type = TType.BOTHNER;
+	    this.type = TType.NER_BOTH;
 	    return;
-	}	
+	}
+	
 	if (isNEREntity(this.subject) && isWikiEntity(this.object)){
-	    this.type = TType.SBJNER;
+	    this.type = TType.NER_SBJ;
 	    return;
 	}
+	
 	if (isWikiEntity(this.subject) && isNEREntity(this.object)){
-	    this.type = TType.OBJNER;
+	    this.type = TType.NER_OBJ;
 	    return;
 	}
+	
 	this.type = TType.DROP;
     }
 
@@ -162,7 +192,7 @@ public class WikiTriple {
      * @return
      */
     public Set<String> getLabels() {
-	return Lector.getKg().getRelations(subject, object);
+	return Lector.getKg().getRelations(wikiSubject, wikiObject);
     }
 
 
@@ -176,9 +206,25 @@ public class WikiTriple {
 	String type = "[none]";
 	// make sure it makes sense to qyery the type
 	if (isWikiEntity(entity) && !isMVLEntity(entity) && !isNEREntity(entity)){
-	    type = Lector.getKg().getType(entity);
+	    type = Lector.getKg().getType(getWikipediaName(entity));
 	}
 	return type;
+    }
+    
+    /**
+     * This method extracts Wikipedia Id (i.e. wikid) from the annotated entities.
+     * 
+     * @param entity
+     * @return
+     */
+    private String getWikipediaName(String entity){
+	String dbpediaEntity = null;
+	Pattern ENTITY = Pattern.compile("<[A-Z-]+<([^>]*?)>>");
+	Matcher m = ENTITY.matcher(entity);
+	if(m.find()){
+	    dbpediaEntity = m.group(1);
+	}
+	return dbpediaEntity;
     }
 
     /**
@@ -321,6 +367,20 @@ public class WikiTriple {
      */
     public String getWikid() {
 	return wikid;
+    }
+
+    /**
+     * @return the wikiSubject
+     */
+    public String getWikiSubject() {
+        return wikiSubject;
+    }
+
+    /**
+     * @return the wikiObject
+     */
+    public String getWikiObject() {
+        return wikiObject;
     }
 
 }

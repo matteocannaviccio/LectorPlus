@@ -23,7 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import edu.stanford.nlp.util.StringUtils;
-import it.uniroma3.model.WikiArticle;
+import it.uniroma3.bean.WikiArticle;
 import it.uniroma3.util.Pair;
 /**
  * 

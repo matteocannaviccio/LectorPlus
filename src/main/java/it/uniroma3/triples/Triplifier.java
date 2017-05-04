@@ -10,16 +10,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.bean.WikiArticle;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle;
+import it.uniroma3.model.DBlite;
 import it.uniroma3.util.Pair;
-import it.uniroma3.util.index.DBlite;
 
 /**
- * This module extracts triples from the articles a put them in the db.
+ * This module extracts triples from the articles and write them in DB.
  * 
  * Before to extract the triple we pre-process the sentence and perform
  * some text filtering such as:
+ * - applying place-holders
  * - removing parenthesis
  * - removing triples where the object is followed by 's
  * - removing triples with phrases that end with "that"
@@ -33,20 +34,44 @@ public class Triplifier {
     private Map<String, Integer> stats;
     private Queue<Pair<WikiTriple, String>> labeled_triples;
     private Queue<WikiTriple> unlabeled_triples;
-
+    private PlaceholderFilter placeholderFilter;
 
     /**
      * 
      */
     public Triplifier() {
-	db = new DBlite();
-	db.createDB();
+	db = new DBlite("lector.db");
+	// uncomment for new execution
+	//db.createDB();
 	stats = new ConcurrentHashMap<String, Integer>();
 	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
-
+	placeholderFilter = new PlaceholderFilter();
     }
 
+    /**
+     * Given the article, iterate all the sentences and extract the triples.
+     * We eliminate the content inside parenthesis and then we dispatch
+     * each triple in the right db using its type as a label.
+     * 
+     * @param article
+     */
+    public void extractTriples(WikiArticle article) {
+	try{
+	    for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
+		for (String sentence : sentenceCollection.getValue()) {
+		    sentence = Lector.getTextParser().removeParenthesis(sentence);
+		    sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
+		    for (WikiTriple t : createTriples(article, sentence)) {
+			processTriple(t);
+		    }
+		}
+	    }
+	}catch(Exception e){
+	    e.printStackTrace();
+	}
+    }
+    
     /**
      * Dispatch the triple in the DB, with the right label on it.
      * 
@@ -54,7 +79,7 @@ public class Triplifier {
      */
     public void processTriple(WikiTriple t){
 	switch(t.getType()){
-	
+
 	// it is a joinable triple only if both the subject
 	// and object are wiki entities with a type
 	case JOINABLE: 
@@ -66,7 +91,7 @@ public class Triplifier {
 		    if (!stats.containsKey(key))
 			stats.put(key, 0);
 		    stats.put(key, stats.get(key) + 1);
-			
+
 		}
 	    }else{
 		unlabeled_triples.add(t);
@@ -74,96 +99,17 @@ public class Triplifier {
 	    break;
 
 	case MVL:
-	case SBJNER:
-	case OBJNER:
-	case BOTHNER:
+	case NER_BOTH:
+	case NER_OBJ:
+	case NER_SBJ:
+	case JOINABLE_NOTYPE_BOTH:
+	case JOINABLE_NOTYPE_SBJ:
+	case JOINABLE_NOTYPE_OBJ:
 	case DROP:
-	case JOINABLENOTYPES:
 	    unlabeled_triples.add(t);
 	    break;
 
 	}
-    }
-
-    /**
-     * Given the article, iterate all te sentences and extract the triples.
-     * Here we pre-process them and we extract list of entities.
-     * 
-     * 
-     * @param article
-     */
-    public void extractTriples(WikiArticle article) {
-	try{
-	    for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
-		for (String sentence : sentenceCollection.getValue()) {
-		    sentence = preprocess(sentence);
-		    sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
-		    for (WikiTriple t : createTriples(article, sentence)) {
-			processTriple(t);
-		    }
-		}
-	    }
-	}catch(Exception e){
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * Replace all the MVL lists that are present in the sentence.
-     * 
-     * @param sentence
-     * @return
-     */
-    private String replaceMultiValuedList(String sentence, String section, String wikid){
-	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
-	while(m.find()){
-	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
-	    db.insertMVList(mv);
-	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
-	}
-	return sentence;
-    }
-
-    /**
-     * 
-     * @param triple
-     * @return
-     */
-    private List<WikiTriple> filterUncorrectTriple(List<WikiTriple> triples){
-	List<WikiTriple> filteredTriples = new ArrayList<WikiTriple>(triples.size());
-	boolean isCorrect;
-	for (WikiTriple t : triples){
-	    isCorrect = true;
-	    // we remove triples with possessive objects ('s)
-	    if(t.getPost().startsWith("'s"))
-		isCorrect = false;
-	    // we remove triples with objects intoduced with "that"
-	    if(t.getPhrase().endsWith(" that"))
-		isCorrect = false;
-	    // we remove triples with phrase longer than 10
-	    if (t.getPhrase().split(" ").length > 10)
-		isCorrect = false;
-	    if (isCorrect)
-		filteredTriples.add(t);
-	}
-	return filteredTriples;
-    }
-
-    /**
-     * Eliminate parethesis.
-     * 
-     * @param sentence
-     * @return
-     */
-    private String preprocess(String sentence){
-	sentence = Lector.getTextParser().removeParenthesis(sentence);
-	sentence = sentence.replaceAll(",,", ",");
-	sentence = sentence.replaceAll("''", "");
-	sentence = sentence.replaceAll("\"", "");
-	sentence = sentence.replaceAll("—", " ");
-	sentence = sentence.replaceAll("=", "");
-	sentence = sentence.trim();
-	return sentence;
     }
 
     /**
@@ -211,12 +157,14 @@ public class Triplifier {
 		post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
 		phrase = sentence.substring(subjectEndPos, objectStartPos).trim();
 
-		pre = preprocess(pre);
-		post = preprocess(post);
-		phrase = preprocess(phrase);
+		pre = placeholderFilter.preprocess(pre);
+		post = placeholderFilter.preprocess(post);
+		phrase = placeholderFilter.preprocess(phrase);
 
-		WikiTriple t = new WikiTriple(article.getWikid(), pre, subject, phrase, object, post);
-		triples.add(t);
+		if (!phrase.equals("")){
+		    WikiTriple t = new WikiTriple(article.getWikid(), pre, subject, phrase, object, post);
+		    triples.add(t);
+		}
 
 		// change subject now for the next triple
 		subject = object;
@@ -226,6 +174,47 @@ public class Triplifier {
 	}
 
 	return filterUncorrectTriple(triples);
+    }
+    
+    /**
+     * 
+     * @param triple
+     * @return
+     */
+    private List<WikiTriple> filterUncorrectTriple(List<WikiTriple> triples){
+	List<WikiTriple> filteredTriples = new ArrayList<WikiTriple>(triples.size());
+	boolean isCorrect;
+	for (WikiTriple t : triples){
+	    isCorrect = true;
+	    // we remove triples with possessive objects ('s)
+	    if(t.getPost().startsWith("'s"))
+		isCorrect = false;
+	    // we remove triples with objects intoduced with "that"
+	    if(t.getPhrase().endsWith(" that"))
+		isCorrect = false;
+	    // we remove triples with phrase longer than 10
+	    if (t.getPhrase().split(" ").length > 10)
+		isCorrect = false;
+	    if (isCorrect)
+		filteredTriples.add(t);
+	}
+	return filteredTriples;
+    }
+    
+    /**
+     * Replace all the MVL lists that are present in the sentence.
+     * 
+     * @param sentence
+     * @return
+     */
+    private String replaceMultiValuedList(String sentence, String section, String wikid){
+	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
+	while(m.find()){
+	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
+	    db.insertMVList(mv);
+	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
+	}
+	return sentence;
     }
 
     /**
@@ -307,7 +296,7 @@ public class Triplifier {
     public void endConnection(){
 	db.closeConnection();
     }
-    
+
     /**
      * 
      */
@@ -315,51 +304,20 @@ public class Triplifier {
 	for (Pair<WikiTriple, String> pair : this.labeled_triples){
 	    db.insertLabeledTriple(pair.key, pair.value);
 	}
-	
+
 	for(WikiTriple t : this.unlabeled_triples){
 	    db.insertUnlabeledTriple(t);
 	}
-	
+
 	for (Map.Entry<String, Integer> entry : this.stats.entrySet()){
 	    String[] fields = entry.getKey().split("\t");
 	    db.updateModelStats(fields[0], fields[1], fields[2], fields[3], entry.getValue());
 	}
-	
+
 	this.unlabeled_triples.clear();
 	this.labeled_triples.clear();
 	this.stats.clear();
     }
-
-
-    /**
-     * Used for testing.
-     * 
-     * @return
-     */
-    public String printEverything(){
-	db = new DBlite();
-	StringBuffer sb = new StringBuffer();
-
-	sb.append("\n");sb.append("\n");
-	sb.append(" ------  LABELED TRIPLES ------ ");
-	sb.append("\n");
-	for (Pair<WikiTriple, String> lt : db.selectLabeledTriple()){
-	    sb.append(lt.key.toString() + "\t" + lt.value);
-	    sb.append("\n");
-	}
-
-	sb.append("\n");sb.append("\n");
-	sb.append(" ------  UNLABELED TRIPLES ------ ");
-	sb.append("\n");
-	for (WikiTriple lt : db.selectUnlabeledTriple()){
-	    sb.append(lt.getType() + "\t "  + lt.toString());
-	    sb.append("\n");
-	}
-	db.closeConnection();
-	return sb.toString();
-    }
-
-
 
 
 }

@@ -1,4 +1,4 @@
-package it.uniroma3.model;
+package it.uniroma3.bean;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.bean.WikiArticle;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle;
 import it.uniroma3.util.reader.TSVReader;
 
 /**

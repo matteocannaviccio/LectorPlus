@@ -1,12 +1,10 @@
 package it.uniroma3.configuration;
 
-import java.io.File;
-
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.entitydetection.ReplAttacher;
 import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.entitydetection.SeedFSM;
 import it.uniroma3.kg.KGEndPoint;
-import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.ArticleTyper;
 import it.uniroma3.parser.BlockParser;
 import it.uniroma3.parser.MarkupParser;
@@ -56,7 +54,7 @@ public class Lector {
 	triplifier = new Triplifier();
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
-	
+
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
 		return new StanfordNLP();
@@ -74,8 +72,6 @@ public class Lector {
 		return new SeedFSM(openNLPExpert.get());
 	    }
 	};
-	
-	initMVLFile();
     }
 
     
@@ -135,15 +131,6 @@ public class Lector {
         return openNLPExpert;
     }
     
-    /**
-     * 
-     */
-    private static void initMVLFile(){
-	File file = new File(Configuration.getMVLFile());
-	if(file.exists()){
-	    file.delete();
-	}
-    }
 
     /**
      * @return the fsm

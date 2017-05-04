@@ -7,9 +7,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import it.uniroma3.bean.WikiArticle.ArticleType;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle.ArticleType;
 import it.uniroma3.util.reader.XMLReader;
 
 /**

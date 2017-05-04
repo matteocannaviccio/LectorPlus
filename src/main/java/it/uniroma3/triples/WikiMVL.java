@@ -33,12 +33,28 @@ public class WikiMVL {
     }
     
     /**
+     * This method extracts Wikipedia Id (i.e. wikid) from the annotated entities.
+     * 
+     * @param entity
+     * @return
+     */
+    private String getWikipediaName(String entity){
+	String dbpediaEntity = null;
+	Pattern ENTITY = Pattern.compile("<[A-Z-]+<([^>]*?)>>");
+	Matcher m = ENTITY.matcher(entity);
+	if(m.find()){
+	    dbpediaEntity = m.group(1);
+	}
+	return dbpediaEntity;
+    }
+    
+    /**
      * Check that the entries of a MVL have all the same type.
      * 
      * @return
      */
     public String mineType(){
-	String type = Lector.getKg().getType(this.listWikid.get(0));
+	String type = Lector.getKg().getType(getWikipediaName(this.listWikid.get(0)));
 	for (String entity : this.listWikid){
 	    if (!Lector.getKg().getType(entity).equals(type)){
 		type = "[none]";

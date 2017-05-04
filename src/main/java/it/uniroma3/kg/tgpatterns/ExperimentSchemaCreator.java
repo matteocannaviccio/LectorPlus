@@ -6,13 +6,31 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.util.Pair;
 
 public class ExperimentSchemaCreator {
+    
+    /**
+     * This method extracts Wikipedia Id (i.e. wikid) from the annotated entities.
+     * 
+     * @param entity
+     * @return
+     */
+    private static String getWikipediaName(String entity){
+	String dbpediaEntity = null;
+	Pattern ENTITY = Pattern.compile("<[A-Z-]+<([^>]*?)>>");
+	Matcher m = ENTITY.matcher(entity);
+	if(m.find()){
+	    dbpediaEntity = m.group(1);
+	}
+	return dbpediaEntity;
+    }
 
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
@@ -38,8 +56,8 @@ public class ExperimentSchemaCreator {
 		String relation = line.split("\t")[1];
 
 
-		TGPattern subjectTGP = Lector.getKg().getTGPattern(subject);
-		TGPattern objectTGP = Lector.getKg().getTGPattern(object);
+		TGPattern subjectTGP = Lector.getKg().getTGPattern(ExperimentSchemaCreator.getWikipediaName(subject));
+		TGPattern objectTGP = Lector.getKg().getTGPattern(ExperimentSchemaCreator.getWikipediaName(object));
 
 		if (subjectTGP != null && objectTGP != null){
 		    if(!relation2counts.containsKey(relation)){

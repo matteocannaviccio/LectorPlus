@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.uniroma3.model.WikiArticle;
+import it.uniroma3.bean.WikiArticle;
 import it.uniroma3.util.Pair;
 
 public class Calculator {

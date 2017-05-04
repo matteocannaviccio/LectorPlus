@@ -7,16 +7,16 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.configuration.Configuration;
-import it.uniroma3.util.index.KeyValueIndex;
+import it.uniroma3.util.KeyValueIndex;
 /**
  * 
  * @author matteo
  *
  */
 public class RelationsResolver {
-    
+
     private KeyValueIndex indexKG;
-    
+
     public RelationsResolver(){
 	if (!new File(Configuration.getKGIndex()).exists()){
 	    System.out.print("Creating [relations] index ...");
@@ -28,7 +28,7 @@ public class RelationsResolver {
 	else // we already have the index
 	    this.indexKG = new KeyValueIndex(Configuration.getKGIndex());
     }
-    
+
     /**
      * 
      * @param wikidSubject
@@ -48,6 +48,28 @@ public class RelationsResolver {
 
     /**
      * 
+     * @param relation
+     * @return
+     */
+    private void getInstances(String relation){
+	for (String instance : indexKG.retrieveKeys(relation))
+	    System.out.println(instance);
+    }
+
+    /**
+     * 
+     * @param subject
+     * @param object
+     */
+    private void findRelations(String subject, String object){
+	System.out.println("Relations in DBPedia between <" + subject + "> and <" + object + ">:");
+	for (String relation : getRelations(subject, object))
+	    System.out.println("\t" + relation);
+    }
+
+
+    /**
+     * 
      * @param args
      * @throws IOException
      */
@@ -55,12 +77,12 @@ public class RelationsResolver {
 	Configuration.init(args);
 	RelationsResolver res = new RelationsResolver();
 
-	String subject = "Steven_Spielberg";
-	String object = "Amistad_(film)";
+	String subject = "Belfast_Trojans";
+	String object = "Belfast";
+	//res.findRelations(subject, object);
 
-	System.out.println("Relations in DBPedia between <" + subject + "> and <" + object + ">:");
-	for (String relation : res.getRelations(subject, object))
-	    System.out.println("\t" + relation);
+	String relation = "routeJunction";
+	res.getInstances(relation);
 
     }
 

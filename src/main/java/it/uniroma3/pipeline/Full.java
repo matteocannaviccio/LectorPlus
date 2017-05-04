@@ -1,8 +1,8 @@
 package it.uniroma3.pipeline;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiLanguage;
 /**
  * 
  * @author matteo

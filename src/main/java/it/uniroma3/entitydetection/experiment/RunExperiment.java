@@ -6,10 +6,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.entitydetection.ReplFinder;
 import it.uniroma3.entitydetection.experiment.tool.DBPediaSpotlight;
-import it.uniroma3.model.WikiLanguage;
 import it.uniroma3.parser.WikiParser;
 import it.uniroma3.util.Pair;
 import it.uniroma3.util.reader.XMLReader;

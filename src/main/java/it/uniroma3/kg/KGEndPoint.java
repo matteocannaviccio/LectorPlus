@@ -1,16 +1,14 @@
 package it.uniroma3.kg;
 
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import it.uniroma3.bean.WikiLanguage;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
 import it.uniroma3.kg.resolver.RedirectResolver;
 import it.uniroma3.kg.resolver.RelationsResolver;
 import it.uniroma3.kg.resolver.TypesResolver;
 import it.uniroma3.kg.tgpatterns.TGPattern;
-import it.uniroma3.model.WikiLanguage;
 /**
  * 
  * @author matteo
@@ -32,32 +30,13 @@ public class KGEndPoint {
     }
 
     /**
-     * This method extracts DBPedia names (i.e. Wikipedia ids) from the annotated entities.
-     * 
-     * @param entity
-     * @return
-     */
-    private static String getDBPediaName(String entity){
-	String dbpediaEntity = null;
-	Pattern ENTITY = Pattern.compile("<[A-Z-]+<([^>]*?)>>");
-	Matcher m = ENTITY.matcher(entity);
-	if(m.find()){
-	    dbpediaEntity = m.group(1);
-	}
-	return dbpediaEntity;
-    }
-
-    /**
      * This method queries the KG to find possible relations between the entities.
      * 
      * @return
      */
     public Set<String> getRelations(String entitySubject, String entityObject) {
-	String dbpediaSubject = getDBPediaName(entitySubject);
-	String dbpediaObject = getDBPediaName(entityObject);
-	return relationResolver.getRelations(dbpediaSubject, dbpediaObject);
+	return relationResolver.getRelations(entitySubject, entityObject);
     }
-
     
     /**
      * 
@@ -96,14 +75,12 @@ public class KGEndPoint {
      * @return
      */
     public String getType(String entity) {
-	String dbpediaEntity = getDBPediaName(entity);
-	return typesResolver.assignTypes(dbpediaEntity);
+	return typesResolver.assignTypes(entity);
     }
     
     
     public TGPattern getTGPattern(String entity) {
-	String dbpediaEntity = getDBPediaName(entity);
-	return typesResolver.getTGpattern(dbpediaEntity);
+	return typesResolver.getTGpattern(entity);
     }
     
     /**

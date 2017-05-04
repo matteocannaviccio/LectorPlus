@@ -1,19 +1,14 @@
-package it.uniroma3.util.index;
+package it.uniroma3.model;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
-import java.util.List;
 
 import edu.stanford.nlp.util.StringUtils;
 import it.uniroma3.triples.WikiMVL;
 import it.uniroma3.triples.WikiTriple;
-import it.uniroma3.triples.WikiTriple.TType;
-import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo
@@ -26,22 +21,21 @@ public class DBlite {
     /**
      * 
      */
-    public DBlite(){
-	this.connection = obtainConnection();
+    public DBlite(String dbname){
+	this.connection = obtainConnection(dbname);
     }
 
     /**
      * 
      * @return
      */
-    public Connection obtainConnection(){
+    public Connection obtainConnection(String dbname){
 	String sDriverName = "org.sqlite.JDBC";
 	Connection conn = null;
 	try {
 	    Class.forName(sDriverName);
-	    String sTempDb = "lector.db";
 	    String sJdbc = "jdbc:sqlite";
-	    String sDbUrl = sJdbc + ":" + sTempDb;
+	    String sDbUrl = sJdbc + ":" + dbname;
 	    conn = DriverManager.getConnection(sDbUrl);
 	    Statement st = conn.createStatement();        
 	    st.execute("PRAGMA synchronous=OFF");
@@ -52,110 +46,92 @@ public class DBlite {
 	return conn;
     }
 
+
     /**
      * 
      */
     public void createDB(){
-	createLabeledTriples();
-	createUnlabeledTriples();
-	createMVLCollection();
-	createMVLFactsCollection();
-	createModelStats();
-    }
-    
-    /**
-     * 
-     * @param phrase
-     * @param subject_type
-     * @param object_type
-     * @param relation
-     */
-    public List<Pair<WikiTriple, String>> selectLabeledTriple(){
-	List<Pair<WikiTriple, String>> result = new LinkedList<Pair<WikiTriple, String>>();
-        String select = "SELECT * from labeled_triples";
+	String dropLabeled = "DROP TABLE IF EXISTS labeled_triples";
+	String createLabeled = "CREATE TABLE labeled_triples(wikid text, phrase text, subject text, object text, type_subject text, type_object text, relation text)";
+	String dropModelStats = "DROP TABLE IF EXISTS model_stats";
+	String createModelsStats = "CREATE TABLE model_stats(phrase text, type_subject text, type_object text, relation text, count int, PRIMARY KEY (phrase, type_subject, type_object, relation))";
+	String indexModelStats = "CREATE INDEX indexphrase ON model_stats(type_subject, type_object, relation, phrase)";
+	String dropUnlabeled = "DROP TABLE IF EXISTS unlabeled_triples";
+	String createUnlabeled = "CREATE TABLE unlabeled_triples(wikid text, phrase text, subject text, object text, type_subject text, type_object text, type text)";
+	String dropMVLCollection = "DROP TABLE IF EXISTS mvl_collection";
+	String createMVLCollection = "CREATE TABLE mvl_collection(code text, section text, wikid text, list text)";
 	try (Statement stmt = this.getConnection().createStatement()){
-	    try (ResultSet rs = stmt.executeQuery(select)){
-		while(rs.next()){
-		    String wikid = rs.getString("wikid");
-                    String phrase = rs.getString("phrase");
-                    String subject = rs.getString("subject");
-                    String subjectType = rs.getString("type_subject");
-                    String object = rs.getString("object");
-                    String objectType = rs.getString("type_object");
-                    String relation = rs.getString("relation");
-                    WikiTriple t = new WikiTriple(wikid, phrase, subject, object, subjectType, objectType, TType.JOINABLE.name());
-                    result.add(Pair.make(t, relation));
-                }
-	    }
+	    stmt.executeUpdate(dropLabeled);
+	    stmt.executeUpdate(createLabeled);
+	    stmt.executeUpdate(dropModelStats);
+	    stmt.executeUpdate(createModelsStats);
+	    stmt.executeUpdate(indexModelStats);
+	    stmt.executeUpdate(dropUnlabeled);
+	    stmt.executeUpdate(createUnlabeled);
+	    stmt.executeUpdate(dropMVLCollection);
+	    stmt.executeUpdate(createMVLCollection);
 	}catch(SQLException e){
+	    try {
+		connection.rollback();
+	    } catch (SQLException e1) {
+		e1.printStackTrace();
+	    }
 	    e.printStackTrace();
 	}
-	return result;
     }
-    
-    /**
-     * 
-     * @param phrase
-     * @param subject_type
-     * @param object_type
-     * @param relation
-     */
-    public List<WikiTriple> selectUnlabeledTripleWithCondition(){
-	List<WikiTriple> result = new LinkedList<WikiTriple>();
-        String select = "SELECT * from unlabeled_triples WHERE type=?";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(select)){
-	    stmt.setString(1, "PARTIALNER");
-	    try (ResultSet rs = stmt.executeQuery()){
-		while(rs.next()){
-		    String wikid = rs.getString("wikid");
-                    String phrase = rs.getString("phrase");
-                    String subject = rs.getString("subject");
-                    String object = rs.getString("object");
-                    String subjectType = rs.getString("type_subject");
-                    String objectType = rs.getString("type_object");
-                    String articleType = rs.getString("type");
-                    WikiTriple t = new WikiTriple(wikid, phrase, subject, object, subjectType, objectType, articleType);
-                    result.add(t);
-                }
-	    }
-	}catch(SQLException e){
-	    e.printStackTrace();
-	}
-	return result;
-    }
-    
-    /**
-     * 
-     * @param phrase
-     * @param subject_type
-     * @param object_type
-     * @param relation
-     */
-    public List<WikiTriple> selectUnlabeledTriple(){
-	List<WikiTriple> result = new LinkedList<WikiTriple>();
-        String select = "SELECT * from unlabeled_triples";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    try (ResultSet rs = stmt.executeQuery(select)){
-		while(rs.next()){
-		    String wikid = rs.getString("wikid");
-                    String phrase = rs.getString("phrase");
-                    String subject = rs.getString("subject");
-                    String object = rs.getString("object");
-                    String subjectType = rs.getString("type_subject");
-                    String objectType = rs.getString("type_object");
-                    String articleType = rs.getString("type");
-                    WikiTriple t = new WikiTriple(wikid, phrase, subject, object, subjectType, objectType, articleType);
-                    result.add(t);
-                }
-	    }
-	}catch(SQLException e){
-	    e.printStackTrace();
-	}
-	return result;
-    }
-    
-    /**************************************************************/
 
+    /**
+     * 
+     */
+    public void createNovelFactsDB(){
+	String dropLabeled = "DROP TABLE IF EXISTS novel_facts";
+	String createLabeled = "CREATE TABLE novel_facts("
+		+ "wikid text, phrase text, subject text, object text, wikisubject text, "
+		+ "wikiobject text, type_subject text, type_object text, relation text)";
+	String indexrelation = "CREATE INDEX IF NOT EXISTS indexunlabeledphrase ON novel_facts(relation)";
+	String indexsbjobj = "CREATE INDEX IF NOT EXISTS indexunlabeledphrase ON novel_facts(subject,object)";
+	try (Statement stmt = this.getConnection().createStatement()){
+	    stmt.executeUpdate(dropLabeled);
+	    stmt.executeUpdate(createLabeled);
+	    stmt.executeUpdate(indexrelation);
+	    stmt.executeUpdate(indexsbjobj);
+	}catch(SQLException e){
+	    try {
+		connection.rollback();
+	    } catch (SQLException e1) {
+		e1.printStackTrace();
+	    }
+	    e.printStackTrace();
+	}
+    }
+
+    /**
+     * 
+     */
+    public void createNecessaryIndexes(){
+	System.out.print("Writing indexes ... ");
+	String indexModelRelationPhrase = "CREATE INDEX IF NOT EXISTS indexmodelrelationphrase ON labeled_triples(relation,phrase)";
+	String indexModelPhrase = "CREATE INDEX IF NOT EXISTS indexmodelphrase ON labeled_triples(phrase)";
+	String indexModelTypesPhrase = "CREATE INDEX IF NOT EXISTS indexmodeltypesphrase ON labeled_triples(type_subject, type_object, relation, phrase)";
+	String indexUnlabeled = "CREATE INDEX IF NOT EXISTS indexunlabeled ON unlabeled_triples(type, phrase, type_subject, type_object)";
+	String indexUnlabeledPhrase = "CREATE INDEX IF NOT EXISTS indexunlabeledphrase ON unlabeled_triples(phrase, type_subject, type_object)";
+	try (Statement stmt = this.getConnection().createStatement()){
+	    stmt.executeUpdate(indexModelRelationPhrase);
+	    stmt.executeUpdate(indexModelPhrase);
+	    stmt.executeUpdate(indexModelTypesPhrase);
+	    stmt.executeUpdate(indexUnlabeled);
+	    stmt.executeUpdate(indexUnlabeledPhrase);
+	}catch(SQLException e){
+	    try {
+		connection.rollback();
+	    } catch (SQLException e1) {
+		e1.printStackTrace();
+	    }
+	    e.printStackTrace();
+	}
+	System.out.println("Done!");
+
+    }
 
     /**
      * 
@@ -184,7 +160,7 @@ public class DBlite {
 	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param phrase
@@ -216,7 +192,7 @@ public class DBlite {
 	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param phrase
@@ -244,7 +220,7 @@ public class DBlite {
 	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param phrase
@@ -269,107 +245,28 @@ public class DBlite {
 	    e.printStackTrace();
 	}
     }
-    
-    /**************************************************************/
+
 
     /**
      * 
-     * @param table_name
+     * @param phrase
+     * @param subject_type
+     * @param object_type
+     * @param relation
      */
-    private void createLabeledTriples(){
-	String drop = "DROP TABLE IF EXISTS labeled_triples";
-	String create = "CREATE TABLE labeled_triples(wikid text, phrase text, subject text, object text, type_subject text, type_object text, relation text)";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    stmt.executeUpdate(drop);
-	    stmt.executeUpdate(create);
-	}catch(SQLException e){
-	    try {
-		connection.rollback();
-	    } catch (SQLException e1) {
-		e1.printStackTrace();
-	    }
-	    e.printStackTrace();
-	}
-    }
-    
-    /**
-     * 
-     * @param table_name
-     */
-    private void createModelStats(){
-	String drop = "DROP TABLE IF EXISTS model_stats";
-	String create = "CREATE TABLE model_stats(phrase text, type_subject text, type_object text, relation text, count int, PRIMARY KEY (phrase, type_subject, type_object, relation))";
-	String index1 = "CREATE INDEX indexphrase ON model_stats(phrase)";
-	String index2 = "CREATE INDEX indextypesubject ON model_stats(type_subject)";
-	String index3 = "CREATE INDEX indextypeobject ON model_stats(type_object)";
-	String index4 = "CREATE INDEX indexrelation ON model_stats(relation)";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    stmt.executeUpdate(drop);
-	    stmt.executeUpdate(create);
-	    stmt.executeUpdate(index1);
-	    stmt.executeUpdate(index2);
-	    stmt.executeUpdate(index3);
-	    stmt.executeUpdate(index4);
-	}catch(SQLException e){
-	    try {
-		connection.rollback();
-	    } catch (SQLException e1) {
-		e1.printStackTrace();
-	    }
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * 
-     * @param table_name
-     */
-    private void createUnlabeledTriples(){
-	String drop = "DROP TABLE IF EXISTS unlabeled_triples";
-	String create = "CREATE TABLE unlabeled_triples(wikid text, phrase text, subject text, object text, type_subject text, type_object text, type text)";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    stmt.executeUpdate(drop);
-	    stmt.executeUpdate(create);
-	}catch(SQLException e){
-	    try {
-		connection.rollback();
-	    } catch (SQLException e1) {
-		e1.printStackTrace();
-	    }
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * 
-     * @param table_name
-     */
-    private void createMVLCollection(){
-	String drop = "DROP TABLE IF EXISTS mvl_collection";
-	String create = "CREATE TABLE mvl_collection(code text, section text, wikid text, list text)";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    stmt.executeUpdate(drop);
-	    stmt.executeUpdate(create);
-	}catch(SQLException e){
-	    try {
-		connection.rollback();
-	    } catch (SQLException e1) {
-		e1.printStackTrace();
-	    }
-	    e.printStackTrace();
-	}
-    }
-
-    /**
-     * 
-     * @param table_name
-     */
-    private void createMVLFactsCollection(){
-	String drop = "DROP TABLE IF EXISTS mvl_triples";
-	String create = "CREATE TABLE mvl_triples(wikid text, subject text, phrase text, object text)";
-	try (Statement stmt = this.getConnection().createStatement()){
-	    stmt.executeUpdate(drop);
-	    stmt.executeUpdate(create);
+    public void insertNovelFact(WikiTriple triple, String relation){
+	String insert = "INSERT INTO novel_facts VALUES(?,?,?,?,?,?,?,?,?)";
+	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
+	    stmt.setString(1, triple.getWikid());
+	    stmt.setString(2, triple.getPhrase());
+	    stmt.setString(3, triple.getSubject());
+	    stmt.setString(4, triple.getObject());
+	    stmt.setString(5, triple.getWikiSubject());
+	    stmt.setString(6, triple.getWikiObject());
+	    stmt.setString(7, triple.getSubjectType());
+	    stmt.setString(8, triple.getObjectType());
+	    stmt.setString(9, relation);
+	    stmt.execute();
 	}catch(SQLException e){
 	    try {
 		connection.rollback();
@@ -382,7 +279,7 @@ public class DBlite {
 
     /**************************************************************/
 
-    
+
     /**
      * @return the connection
      */
@@ -400,5 +297,6 @@ public class DBlite {
 	    e.printStackTrace();
 	}
     }
+
 
 }

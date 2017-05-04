@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.bean.WikiLanguage;
 /**
  * This reader takes an XML content and extract fields of interest from it.
  * 

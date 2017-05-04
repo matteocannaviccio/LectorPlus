@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.bean.WikiLanguage;
 /**
  * Finite state machine to capture composite structures in Wikipedia Markup Language.
  * Those structures can be: infobox, bio, tables, template, etc.

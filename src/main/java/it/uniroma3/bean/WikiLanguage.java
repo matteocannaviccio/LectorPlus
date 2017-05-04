@@ -1,4 +1,4 @@
-package it.uniroma3.model;
+package it.uniroma3.bean;
 
 import java.io.FileInputStream;
 import java.io.IOException;

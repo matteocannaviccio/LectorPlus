@@ -14,9 +14,9 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.google.common.collect.TreeMultiset;
 
+import it.uniroma3.bean.WikiArticle;
 import it.uniroma3.configuration.Configuration;
 import it.uniroma3.configuration.Lector;
-import it.uniroma3.model.WikiArticle;
 /**
  * 
  * @author matteo

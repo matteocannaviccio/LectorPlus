@@ -3,9 +3,9 @@ package it.uniroma3.parser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.model.WikiArticle;
-import it.uniroma3.model.WikiArticle.ArticleType;
-import it.uniroma3.model.WikiLanguage;
+import it.uniroma3.bean.WikiArticle;
+import it.uniroma3.bean.WikiLanguage;
+import it.uniroma3.bean.WikiArticle.ArticleType;
 /**
  * This parser is able to assign a specific type to 
  * the article using its wikid or original wiki-markup.
