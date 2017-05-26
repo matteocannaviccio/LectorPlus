@@ -5,5 +5,5 @@ target/
 .project
 .settings/
 javadoc
-lector.db
-facts.db
+*.db
+*.csv

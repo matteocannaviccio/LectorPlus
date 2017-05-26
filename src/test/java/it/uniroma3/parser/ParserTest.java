@@ -1,10 +1,11 @@
 package it.uniroma3.parser;
 
-import it.uniroma3.bean.WikiArticle;
-import it.uniroma3.bean.WikiLanguage;
-import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.ReplFinder;
-import it.uniroma3.util.reader.XMLReader;
+import it.uniroma3.extractor.bean.WikiArticle;
+import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.entitydetection.ReplFinder;
+import it.uniroma3.extractor.parser.WikiParser;
+import it.uniroma3.extractor.util.reader.XMLReader;
 
 public class ParserTest {
 

@@ -6,10 +6,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import it.uniroma3.bean.WikiLanguage;
-import it.uniroma3.configuration.Configuration;
-import it.uniroma3.configuration.Lector;
-import it.uniroma3.triples.WikiTriple.TType;
+import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.triples.WikiTriple.TType;
 
 public class TripleTest {
     
@@ -27,11 +28,11 @@ public class TripleTest {
     
     @Before
     public void setup() {
-        tripleNER1 = new WikiTriple("wiki", "some pre", "<PE-ORG<Italy>>", "a phrase", "<LOCATION<Bassano del Grappa>>", "and a post.");
-        tripleNER2 = new WikiTriple("wiki", "some pre", "<PERSON<Franco Battiato>>", "a phrase", "<LOCATION<Italy>>", "and a post.");
-        tripleNER3 = new WikiTriple("wiki", "some pre", "<PERSON<Franco Battiato>>", "a phrase", "<SE-AUG<Italy>>", "and a post.");
-        tripleJoinable1 = new WikiTriple("wiki", "some pre", "<PE-ORG<Franco_Battiato>>", "a phrase", "<SE-AUG<Italy>>", "and a post.");
-        tripleJoinableWrong = new WikiTriple("wiki", "some pre", "<PE-ORG<Franco_Battiato>>", "a phrase", "<SE-AUG<Italy>>", "'s author.");
+        tripleNER1 = new WikiTriple("wiki", "some pre", "<PE-ORG<Italy>>", "a phrase", "a phrase",  "<LOCATION<Bassano del Grappa>>", "and a post.");
+        tripleNER2 = new WikiTriple("wiki", "some pre", "<PERSON<Franco Battiato>>", "a phrase", "a phrase", "<LOCATION<Italy>>", "and a post.");
+        tripleNER3 = new WikiTriple("wiki", "some pre", "<PERSON<Franco Battiato>>", "a phrase","a phrase", "<SE-AUG<Italy>>", "and a post.");
+        tripleJoinable1 = new WikiTriple("wiki", "some pre", "<PE-ORG<Franco_Battiato>>", "a phrase","a phrase", "<SE-AUG<Italy>>", "and a post.");
+        tripleJoinableWrong = new WikiTriple("wiki", "some pre", "<PE-ORG<Franco_Battiato>>", "a phrase", "a phrase", "<SE-AUG<Italy>>", "'s author.");
     }
     
     @Test

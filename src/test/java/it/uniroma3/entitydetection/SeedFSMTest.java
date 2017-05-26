@@ -9,9 +9,9 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import it.uniroma3.configuration.Configuration;
-import it.uniroma3.entitydetection.SeedFSM;
-import it.uniroma3.util.nlp.OpenNLP;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.entitydetection.SeedFSM;
+import it.uniroma3.extractor.util.nlp.OpenNLP;
 
 public class SeedFSMTest {
     

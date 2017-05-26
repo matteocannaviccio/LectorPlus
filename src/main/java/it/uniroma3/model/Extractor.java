@@ -4,30 +4,37 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import it.uniroma3.model.ModelNB.ModelNBType;
-import it.uniroma3.triples.WikiTriple;
+import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.triples.WikiTriple.TType;
+import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.model.db.DBModel;
+import it.uniroma3.model.model.Model;
+import it.uniroma3.model.model.Model.PhraseType;
+import it.uniroma3.model.model.ModelBM25;
+import it.uniroma3.model.model.ModelLS;
+import it.uniroma3.model.model.ModelNB;
+import it.uniroma3.model.model.ModelNB.ModelNBType;
 /**
  * 
  * @author matteo
  *
  */
 public class Extractor {
-
-    private DBlite db_read;
-    private DBlite db_write;
+    private DBModel db_read;
+    private DBModel db_write;
+    
     private Model model;
-
+    public enum ModelType {BM25, LectorScore, NB};
+    
     /**
      * 
      * @param model
      * @param db_write
      */
-    public Extractor(Model model, DBlite db_read, DBlite db_write){
+    public Extractor(DBModel db_read, DBModel db_write){
 	this.db_read = db_read;
 	this.db_write = db_write;
-	this.model = model;
-	db_write.createNovelFactsDB();
-
+	db_write.createFactsDB();
     }
 
     /**
@@ -41,7 +48,8 @@ public class Extractor {
     private boolean processRecord(WikiTriple t){
 	if (t.getWikiSubject().equals(t.getWikiObject()))
 	    return false;
-	String relation = model.predictRelation(t);
+	Pair<String, Double> prediction = model.predictRelation(t);
+	String relation = prediction.key;
 	if (relation!=null){
 	    db_write.insertNovelFact(t, relation);
 	    return true;
@@ -57,18 +65,23 @@ public class Extractor {
      */
     private void runExtraction(){
 	int contProcessed = 0;
-	String allUnlabeledTriplesQuery = "SELECT * from unlabeled_triples where type=\"JOINABLE\"";
+	String allUnlabeledTriplesQuery = "SELECT * FROM unlabeled_triples";
 	try (Statement stmt = db_read.getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
 		while(rs.next()){
-		    // wikid text, phrase text, subject text, object text, type_subject text, type_object text, type text
 		    String wikid = rs.getString(1);
-		    String phrase = rs.getString(2);
-		    String subject = rs.getString(3);
-		    String object = rs.getString(4);
-		    String type_subject = rs.getString(5);
-		    String type_object = rs.getString(6);
-		    WikiTriple t = new WikiTriple(wikid, phrase, subject, object, type_subject, type_object, "JOINABLE");
+		    String phrase_original = rs.getString(2);
+		    String phrase_placeholder = rs.getString(3);
+		    String pre = rs.getString(4);
+		    String post = rs.getString(5);
+		    String subject = rs.getString(6);
+		    String subject_type = rs.getString(8);
+		    String object = rs.getString(9);
+		    String object_type = rs.getString(11);
+		    
+		    WikiTriple t = new WikiTriple(wikid, phrase_original, phrase_placeholder, pre, post, 
+			    subject, object, subject_type, object_type, TType.JOINABLE.name());
+		    
 		    if (processRecord(t))
 			contProcessed+=1;
 		    if (contProcessed % 500000 == 0 && contProcessed > 0)
@@ -82,22 +95,41 @@ public class Extractor {
     
     /**
      * 
+     * @param type
+     * @param labeled_table
+     * @param minFreq
+     * @param topK
+     * @param typePhrase
+     * @return
+     */
+    private void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, 
+	    int topK, PhraseType typePhrase){
+	switch(type){
+	case BM25:
+	    model = new ModelBM25(this.db_read, labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    break;
+	case NB:
+	    model = new ModelNB(this.db_read, labeled_table, minFreq, ModelNBType.CLASSIC);
+	    break;
+	case LectorScore:
+	    model = new ModelLS(this.db_read, labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    break;
+	}
+    }
+    
+    /**
+     * 
      * @return
      */
     public static void main(String[] args){
-	/*
-	ModelScoreType type = ModelScoreType.TYPED_PHRASES;
-	DBlite db_read = new DBlite("lector.db");
-	DBlite db_write = new DBlite("facts.db");
-	ModelScore model = new ModelScore(db_read, 20, 20, 100, type);
-	Extractor extractor = new Extractor(model, db_read, db_write);
-	extractor.runExtraction();
-	*/
 	
-	DBlite db_read = new DBlite("lector.db");
-	DBlite db_write = new DBlite("facts.db");
-	Model model = new ModelNB(db_read, ModelNBType.TYPED_RELATIONS, 0);
-	Extractor extractor = new Extractor(model, db_read, db_write);
+	DBModel db_read = new DBModel("model.db");
+	DBModel db_write = new DBModel("facts.db");
+	
+	String labeled = "labeled_triples";
+	
+	Extractor extractor = new Extractor(db_read, db_write);
+	extractor.setModelForEvaluation(ModelType.LectorScore, labeled, 0, 10, PhraseType.TYPED_PHRASES);
 	extractor.runExtraction();
     }
 

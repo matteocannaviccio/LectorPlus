@@ -3,9 +3,9 @@ package it.uniroma3.kg.ontology;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import it.uniroma3.configuration.Configuration;
-import it.uniroma3.kg.tgpatterns.Ontology;
-import it.uniroma3.kg.tgpatterns.TGPattern;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.kg.tgpatterns.Ontology;
+import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
 
 public class OntologyTest {
     

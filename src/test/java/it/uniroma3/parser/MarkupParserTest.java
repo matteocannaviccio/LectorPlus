@@ -5,10 +5,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import it.uniroma3.bean.WikiArticle;
-import it.uniroma3.bean.WikiLanguage;
-import it.uniroma3.configuration.Configuration;
-import it.uniroma3.configuration.Lector;
+import it.uniroma3.extractor.bean.WikiArticle;
+import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 
 public class MarkupParserTest {
 
