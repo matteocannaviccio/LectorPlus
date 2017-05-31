@@ -16,7 +16,7 @@ public abstract class DB {
     private String dbname;
 
     /**
-     * s
+     * 
      * @param dbname
      */
     public DB(String dbname){
@@ -34,7 +34,8 @@ public abstract class DB {
 	try {
 	    Class.forName(sDriverName);
 	    String sJdbc = "jdbc:sqlite";
-	    String sDbUrl = sJdbc + ":" + this.dbname;
+	    //String sDbUrl = sJdbc + ":" + this.dbname;
+	    String sDbUrl = sJdbc + "::memory:";
 	    conn = DriverManager.getConnection(sDbUrl);
 	    Statement st = conn.createStatement();        
 	    st.execute("PRAGMA synchronous=OFF");

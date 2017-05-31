@@ -35,7 +35,7 @@ public class QueryDB {
 	this.db = db;
 	db.createNecessaryIndexes();
     }
-    
+
     /**
      * Constructor used to query the DBCrossValidation.
      * 
@@ -94,7 +94,7 @@ public class QueryDB {
 	}
 	return triples;
     }
-    
+
     /***************************************** 
      * 
      * 		SELECT ALL unlabeled_triples
@@ -134,7 +134,7 @@ public class QueryDB {
      * 		------------------------------------------------
      * 		[Settlement] ### isPartOf ### [Settlement]	: 675 K
      * 		[Settlement] ### isPartOf ### [City]		: 342 K
-     * 		[City] ### country ### [Country]		: 112 K
+     * 		[City] 	### country ### [Country]		: 112 K
      * 		...
      * 
      * @param availablePhrases the phrases available in the model
@@ -150,7 +150,7 @@ public class QueryDB {
 		    String relation = rs.getString(2);
 		    String type_subject = rs.getString(3);
 		    String type_object = rs.getString(4);
-		    if (availablePhrases.contains(phrase))
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
 			countTypedRelation.add(type_subject + "###" + relation + "###"  + type_object);
 		}
 	    }
@@ -183,7 +183,7 @@ public class QueryDB {
 		    String relation = rs.getString(2);
 		    String type_subject = rs.getString(3);
 		    String type_object = rs.getString(4);
-		    if (availablePhrases.contains(phrase))
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
 			countTypedPhraseRelation.add(phrase + "###" + type_subject + "###" + relation + "###"  + type_object);
 		}
 	    }
@@ -217,7 +217,42 @@ public class QueryDB {
 		while(rs.next()){
 		    String relation = rs.getString(1);
 		    String phrase = rs.getString(2);
-		    if (availablePhrases.contains(phrase))
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
+			countRelation.add(relation);
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+	return countRelation;
+    }
+
+    /**
+     * Returns relations and their counts,
+     * that are present at least N times.
+     * 		---------------------	
+     * 		   LABELED RELATIONS
+     * 		---------------------
+     * 		isPartOf 	: 974 K
+     * 		country 	: 926 K
+     * 		team 		: 212 K
+     * 		...
+     * 
+     * @param availablePhrases the phrases available in the model
+     * @return
+     */
+    public CounterMap<String> getCleanRelationCountByTypedPhrases(Set<String> availablePhrases){
+	CounterMap<String> countRelation = new CounterMap<String>();
+	String query = "SELECT phrase_placeholder, relation, type_subject, type_object FROM " + this.labeled_facts;
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String phrase = rs.getString(1);
+		    String relation = rs.getString(2);
+		    String type_subject = rs.getString(3);
+		    String type_object = rs.getString(4);
+		    phrase = type_subject+"\t"+phrase+"\t"+type_object;
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
 			countRelation.add(relation);
 		}
 	    }
@@ -248,7 +283,7 @@ public class QueryDB {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String phrase = rs.getString(1);
-		    if (availablePhrases.contains(phrase))
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
 			countPhrases.add(phrase);
 		}
 	    }
@@ -282,7 +317,7 @@ public class QueryDB {
 		    String ts = rs.getString(2);
 		    String to = rs.getString(3);
 		    phrase = ts+"\t"+phrase+"\t"+to;
-		    if (availablePhrases.contains(phrase))
+		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
 			phrasesCount.add(phrase);
 		}
 	    }
@@ -314,7 +349,7 @@ public class QueryDB {
 		    String relation = rs.getString(1);
 		    String phrase = rs.getString(2);
 		    // filter only the phrases we are considering...
-		    if (availablePhrases.contains(phrase)){
+		    if (availablePhrases.contains(phrase) && !phrase.equals("")){
 			if (!relation2phrasesCount.containsKey(relation))
 			    relation2phrasesCount.put(relation, new CounterMap<String>());
 			relation2phrasesCount.get(relation).add(phrase);
@@ -349,7 +384,7 @@ public class QueryDB {
 		    String relation = rs.getString(1);
 		    String phrase = rs.getString(2);
 		    // filter only the phrases we are considering...
-		    if (availablePhrases.contains(phrase)){
+		    if (availablePhrases.contains(phrase) && !phrase.equals("")) {
 			if (!phrases2relationsCount.containsKey(phrase))
 			    phrases2relationsCount.put(phrase, new CounterMap<String>());
 			phrases2relationsCount.get(phrase).add(relation);
@@ -390,7 +425,7 @@ public class QueryDB {
 		    phrase = ts+"\t"+phrase+"\t"+to;
 
 		    // filter only the phrases we are considering...
-		    if (availablePhrases.contains(phrase)){
+		    if (availablePhrases.contains(phrase) && !phrase.equals("")){
 			if (!relation2phrasesCount.containsKey(relation))
 			    relation2phrasesCount.put(relation, new CounterMap<String>());
 			relation2phrasesCount.get(relation).add(phrase);
@@ -429,7 +464,7 @@ public class QueryDB {
 		    phrase = ts+"\t"+phrase+"\t"+to;
 
 		    // filter only the phrases we are considering...
-		    if (availablePhrases.contains(phrase)){
+		    if (availablePhrases.contains(phrase) && !phrase.equals("")){
 			if (!phrases2relationsCount.containsKey(phrase))
 			    phrases2relationsCount.put(phrase, new CounterMap<String>());
 			phrases2relationsCount.get(phrase).add(relation);
@@ -468,7 +503,7 @@ public class QueryDB {
 		    relation = ts + "\t" + relation + "\t" + to;
 
 		    // optionally filter only the phrases we are considering ...
-		    if(availablePhrases.contains(phrase)){
+		    if(availablePhrases.contains(phrase) && !phrase.equals("")){
 			if (!relation2phrasesCount.containsKey(relation))
 			    relation2phrasesCount.put(relation, new CounterMap<String>());
 			relation2phrasesCount.get(relation).add(phrase);
@@ -527,7 +562,8 @@ public class QueryDB {
 		while(rs.next()){
 		    String phrase = rs.getString(1);
 		    int count = Integer.parseInt(rs.getString(2));
-		    phrasesCount.add(phrase, count);
+		    if (!phrase.equals(""))
+			phrasesCount.add(phrase, count);
 		}
 	    }
 	}catch(SQLException e){
@@ -562,7 +598,8 @@ public class QueryDB {
 		    String ts = rs.getString(2);
 		    String to = rs.getString(3);
 		    int count = Integer.parseInt(rs.getString(4));
-		    phrasesTypesCount.add(ts +"\t"+ phrase +"\t"+ to, count);
+		    if (!phrase.equals(""))
+			phrasesTypesCount.add(ts +"\t"+ phrase +"\t"+ to, count);
 		}
 	    }
 	}catch(SQLException e){
