@@ -19,7 +19,7 @@ import it.uniroma3.model.db.QueryDB;
  */
 public class DBCrossValidation extends DB{
     // print the computation
-    protected static boolean verbose = true;
+    protected static boolean verbose = false;
 
     private QueryDB querydb;
     private String dbModelName;

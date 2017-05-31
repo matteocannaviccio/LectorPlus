@@ -7,4 +7,4 @@ target/
 javadoc
 *.db
 *.csv
-export.*
+*.jardesc

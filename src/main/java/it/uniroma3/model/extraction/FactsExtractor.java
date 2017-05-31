@@ -1,13 +1,13 @@
-package it.uniroma3.model;
+package it.uniroma3.model.extraction;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.model.db.DBModel;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
@@ -19,22 +19,18 @@ import it.uniroma3.model.model.ModelNB.ModelNBType;
  * @author matteo
  *
  */
-public class Extractor {
-    private DBModel db_read;
-    private DBModel db_write;
-    
+public class FactsExtractor {
+
     private Model model;
     public enum ModelType {BM25, LectorScore, NB};
-    
+
     /**
      * 
      * @param model
      * @param db_write
      */
-    public Extractor(DBModel db_read, DBModel db_write){
-	this.db_read = db_read;
-	this.db_write = db_write;
-	db_write.createFactsDB();
+    public FactsExtractor(){
+	System.out.println("\n**** NEW FACTS EXTRACTION ****");
     }
 
     /**
@@ -46,12 +42,10 @@ public class Extractor {
      * @return
      */
     private boolean processRecord(WikiTriple t){
-	if (t.getWikiSubject().equals(t.getWikiObject()))
-	    return false;
 	Pair<String, Double> prediction = model.predictRelation(t);
 	String relation = prediction.key;
 	if (relation!=null){
-	    db_write.insertNovelFact(t, relation);
+	    Lector.getDbfacts().insertNovelFact(t, relation);
 	    return true;
 	}else{
 	    return false;
@@ -63,10 +57,10 @@ public class Extractor {
      * 
      * @param model
      */
-    private void runExtraction(){
+    public void runExtraction(){
 	int contProcessed = 0;
 	String allUnlabeledTriplesQuery = "SELECT * FROM unlabeled_triples";
-	try (Statement stmt = db_read.getConnection().createStatement()){	
+	try (Statement stmt = Lector.getDbmodel().getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
@@ -78,21 +72,23 @@ public class Extractor {
 		    String subject_type = rs.getString(8);
 		    String object = rs.getString(9);
 		    String object_type = rs.getString(11);
-		    
+
 		    WikiTriple t = new WikiTriple(wikid, phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
-		    
-		    if (processRecord(t))
-			contProcessed+=1;
-		    if (contProcessed % 500000 == 0 && contProcessed > 0)
-			System.out.println("Extracted " + contProcessed + " novel facts.");
+
+		    if (!t.getWikiSubject().equals(t.getWikiObject())){
+			if (processRecord(t))
+			    contProcessed+=1;
+			if (contProcessed % 1000 == 0 && contProcessed > 0)
+			    System.out.println("Extracted " + contProcessed + " novel facts.");
+		    }
 		}
 	    }
 	}catch(SQLException e){
 	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param type
@@ -102,33 +98,30 @@ public class Extractor {
      * @param typePhrase
      * @return
      */
-    private void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, 
+    public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, 
 	    int topK, PhraseType typePhrase){
 	switch(type){
 	case BM25:
-	    model = new ModelBM25(this.db_read, labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    model = new ModelBM25(Lector.getDbmodel(), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
 	    break;
 	case NB:
-	    model = new ModelNB(this.db_read, labeled_table, minFreq, ModelNBType.CLASSIC);
+	    model = new ModelNB(Lector.getDbmodel(), labeled_table, minFreq, ModelNBType.CLASSIC);
 	    break;
 	case LectorScore:
-	    model = new ModelLS(this.db_read, labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    model = new ModelLS(Lector.getDbmodel(), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
 	    break;
 	}
     }
-    
+
     /**
      * 
      * @return
      */
     public static void main(String[] args){
-	
-	DBModel db_read = new DBModel("model.db");
-	DBModel db_write = new DBModel("facts.db");
-	
+
 	String labeled = "labeled_triples";
-	
-	Extractor extractor = new Extractor(db_read, db_write);
+
+	FactsExtractor extractor = new FactsExtractor();
 	extractor.setModelForEvaluation(ModelType.LectorScore, labeled, 0, 10, PhraseType.TYPED_PHRASES);
 	extractor.runExtraction();
     }

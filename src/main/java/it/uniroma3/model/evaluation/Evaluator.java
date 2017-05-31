@@ -6,7 +6,9 @@ import java.sql.Statement;
 
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
+import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.db.DBModel;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.PhraseType;
@@ -24,7 +26,7 @@ public class Evaluator {
     private DBCrossValidation dbcrossvaliadation;
 
     private Model model;
-    public enum ModelType {BM25, LectorScore, NB};
+    public enum ModelType {LectorScore, BM25, NB};
 
     /**
      * 
@@ -48,13 +50,13 @@ public class Evaluator {
 	    int topK, PhraseType typePhrase){
 	switch(type){
 	case BM25:
-	    model = new ModelBM25(this.dbcrossvaliadation, labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    model = new ModelBM25(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
 	    break;
 	case NB:
 	    model = new ModelNB(this.dbcrossvaliadation, labeled_table, minFreq, ModelNBType.CLASSIC);
 	    break;
 	case LectorScore:
-	    model = new ModelLS(this.dbcrossvaliadation, labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    model = new ModelLS(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
 	    break;
 	}
     }
@@ -66,8 +68,16 @@ public class Evaluator {
      * @return
      */
     private DBCrossValidation createDBcrossvalidation(DBModel dbmodel, int nParts){
-	DBCrossValidation dbc = new DBCrossValidation("cross.db", dbmodel, nParts);
-	return dbc;
+	return new DBCrossValidation("cross.db", dbmodel, nParts);
+    }
+
+    /**
+     * 
+     * @param expectedRelation
+     * @return
+     */
+    private boolean isPredictableRelation(String expectedRelation){
+	return model.canPredict(expectedRelation);
     }
 
     /**
@@ -91,12 +101,14 @@ public class Evaluator {
 	int fp = 0;
 	int fntn = 0;
 
-	//CounterMap<String> bestPhrases = new CounterMap<>();
+	CounterMap<String> bestPhrases = new CounterMap<String>();
+	CounterMap<String> badPhrases = new CounterMap<String>();
+
 	String all = "SELECT * FROM " + table_name;
 
 	try (Statement stmt = this.dbcrossvaliadation.getConnection().createStatement()){
 	    try (ResultSet rs = stmt.executeQuery(all)){
-		while(rs.next() && fntn < 500000){
+		while(rs.next() && fntn < 100000){
 		    String wikid = rs.getString(1);
 		    String phrase_original = rs.getString(2);
 		    String phrase_placeholder = rs.getString(3);
@@ -119,17 +131,19 @@ public class Evaluator {
 
 			// controlla se abbiamo recuperato qualcosa
 			if (prediction != null){
-			    if (relation.equals(prediction)){
+			    if (relation.replace("(-1)", "").equals(prediction.replace("(-1)", ""))){
 				//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + relation + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
+				bestPhrases.add(subject_type + " " + phrase_placeholder+ " " + object_type);
 				tp +=1;
 			    }else{
 				//System.out.println("FALSE POSITIVE ("+ String.format ("%.2f", prob) +")\t" + "expected: " + relation + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
 				fp +=1;
+				badPhrases.add(subject_type + " " + phrase_placeholder+ " " + object_type);
 			    }
-			// altrimenti, se non abbiamo recuperato niente
+			    // altrimenti, se non abbiamo recuperato niente
 			}else{ 
 			    //predictions.add(Pair.make(relation, "-"));
-			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + relation + " - predicted: " + predict +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
+			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + relation + " - predicted: - ---> " + subject_type + " " + phrase_original+ " " + object_type);
 			}
 		    }
 		}
@@ -140,7 +154,34 @@ public class Evaluator {
 	}
 	double precision = (double) tp/(tp+fp);
 	double recall = (double) tp/fntn;
+	System.out.println("Best Phrases : " + Ranking.getTopKRanking(bestPhrases, 20));
+	System.out.println("Bad Phrases : " + Ranking.getTopKRanking(badPhrases, 20));
+
 	return Pair.make(precision, recall);
+    }
+
+    /**
+     * 
+     * @param nParts
+     * @param modelType
+     * @param phraseType
+     * @param topK
+     * @param minF
+     * @return
+     */
+    private Pair<Double, Double> runCrossValidation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF){
+	// {1,2,3,4,5} --> change if you want to average accross all the 5 parts
+	double avg_precision = 0.0;
+	double avg_recall = 0.0;
+	for (int it=0; it < nParts; it++){
+	    String labeled_table = "cv_labeled_triples_" + it;
+	    String evaluation_table = "cv_evaluation_triples_"+ it;
+	    this.setModel(modelType, labeled_table, minF, topK, phraseType);
+	    Pair<Double, Double> precision_recall =  this.runEvaluation(evaluation_table);
+	    avg_precision += precision_recall.key;
+	    avg_recall += precision_recall.value;
+	}
+	return Pair.make(avg_precision, avg_recall);
     }
 
     /**
@@ -149,24 +190,23 @@ public class Evaluator {
      */
     public static void main(String[] args){
 	Evaluator ev = new Evaluator(new DBModel("model.db"));
+	int nParts = 1;
+	int[] topk = new int[]{5, 100, -1};
+	int[] minF = new int[]{0, 10, 100};
 
-	// {1,2,3,4,5} --> change if you want to average accross all the 5 parts
-	int its = 1;
-	double avg_precision = 0.0;
-	double avg_recall = 0.0;
-	
-	for (int it=0; it < its; it++){
-	    String labeled_table = "cv_labeled_triples_" + it;
-	    String evaluation_table = "cv_evaluation_triples_"+ it;
-
-	    ev.setModel(ModelType.NB, labeled_table, 0, -1, PhraseType.TYPED_PHRASES);
-	    Pair<Double, Double> precRec =  ev.runEvaluation(evaluation_table);
-
-	    avg_precision += precRec.key;
-	    avg_recall += precRec.value;
-	}
-	
-	System.out.println("-> Precision: " + (double) avg_precision/its);
-	System.out.println("-> Recall: " + (double) avg_recall/its);
+	//for (ModelType model : ModelType.values()){
+	//for(int tk : topk){
+	//for (int mF : minF){
+	ModelType model = ModelType.NB;
+	int tk = 100;
+	int mF = 10;
+	Pair<Double, Double> evaluations = ev.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, tk, mF);
+	System.out.println("***********************************");
+	System.out.println("Results with model= " + model.name() + ", topk= " + tk + " and minF= " + mF);
+	System.out.println("-> Precision: " + (double) evaluations.key/nParts);
+	System.out.println("-> Recall: " + (double) evaluations.value/nParts);
+	//}
+	// }
+	//}
     }
 }

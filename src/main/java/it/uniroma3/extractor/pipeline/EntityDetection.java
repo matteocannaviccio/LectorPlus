@@ -27,6 +27,8 @@ public class EntityDetection {
      * @param outputFile
      */
     public EntityDetection(String inputFile, String outputFile){
+	System.out.println("\n**** ENTITY DETECTION ****");
+
 	if (inputFile != null && outputFile != null){
 	    inputReader = new JSONReader(inputFile);
 	    try {

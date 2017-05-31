@@ -51,9 +51,10 @@ public class BlockParser {
 	 * Then, fragment the article in blocks
 	 */
 	String ABSTRACT = "#Abstract";
-	String regex_first = "(?m)^==\\s?([^=]+)\\s?==$";	// h1
-	String regex_second = "(?m)^===\\s?([^=]+)\\s?===$";	// h2
-	String regex_third = "(?m)^====\\s?([^=]+)\\s?====$";	// h3
+	String regex_first = "(?m)^==\\s?([^=]+)\\s?==$";		// h1
+	String regex_second = "(?m)^===\\s?([^=]+)\\s?===$";		// h2
+	String regex_third = "(?m)^====\\s?([^=]+)\\s?====$";		// h3
+	String regex_fourth = "(?m)^=====\\s?([^=]+)\\s?=====$";	// h4
 
 	// content --> first sections
 	Map<String, String> first_sections = getBlocksFromContent(text, regex_first, ABSTRACT, "#");
@@ -86,7 +87,21 @@ public class BlockParser {
 	    }
 	}
 
-	return third_sections;
+	// second sections --> third sections
+	Map<String, String> fourth_sections = new LinkedHashMap<String, String>();
+	for(Map.Entry<String, String> entry : third_sections.entrySet()){
+	    String head = entry.getKey();
+	    String cont = entry.getValue();
+	    Map<String, String> tmp = getBlocksFromContent(cont, regex_fourth, ABSTRACT, "#");
+	    for(Map.Entry<String, String> entries : tmp.entrySet()){
+		if (!entries.getKey().equals(ABSTRACT))
+		    fourth_sections.put(entries.getKey(), entries.getValue());
+		else
+		    fourth_sections.put(head, entries.getValue());
+	    }
+	}
+
+	return fourth_sections;
     }
 
     /**

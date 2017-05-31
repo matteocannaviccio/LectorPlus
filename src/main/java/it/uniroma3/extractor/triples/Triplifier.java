@@ -10,10 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.model.db.DBModel;
 
 /**
  * This module extracts triples from the articles and write them in DB.
@@ -29,7 +27,6 @@ import it.uniroma3.model.db.DBModel;
  *
  */
 public class Triplifier {
-    private DBModel db;
     private Queue<Pair<WikiTriple, String>> labeled_triples;
     private Queue<WikiTriple> unlabeled_triples;
     private Queue<WikiTriple> other_triples;
@@ -38,10 +35,7 @@ public class Triplifier {
     /**
      * 
      */
-    public Triplifier(boolean createdb) {
-	db = new DBModel(Configuration.getDBModel());
-	if (createdb)
-	    db.createModelDB();
+    public Triplifier() {
 	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	other_triples = new ConcurrentLinkedQueue<WikiTriple>();
@@ -199,7 +193,7 @@ public class Triplifier {
 	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
 	while(m.find()){
 	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
-	    db.insertMVList(mv);
+	    Lector.getDbmodel().insertMVList(mv);
 	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
 	}
 	return sentence;
@@ -275,29 +269,23 @@ public class Triplifier {
 	return buf.toString();
     }
 
-    /**
-     * 
-     */
-    public void endConnection(){
-	db.closeConnection();
-    }
 
     /**
      * 
      */
     public void updateBlock(){
 	for (Pair<WikiTriple, String> pair : this.labeled_triples){
-	    db.insertLabeledTriple(pair.key, pair.value);
+	    Lector.getDbmodel().insertLabeledTriple(pair.key, pair.value);
 	}
 	this.labeled_triples.clear();
 
 	for(WikiTriple t : this.unlabeled_triples){
-	    db.insertUnlabeledTriple(t);
+	    Lector.getDbmodel().insertUnlabeledTriple(t);
 	}
 	this.unlabeled_triples.clear();
 
 	for (WikiTriple t : this.other_triples){
-	    db.insertOtherTriple(t);
+	    Lector.getDbmodel().insertOtherTriple(t);
 	}
 	this.other_triples.clear();
     }

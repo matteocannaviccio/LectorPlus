@@ -28,11 +28,14 @@ public class StanfordNLP {
     /**
      * 
      */
-    public StanfordNLP(){
+    public StanfordNLP(String langCode){
 	/********* this code only makes all writes to the System.err stream silent to avoid the print "Loading classifier ... " *****/
 	PrintStream err = System.err;
 	System.setErr(new PrintStream(new OutputStream() {public void write(int b) {}}));
-	this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
+	if (langCode.equals("en"))
+	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
+	if (langCode.equals("es"))
+	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/spanish.ancora.distsim.s512.crf.ser.gz");
 	System.setErr(err);
 	/*** and then set everything back to its original state afterwards ***/
 

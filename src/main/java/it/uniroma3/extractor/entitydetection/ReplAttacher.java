@@ -167,8 +167,12 @@ public class ReplAttacher {
 	     */
 	    List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
 	    Set<Pair<String, String>> primaryEntityNames = new HashSet<Pair<String, String>>();
+	    
 	    primaryEntityNames.addAll(getNameRegex(article));
-	    primaryEntityNames.addAll(getPronounRegex(article));
+	 
+	    if (Lector.getLangCode().equals("en"))
+		primaryEntityNames.addAll(getPronounRegex(article));
+	    
 	    primaryEntityNames.addAll(getSeedRegex(article));
 	    primaryEntityNames.addAll(getDisambiguationRegex(article));
 	    regex2entity.addAll(primaryEntityNames);

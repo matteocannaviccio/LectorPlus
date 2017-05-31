@@ -3,6 +3,7 @@ package it.uniroma3.extractor.kg.resolver;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -17,11 +18,13 @@ import it.uniroma3.extractor.util.KeyValueIndex;
 public class RelationsResolver {
 
     private KeyValueIndex indexKG;
+    private Map<String, String> inverse;
 
     /**
      * 
      */
     public RelationsResolver(){
+	inverse = InverseDBPediaRelations.inverse();
 	if (!new File(Configuration.getDBPediaIndex()).exists()){
 	    System.out.println("**** Init DBPedia ****");
 	    if (!new File(Configuration.getIndexableDBPediaFile()).exists()){
@@ -53,7 +56,10 @@ public class RelationsResolver {
 	    relations.add(relation);
 	for (String relation : indexKG.retrieveValues(wikidObject + "###" + wikidSubject)){
 	    if(!relations.contains(relation))
-		relations.add(relation + "(-1)");
+		relation = relation + "(-1)";
+	    if(inverse.containsKey(relation))
+		relation = inverse.get(relation);
+	    relations.add(relation);
 	}
 	return relations;
     }
@@ -63,7 +69,7 @@ public class RelationsResolver {
      * @param relation
      * @return
      */
-    private void getInstances(String relation){
+    public void getInstances(String relation){
 	for (String instance : indexKG.retrieveKeys(relation))
 	    System.out.println(instance);
     }
@@ -89,12 +95,12 @@ public class RelationsResolver {
 	Configuration.init(args);
 	RelationsResolver res = new RelationsResolver();
 
-	//String subject = "Tom_Maniatis";
-	//String object = "Belfast";
-	//res.findRelations(subject, object);
+	String subject = "Barbara_Pierce_Bush";
+	String object = "George_W._Bush";
+	res.findRelations(object, subject);
 
-	String relation = "managerTitle";
-	res.getInstances(relation);
+	//String relation = "managerTitle";
+	//res.getInstances(relation);
 
     }
 

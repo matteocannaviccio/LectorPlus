@@ -19,16 +19,19 @@ public class RedirectResolver {
      * 
      */
     public RedirectResolver(){
-	if (!new File(Configuration.getRedirectIndex()).exists()){
-	    System.out.print("Creating REDIRECT resolver ...");
-	    long start_time = System.currentTimeMillis();
-	    this.indexRedirect = new KeyValueIndex(Configuration.getIndexableRedirectFile(), Configuration.getRedirectIndex());
-	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
+	if (Lector.getLangCode().equals("en")){
+	    if (!new File(Configuration.getRedirectIndex()).exists()){
+		System.out.print("Creating REDIRECT resolver ...");
+		long start_time = System.currentTimeMillis();
+		this.indexRedirect = new KeyValueIndex(Configuration.getIndexableRedirectFile(), Configuration.getRedirectIndex());
+		long end_time = System.currentTimeMillis();
+		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
+	    }
+	    else // we already have the index
+		this.indexRedirect = new KeyValueIndex(Configuration.getRedirectIndex());
+	}else{
+	    System.out.println("redirect are only for ENGLISH VERSION");
 	}
-	else // we already have the index
-	    this.indexRedirect = new KeyValueIndex(Configuration.getRedirectIndex());
-
     }
 
     /**
@@ -44,7 +47,7 @@ public class RedirectResolver {
 	    targetPage = target.get();
 	return targetPage;
     }
-    
+
     /**
      * 
      * @param args

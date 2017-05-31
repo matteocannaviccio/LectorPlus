@@ -10,26 +10,46 @@ import java.util.concurrent.TimeUnit;
 import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.reader.RDFReader;
+import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**
  * 
  * @author matteo
  *
  */
 public class TypesNormalizer{
-    
+
     public static void normalizeTypesFile(){
 	System.out.println("Normalizing all DBPedia type-mapping files ...");
 	long start_time = System.currentTimeMillis();
 	try {
-	    System.out.println("[main instance types]");
-	    normalizeTypesDataset(Configuration.getSourceMainInstanceTypes(), Configuration.getIndexableDBPediaNormalizedTypesFile());
-	    System.out.println("[lhd instance types]");
-	    normalizeTypesDataset(Configuration.getSourceLHDInstanceTypes(), Configuration.getIndexableDBPediaLHDFile());
-	    System.out.println("[dbtax instance types]");
-	    normalizeTypesDataset(Configuration.getSourceDBTaxInstanceTypes(), Configuration.getIndexableDBPediaDBTaxFile());
-	    System.out.println("[sdtyped instance types]");
-	    normalizeTypesDataset(Configuration.getSourceSDTypedInstanceTypes(), Configuration.getIndexableDBPediaSDTypedFile());		
+	    if (!new File(Configuration.getIndexableDBPediaNormalizedTypesFile()).exists()){
+		System.out.println("[main instance types]");
+		normalizeTypesDataset(Configuration.getSourceMainInstanceTypes(), Configuration.getIndexableDBPediaNormalizedTypesFile());
+	    }
+
+	    if (!new File(Configuration.getIndexableDBPediaAirpediaFile()).exists()){
+		System.out.println("[airpedia instance types]");
+		normalizeTypesDataset(Configuration.getSourceAirpediaInstanceTypes(), Configuration.getIndexableDBPediaAirpediaFile());
+	    }
+
+	    if (Lector.getLangCode().equals("en")){
+		if (!new File(Configuration.getIndexableDBPediaLHDFile()).exists()){
+		    System.out.println("[lhd instance types]");
+		    normalizeTypesDataset(Configuration.getSourceLHDInstanceTypes(), Configuration.getIndexableDBPediaLHDFile());
+		}
+
+		if (!new File(Configuration.getIndexableDBPediaDBTaxFile()).exists()){
+		    System.out.println("[dbtax instance types]");
+		    normalizeTypesDataset(Configuration.getSourceDBTaxInstanceTypes(), Configuration.getIndexableDBPediaDBTaxFile());
+		}
+
+		if (!new File(Configuration.getIndexableDBPediaSDTypedFile()).exists()){
+		    System.out.println("[sdtyped instance types]");
+		    normalizeTypesDataset(Configuration.getSourceSDTypedInstanceTypes(), Configuration.getIndexableDBPediaSDTypedFile());
+		}
+	    }
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
@@ -41,12 +61,21 @@ public class TypesNormalizer{
     private static void normalizeTypesDataset(String sourceBzip2File, String normalizedFile) throws IOException {
 	String subject;
 	String object;
+	Iterator<Triple> iter = null;
+	BufferedWriter bw = null;
+	RDFReader reader = null;
 
-	// first iteration: save second parts
-	RDFReader reader = new RDFReader(sourceBzip2File, true);
-	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(normalizedFile)));
+	if (!sourceBzip2File.contains("airpedia")){
+	    reader = new RDFReader(sourceBzip2File, Encoding.bzip2);
+	    bw = new BufferedWriter(new FileWriter(new File(normalizedFile)));
+	    iter = reader.readTTLFile();
+	}else{
+	    reader = new RDFReader(sourceBzip2File, Encoding.gz);
+	    bw =  new BufferedWriter(new FileWriter(new File(normalizedFile)));
+	    iter = reader.readNTFile();
+	}
 
-	Iterator<Triple> iter = reader.readTTLFile();
+
 	while(iter.hasNext()){
 	    Triple t = iter.next();
 	    subject = t.getSubject().getURI();
@@ -61,14 +90,18 @@ public class TypesNormalizer{
 	bw.close();
 	reader.closeReader();
     }
-    
+
     /**
      * 
      * @param uri
      * @return
      */
     private static String getResourceName(String uri){
-	String namespace = "http://dbpedia.org/resource/";
+	String namespace = null;
+	if(Lector.getLangCode().equals("en"))
+	    namespace = "http://dbpedia.org/resource/";
+	if(Lector.getLangCode().equals("es"))
+	    namespace = "http://es.dbpedia.org/resource/";
 	return uri.replace(namespace, "");
     }
 
@@ -88,10 +121,14 @@ public class TypesNormalizer{
      * @return
      */
     private static boolean isDBPediaResource(String uri){
-	String namespace = "http://dbpedia.org/resource/";
+	String namespace = null;
+	if(Lector.getLangCode().equals("en"))
+	    namespace = "http://dbpedia.org/resource/";
+	if(Lector.getLangCode().equals("es"))
+	    namespace = "http://es.dbpedia.org/resource/";
 	return uri.contains(namespace);
     }
-    
+
     /**
      * 
      * @param uri
@@ -100,7 +137,7 @@ public class TypesNormalizer{
     private static boolean isIntermediateNode(String uri){
 	return uri.contains("__");
     }
-    
+
     /**
      * 
      * @param uri

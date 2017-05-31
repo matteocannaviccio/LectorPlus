@@ -168,7 +168,7 @@ public class WikiParser {
 	article.setAliases(Lector.getTextParser().getAlias(Lector.getBlockParser().getAbstractSection(blocks)));
 	article.setBlocks(Lector.getTextParser().finalCleanText(blocks));
 	/* ********************* */
-
+	
 	return article;
     }
 

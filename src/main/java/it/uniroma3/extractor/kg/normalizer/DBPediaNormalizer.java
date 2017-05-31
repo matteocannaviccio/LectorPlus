@@ -13,7 +13,9 @@ import java.util.Map;
 import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.reader.RDFReader;
+import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**
  * This module reads a DBPedia .ttl dump and normalize it writing a tsv file.
  * The file is composed only by triples that have a subject and object entity,
@@ -56,9 +58,10 @@ public class DBPediaNormalizer{
 	String pred;
 
 	// FIRST iteration: save second parts
-	RDFReader reader = new RDFReader(dumpFile, true);
+	RDFReader reader = new RDFReader(dumpFile, Encoding.bzip2);
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
 	Iterator<Triple> iter = reader.readTTLFile();
+	
 	while(iter.hasNext()){
 	    cont++;
 	    if (cont % 6000000 == 0)
@@ -82,7 +85,7 @@ public class DBPediaNormalizer{
 
 	// SECOND iteration: print clean triples in the following file
 	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(Configuration.getIndexableDBPediaFile())));
-	reader = new RDFReader(Configuration.getDBPediaDumpFile(), true);
+	reader = new RDFReader(Configuration.getDBPediaDumpFile(), Encoding.bzip2);
 	cont = 0;
 	iter = reader.readTTLFile();
 	while(iter.hasNext()){
@@ -134,7 +137,11 @@ public class DBPediaNormalizer{
      * @return
      */
     private static String getResourceName(String uri){
-	String namespace = "http://dbpedia.org/resource/";
+	String namespace = null;
+	if(Lector.getLangCode().equals("en"))
+	    namespace = "http://dbpedia.org/resource/";
+	if(Lector.getLangCode().equals("es"))
+	    namespace = "http://es.dbpedia.org/resource/";
 	return uri.replace(namespace, "");
     }
 
@@ -154,7 +161,11 @@ public class DBPediaNormalizer{
      * @return
      */
     private static boolean isDBPediaResource(String uri){
-	String namespace = "http://dbpedia.org/resource/";
+	String namespace = null;
+	if(Lector.getLangCode().equals("en"))
+	    namespace = "http://dbpedia.org/resource/";
+	if(Lector.getLangCode().equals("es"))
+	    namespace = "http://es.dbpedia.org/resource/";
 	return uri.contains(namespace);
     }
 

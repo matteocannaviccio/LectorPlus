@@ -234,30 +234,38 @@ public class ReplFinder {
      */
     public WikiArticle increaseEvidence(WikiArticle article){
 	try{
-	    
+
 	    /*
 	     * Store the first clean sentence of the article and clean it, 
 	     * in order to extract seed types and run NLP tools.
 	     */
-	    String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
-	    article.setFirstSentence(firstSentence);
+	    if (Lector.getLangCode().equals("en")){
+		String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
+		article.setFirstSentence(firstSentence);
+	    }
 	    /* ********************* */
 
-	    if (!article.getFirstSentence().equals("-"))
-		article.setSeeds(findSeeds(article));
-	    article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
-	    article.setDisambiguation(getDisambiguation(article.getWikid()));
+	    if (Lector.getLangCode().equals("en")){
+		if (!article.getFirstSentence().equals("-"))
+		    article.setSeeds(findSeeds(article));
+		article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
+	    }
 
+	    /* ********************* */
+
+	    article.setDisambiguation(getDisambiguation(article.getWikid()));
 	    /*
 	     * we assign subnames only to articles that describe named entities.
 	     * we check it using the presence of an alias in the first sentence.
 	     */
-	    if (!article.getAliases().isEmpty()){
-		String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
-		if (!article.getWikilinks().containsKey(candidateSubname) &&
-			!article.getTitle().equals(candidateSubname) &&
-			!article.getSeeds().contains(candidateSubname))
+	    if (Lector.getLangCode().equals("en")){
+		if (!article.getAliases().isEmpty()){
+		    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
 		    article.setSubName(candidateSubname);
+		}
+	    }else{
+		String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
+		article.setSubName(candidateSubname);
 	    }
 
 	}catch(Exception e){

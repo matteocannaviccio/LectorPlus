@@ -23,7 +23,7 @@ public class PlaceholderFilter {
 	    ", and other", "and the", ",and the", ", and the", "n and", "s and", "'s and", "s, and"
 	    , ", the", "or", ", or"}));
      */
-    
+
     /**
      * 
      */
@@ -199,14 +199,16 @@ public class PlaceholderFilter {
 	    if(matcher.matches())
 		phrase = "";
 	}
+
 	/*
-	if (badPhrases.contains(phrase))
-	    phrase = "";
+	 * Some nationalities are cutted, e.g. [Canad]ian or [French]ese
 	 */
-	
-	if (phrase.startsWith("n "))
-	    phrase = phrase.substring(2);
-	 
+	String[] initialNatCutted = new String[]{"n ", "ese ", "ian "};
+	for (String inc : initialNatCutted){
+	    if (phrase.startsWith(inc))
+		phrase = phrase.substring(inc.length());
+	}
+
 	return phrase = phrase.trim();
     }
 

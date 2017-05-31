@@ -12,7 +12,7 @@ import it.uniroma3.extractor.util.reader.JSONReader;
  * @author matteo
  *
  */
-public class FactsExtractor {
+public class TriplesExtractor {
 
     private JSONReader reader;
 
@@ -20,7 +20,8 @@ public class FactsExtractor {
      * 
      * @param configFile
      */
-    public FactsExtractor(String inputFile){
+    public TriplesExtractor(String inputFile){
+	System.out.println("\n**** TRIPLES EXTRACTION ****");
 	if (inputFile != null)
 	    reader = new JSONReader(inputFile);
     }
@@ -36,7 +37,7 @@ public class FactsExtractor {
     public void pipelinedProcess(){
 	List<WikiArticle> articles;
 	while (!(articles = reader.nextChunk(Configuration.getChunkSize())).isEmpty()) {
-	    System.out.print("Facts Extraction on next: " + articles.size() + " articles.\t");
+	    System.out.print("Triples Extraction on next: " + articles.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    articles
 	    .parallelStream()
@@ -49,7 +50,7 @@ public class FactsExtractor {
 	    System.out.println("Reading next batch.");
 	    articles.clear();
 	}
-	Lector.getTriplifier().endConnection();
+	//Lector.getTriplifier().endConnection();
 	//System.out.println(Lector.getTriplifier().printEverything());
 
     }

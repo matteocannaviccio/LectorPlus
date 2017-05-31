@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.kg.normalizer.TypesNormalizer;
 import it.uniroma3.extractor.kg.tgpatterns.Ontology;
 import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
@@ -48,6 +50,9 @@ public class TypesResolver {
 	    indexOriginal = new KeyValueIndex(Configuration.getTypesIndex());
 
 	if (!new File(Configuration.getAirpediaIndex()).exists()){
+	    if (!new File(Configuration.getIndexableDBPediaAirpediaFile()).exists()){
+		TypesNormalizer.normalizeTypesFile();
+	    }
 	    System.out.print("Creating [airpedia] index ...");
 	    long start_time = System.currentTimeMillis();
 	    indexAirpedia = new KeyValueIndex(Configuration.getIndexableDBPediaAirpediaFile(), Configuration.getAirpediaIndex());
@@ -57,35 +62,46 @@ public class TypesResolver {
 	else// we already have the index
 	    indexAirpedia = new KeyValueIndex(Configuration.getAirpediaIndex());
 
-	if (!new File(Configuration.getSDTypesIndex()).exists()){
-	    System.out.print("Creating [sdtyped] index ...");
-	    long start_time = System.currentTimeMillis();
-	    indexSDTyped = new KeyValueIndex(Configuration.getIndexableDBPediaSDTypedFile(), Configuration.getSDTypesIndex());
-	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	}
-	else// we already have the index
-	    indexSDTyped = new KeyValueIndex(Configuration.getSDTypesIndex());
+	if (Lector.getLangCode().equals("en")){
+	    if (!new File(Configuration.getSDTypesIndex()).exists()){
+		if (!new File(Configuration.getIndexableDBPediaSDTypedFile()).exists()){
+		    TypesNormalizer.normalizeTypesFile();
+		}
+		System.out.print("Creating [sdtyped] index ...");
+		long start_time = System.currentTimeMillis();
+		indexSDTyped = new KeyValueIndex(Configuration.getIndexableDBPediaSDTypedFile(), Configuration.getSDTypesIndex());
+		long end_time = System.currentTimeMillis();
+		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
+	    }
+	    else// we already have the index
+		indexSDTyped = new KeyValueIndex(Configuration.getSDTypesIndex());
 
-	if (!new File(Configuration.getLHDTypesIndex()).exists()){
-	    System.out.print("Creating [lhd] index ...");
-	    long start_time = System.currentTimeMillis();
-	    indexLHD = new KeyValueIndex(Configuration.getIndexableDBPediaLHDFile(), Configuration.getLHDTypesIndex());
-	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	}
-	else// we already have the index
-	    indexLHD = new KeyValueIndex(Configuration.getLHDTypesIndex());
+	    if (!new File(Configuration.getLHDTypesIndex()).exists()){
+		if (!new File(Configuration.getIndexableDBPediaLHDFile()).exists()){
+		    TypesNormalizer.normalizeTypesFile();
+		}
+		System.out.print("Creating [lhd] index ...");
+		long start_time = System.currentTimeMillis();
+		indexLHD = new KeyValueIndex(Configuration.getIndexableDBPediaLHDFile(), Configuration.getLHDTypesIndex());
+		long end_time = System.currentTimeMillis();
+		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
+	    }
+	    else// we already have the index
+		indexLHD = new KeyValueIndex(Configuration.getLHDTypesIndex());
 
-	if (!new File(Configuration.getDBTaxTypesIndex()).exists()){
-	    System.out.print("Creating [dbtax] index ...");
-	    long start_time = System.currentTimeMillis();
-	    indexDBTax = new KeyValueIndex(Configuration.getIndexableDBPediaDBTaxFile(), Configuration.getDBTaxTypesIndex());
-	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
+	    if (!new File(Configuration.getDBTaxTypesIndex()).exists()){
+		if (!new File(Configuration.getIndexableDBPediaDBTaxFile()).exists()){
+		    TypesNormalizer.normalizeTypesFile();
+		}
+		System.out.print("Creating [dbtax] index ...");
+		long start_time = System.currentTimeMillis();
+		indexDBTax = new KeyValueIndex(Configuration.getIndexableDBPediaDBTaxFile(), Configuration.getDBTaxTypesIndex());
+		long end_time = System.currentTimeMillis();
+		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
+	    }
+	    else// we already have the index
+		indexDBTax = new KeyValueIndex(Configuration.getDBTaxTypesIndex());
 	}
-	else// we already have the index
-	    indexDBTax = new KeyValueIndex(Configuration.getDBTaxTypesIndex());
     }
 
     /**
@@ -151,7 +167,7 @@ public class TypesResolver {
 	}
 	return patt;
     }
-    
+
     /**
      * 
      * 
@@ -171,7 +187,7 @@ public class TypesResolver {
 	String deepType = types.stream().max(Comparator.comparingInt(s -> ontology.depthNode(s))).get();
 	return "[" + deepType + "]";
     }
-    
+
 
     /**
      * 
@@ -180,12 +196,17 @@ public class TypesResolver {
      */
     public String assignTypes(String wikid){
 	String type = selectDeepest(getTypes(wikid, indexOriginal));
-	if (type.equals("[none]"))
-	    type = selectDeepest(getTypes(wikid, indexSDTyped));
+	if (Lector.getLangCode().equals("en")){
+	    if (type.equals("[none]"))
+		type = selectDeepest(getTypes(wikid, indexSDTyped));
+	}
 	if (type.equals("[none]"))
 	    type = selectDeepest(getTypes(wikid, indexAirpedia));
-	if (type.equals("[none]"))
-	    type = selectDeepest(getTypes(wikid, indexLHD));
+
+	if (Lector.getLangCode().equals("en")){
+	    if (type.equals("[none]"))
+		type = selectDeepest(getTypes(wikid, indexLHD));
+	}
 	return type;
     }
 
@@ -195,6 +216,7 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 
 	TypesResolver t = new TypesResolver();
 

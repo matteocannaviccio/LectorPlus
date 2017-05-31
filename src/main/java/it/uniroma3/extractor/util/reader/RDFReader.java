@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RiotReader;
@@ -17,13 +18,30 @@ import com.hp.hpl.jena.graph.Triple;
  */
 public class RDFReader{
 
+    public enum Encoding {tsv, gz, bzip2};
+
     private InputStream is;
 
-    public RDFReader(String path, boolean isBzip2){
-	if(isBzip2)
-	    this.is = getInputStreamBZip2(path);
-	else
+    /**
+     * 
+     * @param path
+     * @param encoding
+     */
+    public RDFReader(String path, Encoding encoding){
+	switch(encoding){
+	case tsv:
 	    this.is = getInputStream(path);
+	    break;
+
+	case gz:
+	    this.is = getInputStreamGZ(path);
+	    break;
+
+	case bzip2:
+	    this.is = getInputStreamBZip2(path);
+	    break;
+
+	}
     }
 
     /**
@@ -40,7 +58,7 @@ public class RDFReader{
 	}
 	return is;
     }
-    
+
     /**
      * 
      * @param path
@@ -58,6 +76,22 @@ public class RDFReader{
 	}
 	return is;
     }
+    
+    /**
+     * 
+     * @param path
+     * @return
+     */
+    private InputStream getInputStreamGZ(String path){
+	InputStream is = null;
+	try {
+	    FileInputStream fis = new FileInputStream(path);
+	    is = new GZIPInputStream((fis));
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return is;
+    }
 
     /**
      * 
@@ -67,14 +101,14 @@ public class RDFReader{
     public Iterator<Triple> readTTLFile(){
 	return RiotReader.createIteratorTriples(is, Lang.TTL, null);
     }
-    
+
     /**
      * 
      * @param path
      * @return
      */
     public Iterator<Triple> readNTFile(){
-	return RiotReader.createIteratorTriples(is, Lang.NT, null);
+	return RiotReader.createIteratorTriples(is, Lang.N3, null);
     }
 
     /**

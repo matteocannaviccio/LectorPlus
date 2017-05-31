@@ -51,6 +51,7 @@ public class ArticleParser {
      * @param configFile
      */
     public ArticleParser(String inputFile, boolean bzip2, String outputFile){
+	System.out.println("**** ARTICLE PARSER ****");
 	this.stats = new Statistics();
 	this.inputReader = new XMLReader(inputFile, bzip2);
 
