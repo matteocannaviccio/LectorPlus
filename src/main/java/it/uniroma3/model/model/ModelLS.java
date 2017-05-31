@@ -4,7 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.opencsv.CSVWriter;
@@ -14,6 +17,8 @@ import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.DB;
+import it.uniroma3.model.db.DBModel;
+import it.uniroma3.model.model.Model.PhraseType;
 /**
  * This is the implementation of a score-based model.
  * Assuming that a phrase can represent only one relation, a score-based model can be 
@@ -31,12 +36,29 @@ public class ModelLS extends Model{
      */
     private Map<String, String> model = new HashMap<String, String>();
 
+    /**
+     * This is the formula:
+     * score (p, r) = log c(p,r) * (alpha) c(p, r)/|c(p, other r)| * (beta) c(p_seed, r)/|c(p_seed, other r)| 
+     */
     // parameters
-    private double alpha;
-    private double beta;
+    private double generality_cutoff = 0.15;
+    private double alpha = 0.5;
+    private double beta = 0.5; 
     private int topk;
+    
+    /**
+     * Constructor without the parameters.
+     * 
+     * @param db
+     */
+    public ModelLS(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
+	super(db, labeled, modelType, minFreq);
+	this.topk = topk;
+	this.model = createModel();
+    }
 
     /**
+     * Constructor with specific parameters alpha and beta.
      * 
      * @param db
      */
@@ -71,8 +93,6 @@ public class ModelLS extends Model{
 	CounterMap<String> seed_labeledPhrases = db_read.getAvailablePhrases(0);
 	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(seed_labeledPhrases.keySet());
 	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(seed_labeledPhrases.keySet());
-
-
 
 	if(verbose){
 	    System.out.println("\t--------");
@@ -175,7 +195,7 @@ public class ModelLS extends Model{
 		 * 
 		 */
 		if (!phrase2prob.containsKey(phrase) || phrase2prob.get(phrase) < probLab){
-		    if (probSeedLabUnlab > 0.15){
+		    if (probSeedLabUnlab > generality_cutoff){
 			phrase2prob.put(phrase, probLab);
 			model.put(phrase, relation);
 		    }
@@ -271,6 +291,55 @@ public class ModelLS extends Model{
 	}
 	return Pair.make(relation, 1.0);
     }
+    
+    /**
+     * 
+     * @param relationA
+     * @return
+     */
+    private Set<String> getPhrasesFromRelation(String relationA){
+	Set<String> phrases = new HashSet<String>();
+	for (Map.Entry<String, String> entry : this.model.entrySet()){
+	    if(entry.getValue().equals(relationA)){
+		phrases.add(entry.getKey());
+	    }
+	}
+	return phrases;
+    }
+    
+    /**
+     * 
+     * @param relationA
+     * @param relationB
+     * @return
+     */
+    private double measureSimilarity(String relationA, String relationB){
+	double sim = 0.0;
+	Set<String> phrasesA = getPhrasesFromRelation(relationA);
+	Set<String> phrasesB = getPhrasesFromRelation(relationB);
+
+	for(String p : phrasesA){
+	    if (!phrasesB.contains(p))
+		continue;
+	    sim += 1.0;
+	}
+	return sim;
+    }
+    
+    /**
+     * 
+     * @param relation
+     * @return
+     */
+    private Map<String, Double> findSimilarRelations(String relation){
+	Map<String, Double> similarRelations = new HashMap<String, Double>();
+	for (String otherRel : new HashSet<String>(this.model.values())){
+	    Double kl = measureSimilarity(relation, otherRel);
+	    if (kl != null)
+		similarRelations.put(otherRel, kl);
+	}
+	return Ranking.getRanking(similarRelations);
+    }
 
     /**
      * 
@@ -280,5 +349,24 @@ public class ModelLS extends Model{
 	return new HashSet<String>(this.model.values());
     }
 
+    @Override
+    public boolean canPredict(String expectedRelation) {
+	return getPredictableRelations().contains(expectedRelation);
+    }
+
+    /**
+     * 
+     * @param args
+     */
+    public static void main(String[] args){
+	ModelLS model = new ModelLS(new DBModel("model.db"), "labeled_triples", 100, 100, PhraseType.TYPED_PHRASES);
+	System.out.println("*****");
+	System.out.println(model.findSimilarRelations("child"));
+	System.out.println("*****");
+	System.out.println(model.findSimilarRelations("parent(-1)"));
+	System.out.println("*****");
+	System.out.println(model.findSimilarRelations("birthPlace"));
+
+    }
 
 }

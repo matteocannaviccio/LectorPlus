@@ -16,7 +16,7 @@ import it.uniroma3.model.db.QueryDB;
 public abstract class Model{
 
     // print the computation
-    protected static boolean verbose = true;
+    protected static boolean verbose = false;
     
     // the type of the phrases used in the model
     protected PhraseType type;
@@ -36,17 +36,10 @@ public abstract class Model{
      * @param minFreqWithR
      */
     public Model(DB dbModel, String labeled, PhraseType type, int minFreq){
-	if(verbose)
-	    System.out.println("**** Filtering " + type +" phrases by (minFreq: " + minFreq +") ****");
-	    
 	this.db_read = new QueryDB(dbModel, labeled);
 	this.type = type;
 	this.minFreq = minFreq;
 	this.available_phrases = availabePhrases(minFreq);
-
-	if(verbose){
-	    System.out.println(" --> "+ this.available_phrases.size() + " phrases.");
-	}
     }
     
     /**
@@ -64,16 +57,21 @@ public abstract class Model{
      * @return
      */
     private CounterMap<String> availabePhrases(int minFreq) {
-	CounterMap<String> available_phrases = null;
+	if(verbose)
+	    System.out.println("**** Filtering " + type +" phrases by (minFreq: " + minFreq +") ****");
+	
+	CounterMap<String> phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
-	    available_phrases = db_read.getAvailableTypedPhrases(minFreq);
+	    phrases = db_read.getAvailableTypedPhrases(minFreq);
 	    break;
 	case NO_TYPES_PHRASES:
-	    available_phrases = db_read.getAvailablePhrases(minFreq);
+	    phrases = db_read.getAvailablePhrases(minFreq);
 	    break;
 	}
-	return available_phrases;
+	if(verbose)
+	    System.out.println(" --> "+ phrases.size() + " different labeled phrases.");
+	return phrases;
     }
     
     /**
@@ -83,6 +81,8 @@ public abstract class Model{
      * @return
      */
     protected CounterMap<String> availableUnlabeledPhrases(Set<String> lab_phrases){
+	if(verbose)
+	    System.out.println("**** Obtaining " + type +" phrases from the unlabeled ****");
 	CounterMap<String> unlab_phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
@@ -92,6 +92,8 @@ public abstract class Model{
 	    unlab_phrases = db_read.getUnlabeledPhrasesCount(lab_phrases);
 	    break;
 	}
+	if(verbose)
+	    System.out.println(" --> "+ unlab_phrases.size() + " different un-labeled phrases.");
 	return unlab_phrases;
     } 
 
@@ -131,7 +133,31 @@ public abstract class Model{
 	    break;
 	}
 	return relations2phrasesAndCount;
-    } 
+    }
+    
+    /**
+     * Obtain the mapping counts between (typed) phrases and relations. 
+     * 
+     * @param lab_phrases
+     * @return
+     */
+    protected CounterMap<String> availableRelations(Set<String> lab_phrases){
+	CounterMap<String> labeledFactsByRelation = null;
+	switch(this.type){
+	case TYPED_PHRASES:
+	    System.out.println("-> get typed relations count");
+	    labeledFactsByRelation = db_read.getCleanRelationCountByTypedPhrases(this.available_phrases.keySet());
+	    break;
+
+	case NO_TYPES_PHRASES:
+	    System.out.println("-> get relations count");
+	    labeledFactsByRelation = db_read.getCleanRelationCount(this.available_phrases.keySet());
+	    break;
+	}
+	System.out.println("-> "+ labeledFactsByRelation.size() +" relations.");
+	return labeledFactsByRelation;
+    }
+    
 
 
     /**
@@ -141,6 +167,13 @@ public abstract class Model{
      * @return
      */
     public abstract Pair<String, Double> predictRelation(WikiTriple t);
+
+    /**
+     * 
+     * @param expectedRelation
+     * @return
+     */
+    public abstract boolean canPredict(String expectedRelation);
     
 
 

@@ -241,4 +241,9 @@ public class ModelBM25 extends Model{
     public Set<String> getPredictableRelations(){
 	return new HashSet<String>(this.model.values());
     }
+
+    @Override
+    public boolean canPredict(String expectedRelation) {
+	return getPredictableRelations().contains(expectedRelation);
+    }
 }

@@ -250,5 +250,11 @@ public class ModelNB extends Model{
 
 	return Pair.make(relation, prob);
     }
+    
+
+    @Override
+    public boolean canPredict(String expectedRelation) {
+	return true;
+    }
 
 }
