@@ -14,6 +14,8 @@ import it.uniroma3.extractor.parser.XMLParser;
 import it.uniroma3.extractor.triples.Triplifier;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.nlp.StanfordNLP;
+import it.uniroma3.model.db.DBModel;
+import it.uniroma3.model.extraction.DBFacts;
 /**
  * 
  * @author matteo
@@ -39,12 +41,17 @@ public class Lector {
     /* Needed in Triple Extraction */
     private static KGEndPoint kg;
     private static Triplifier triplifier;
+    private static DBModel dbmodel;
+    private static DBFacts dbfacts;
+    
+    private static String langCode;
     
     /**
      * 
      * @param config
      */
     public static void init(WikiLanguage lang) {
+	langCode = lang.getCode();
 	wikiParser = new WikiParser(lang);
 	kg = new KGEndPoint();
 	markupParser = new MarkupParser();
@@ -52,12 +59,19 @@ public class Lector {
 	xmlParser = new XMLParser();
 	blockParser = new BlockParser(lang);
 	textParser = new TextParser(lang);
-	triplifier = new Triplifier(Configuration.createModelDB());
+	triplifier = new Triplifier();
+	
+	dbmodel = new DBModel(Configuration.getDBModel());
+	if (Configuration.createModelDB())
+	    dbmodel.createModelDB();
+	
+	dbfacts = new DBFacts(Configuration.getDBFacts());
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
+	
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
-		return new StanfordNLP();
+		return new StanfordNLP(langCode);
 	    }
 	};
 	openNLPExpert = new ThreadLocal<OpenNLP>() {
@@ -166,7 +180,27 @@ public class Lector {
     }
 
 
-    
-    
+    /**
+     * @return the langCode
+     */
+    public static String getLangCode() {
+        return langCode;
+    }
+
+
+    /**
+     * @return the dbmodel
+     */
+    public static DBModel getDbmodel() {
+        return dbmodel;
+    }
+
+
+    /**
+     * @return the dbfacts
+     */
+    public static DBFacts getDbfacts() {
+        return dbfacts;
+    }
 
 }

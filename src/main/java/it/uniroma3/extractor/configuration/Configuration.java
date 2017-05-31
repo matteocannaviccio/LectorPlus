@@ -79,6 +79,17 @@ public class Configuration {
 	    e.printStackTrace();
 	}
     }
+    
+
+    /***********************************************************************/
+    public static String getLanguageCode(){
+	return keyValue.get("languageUsed");
+    }
+
+    public static String getLanguageProperties(){
+	return getDataFolder() + "/languages/" + getLanguageCode() + ".properties";
+    }
+    /***********************************************************************/
 
     /***********************************************************************/
     private static String getDataFolder(){
@@ -94,7 +105,7 @@ public class Configuration {
     }
 
     private static String getIndexesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder") + "/" + getLanguageCode();
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -102,7 +113,7 @@ public class Configuration {
     }
 
     private static String getNormalizedFilesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("normalizedFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode() + "/" + keyValue.get("normalizedFolder");
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -110,7 +121,7 @@ public class Configuration {
     }
 
     private static String getTypesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("typesFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode() + "/" + keyValue.get("typesFolder");
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -118,7 +129,7 @@ public class Configuration {
     }
 
     private static String getOntologyFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("ontologyFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + keyValue.get("ontologyFolder");
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -126,7 +137,7 @@ public class Configuration {
     }
 
     private static String getModelsFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("modelsFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("modelsFolder")+ "/" + getLanguageCode();
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -134,7 +145,7 @@ public class Configuration {
     }
 
     private static String getListsFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("listsFolder");
+	String folderPath = getDataFolder() + "/" + keyValue.get("listsFolder")+ "/" + getLanguageCode();
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -144,7 +155,7 @@ public class Configuration {
 
     /***********************************************************************/
     private static String getDBPediaPath(){
-	return getInputFolder() + "/" + keyValue.get("dbpediaPath");
+	return getInputFolder() + "/" + keyValue.get("dbpediaPath") + "_" + getLanguageCode();
     }
 
     public static String getDBPediaIndex(){
@@ -162,7 +173,7 @@ public class Configuration {
 
     /***********************************************************************/
     private static String getWikipediaPath(){
-	return getInputFolder() + "/" + keyValue.get("wikipediaPath");
+	return getInputFolder() + "/" + keyValue.get("wikipediaPath") + "_" + getLanguageCode();
     }
 
     public static String getOriginalArticlesFile(){
@@ -223,19 +234,9 @@ public class Configuration {
     /***********************************************************************/
 
     /***********************************************************************/
-    public static String getLanguageCode(){
-	return keyValue.get("languageUsed");
-    }
-
-    public static String getLanguageProperties(){
-	return getDataFolder() + "/languages/" + getLanguageCode() + ".properties";
-    }
-    /***********************************************************************/
-
-    /***********************************************************************/
     public static String getIndexableRedirectFile(){
 	return getNormalizedFilesFolder() + "/" + keyValue.get("redirectFile");
-    } 
+    }
 
     public static String getIndexableDBPediaAirpediaFile(){
 	return getNormalizedFilesFolder() + "/" + keyValue.get("typesAirpediaFile");
@@ -260,9 +261,13 @@ public class Configuration {
 
     /*********************************/
 
+    public static String getSourceAirpediaInstanceTypes(){
+	return getTypesFolder() + "/" + keyValue.get("airpediaInstanceType");
+    } 
+    
     public static String getSourceMainInstanceTypes(){
 	return getTypesFolder() + "/" + keyValue.get("mainInstanceType");
-    } 
+    }
 
     public static String getSourceDBTaxInstanceTypes(){
 	return getTypesFolder() + "/" + keyValue.get("dbtaxInstanceType");
