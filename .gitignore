@@ -8,3 +8,4 @@ javadoc
 *.db
 *.csv
 *.jardesc
+export.jardesc
