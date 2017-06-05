@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 
@@ -23,6 +23,8 @@ public class TripleTest {
     @BeforeClass
     public static void runOnceBeforeClass() {
 	Configuration.init(new String[0]);
+	// force english
+	Configuration.keyValue.put("languageUsed", "en");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
     }
     

@@ -5,17 +5,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
 /**
- * 
+ * It is the class tha parses the language configuration file.
  * 
  * @author matteo
  *
  */
 public class WikiLanguage {
-    private String code;
+    public enum Lang {en, es, it, fr, ge};
+    
+    private Lang lang;
     private Properties properties;
     private static final String SEPARATOR = ",";
 
@@ -26,10 +27,8 @@ public class WikiLanguage {
     public WikiLanguage(String code, String langProperties) {
 	properties = new Properties();
 	try {
-
-	    this.code = code;
+	    this.lang = Lang.valueOf(code);
 	    properties.load(new FileInputStream(langProperties));
-
 	} catch (IOException e) {
 	    System.out.println("Language not found.");
 	    e.printStackTrace();
@@ -184,9 +183,9 @@ public class WikiLanguage {
 
 
     /**
-     * @return the code
+     * @return the lang
      */
-    public String getCode() {
-	return code;
+    public Lang getLang() {
+	return lang;
     }
 }

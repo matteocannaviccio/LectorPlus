@@ -14,6 +14,7 @@ import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.entitydetection.PatternComparator;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -28,14 +29,24 @@ public class StanfordNLP {
     /**
      * 
      */
-    public StanfordNLP(String langCode){
+    public StanfordNLP(WikiLanguage lang){
 	/********* this code only makes all writes to the System.err stream silent to avoid the print "Loading classifier ... " *****/
 	PrintStream err = System.err;
 	System.setErr(new PrintStream(new OutputStream() {public void write(int b) {}}));
-	if (langCode.equals("en"))
+	switch(lang.getLang()){
+	case en:
 	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
-	if (langCode.equals("es"))
+	    break;
+	    
+	case es:
 	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/spanish.ancora.distsim.s512.crf.ser.gz");
+	    break;
+	    
+	default:
+	    System.out.println("No Stanford classifier for this language.");
+	    System.exit(1);
+	    break;
+	}
 	System.setErr(err);
 	/*** and then set everything back to its original state afterwards ***/
 
@@ -110,9 +121,7 @@ public class StanfordNLP {
 
 	    for(Pair<String, String> regex : tags){
 		try {
-
 		    sentenceText = applyRegex(sentenceText, regex.value, regex.key);
-
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}

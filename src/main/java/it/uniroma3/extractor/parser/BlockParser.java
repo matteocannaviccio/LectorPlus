@@ -51,10 +51,10 @@ public class BlockParser {
 	 * Then, fragment the article in blocks
 	 */
 	String ABSTRACT = "#Abstract";
-	String regex_first = "(?m)^==\\s?([^=]+)\\s?==$";		// h1
-	String regex_second = "(?m)^===\\s?([^=]+)\\s?===$";		// h2
-	String regex_third = "(?m)^====\\s?([^=]+)\\s?====$";		// h3
-	String regex_fourth = "(?m)^=====\\s?([^=]+)\\s?=====$";	// h4
+	String regex_first = "(?m)^==\\s?([^=]+)\\s?==\\s?$";			// h1
+	String regex_second = "(?m)^===\\s?([^=]+)\\s?===\\s?$";		// h2
+	String regex_third = "(?m)^====\\s?([^=]+)\\s?====\\s?$";		// h3
+	String regex_fourth = "(?m)^=====\\s?([^=]+)\\s?=====\\s?$";		// h4
 
 	// content --> first sections
 	Map<String, String> first_sections = getBlocksFromContent(text, regex_first, ABSTRACT, "#");

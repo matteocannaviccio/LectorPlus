@@ -9,8 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.hp.hpl.jena.graph.Triple;
 
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.reader.RDFReader;
 import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**
@@ -34,7 +35,11 @@ public class TypesNormalizer{
 		normalizeTypesDataset(Configuration.getSourceAirpediaInstanceTypes(), Configuration.getIndexableDBPediaAirpediaFile());
 	    }
 
-	    if (Lector.getLangCode().equals("en")){
+	    /*
+	     * for the english version we rely on three more types datasets 
+	     * but the usage is conditioned to some rules
+	     */
+	    if (Lector.getLang().equals(Lang.en)){
 		if (!new File(Configuration.getIndexableDBPediaLHDFile()).exists()){
 		    System.out.println("[lhd instance types]");
 		    normalizeTypesDataset(Configuration.getSourceLHDInstanceTypes(), Configuration.getIndexableDBPediaLHDFile());
@@ -58,6 +63,12 @@ public class TypesNormalizer{
 	System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
     }
 
+    /**
+     * 
+     * @param sourceBzip2File
+     * @param normalizedFile
+     * @throws IOException
+     */
     private static void normalizeTypesDataset(String sourceBzip2File, String normalizedFile) throws IOException {
 	String subject;
 	String object;
@@ -98,10 +109,11 @@ public class TypesNormalizer{
      */
     private static String getResourceName(String uri){
 	String namespace = null;
-	if(Lector.getLangCode().equals("en"))
+	if(Lector.getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
-	if(Lector.getLangCode().equals("es"))
-	    namespace = "http://es.dbpedia.org/resource/";
+	else{
+	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	}
 	return uri.replace(namespace, "");
     }
 
@@ -122,10 +134,11 @@ public class TypesNormalizer{
      */
     private static boolean isDBPediaResource(String uri){
 	String namespace = null;
-	if(Lector.getLangCode().equals("en"))
+	if(Lector.getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
-	if(Lector.getLangCode().equals("es"))
-	    namespace = "http://es.dbpedia.org/resource/";
+	else{
+	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	}
 	return uri.contains(namespace);
     }
 

@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Lector;
 /**
  * 
  * @author matteo
@@ -386,6 +386,22 @@ public class WikiTriple {
      */
     public String getPhrasePlaceholders() {
         return phrase_placeholders;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getInvertedSubject(){
+	return this.wikiObject;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getInvertedObject(){
+	return this.wikiSubject;
     }
 
 }

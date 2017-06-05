@@ -2,9 +2,9 @@ package it.uniroma3.extractor.kg;
 
 import java.util.Set;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.kg.resolver.RedirectResolver;
 import it.uniroma3.extractor.kg.resolver.RelationsResolver;
 import it.uniroma3.extractor.kg.resolver.TypesResolver;

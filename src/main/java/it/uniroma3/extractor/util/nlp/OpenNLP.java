@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.util.Token;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;

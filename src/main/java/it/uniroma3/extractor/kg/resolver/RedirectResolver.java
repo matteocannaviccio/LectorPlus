@@ -6,9 +6,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.KeyValueIndex;
 
 public class RedirectResolver {
@@ -19,7 +20,10 @@ public class RedirectResolver {
      * 
      */
     public RedirectResolver(){
-	if (Lector.getLangCode().equals("en")){
+	/*
+	 * TODO: parses redirect for new languages!
+	 */
+	if (Lector.getLang().equals(Lang.en)){
 	    if (!new File(Configuration.getRedirectIndex()).exists()){
 		System.out.print("Creating REDIRECT resolver ...");
 		long start_time = System.currentTimeMillis();

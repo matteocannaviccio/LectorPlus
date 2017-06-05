@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.kg.normalizer.TypesNormalizer;
 import it.uniroma3.extractor.kg.tgpatterns.Ontology;
 import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
@@ -62,7 +63,11 @@ public class TypesResolver {
 	else// we already have the index
 	    indexAirpedia = new KeyValueIndex(Configuration.getAirpediaIndex());
 
-	if (Lector.getLangCode().equals("en")){
+	/**
+	 * for the english version we rely on three more types datasets 
+	 * but the usage is conditioned to some rules: {@link #assignTypes(String wikid)}.
+	 */
+	if (Lector.getLang().equals(Lang.en)){
 	    if (!new File(Configuration.getSDTypesIndex()).exists()){
 		if (!new File(Configuration.getIndexableDBPediaSDTypedFile()).exists()){
 		    TypesNormalizer.normalizeTypesFile();
@@ -190,20 +195,22 @@ public class TypesResolver {
 
 
     /**
+     * Here we express the rules that are used to assign a type to an input entity.
+     * Not all the dictionaries of types that we used have the same reliability!
      * 
      * @param wikid
      * @return
      */
     public String assignTypes(String wikid){
 	String type = selectDeepest(getTypes(wikid, indexOriginal));
-	if (Lector.getLangCode().equals("en")){
+	if (Lector.getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexSDTyped));
 	}
 	if (type.equals("[none]"))
 	    type = selectDeepest(getTypes(wikid, indexAirpedia));
 
-	if (Lector.getLangCode().equals("en")){
+	if (Lector.getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexLHD));
 	}

@@ -2,11 +2,11 @@ package it.uniroma3.extractor.parser;
 
 import java.util.Map;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
 /**
  * 
  * 
@@ -45,7 +45,7 @@ public class WikiParser {
 	String id = Lector.getXmlParser().getFieldFromXmlPage(page, "id");
 	String namespace = Lector.getXmlParser().getFieldFromXmlPage(page, "ns");
 	String originalMarkup = Lector.getXmlParser().getWikiMarkup(page);
-	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang.getCode(), originalMarkup);
+	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang.getLang().name(), originalMarkup);
 
 	try{
 	    /*

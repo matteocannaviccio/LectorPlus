@@ -1,8 +1,8 @@
-package it.uniroma3.extractor.configuration;
+package it.uniroma3.extractor.bean;
 
 import java.util.Locale;
 
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.entitydetection.ReplAttacher;
 import it.uniroma3.extractor.entitydetection.ReplFinder;
@@ -44,38 +44,47 @@ public class Lector {
     /* Needed in Triple Extraction */
     private static KGEndPoint kg;
     private static Triplifier triplifier;
-
     /* Keep the (open) connections here */
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
     
     private static DBPediaSpotlight dbpediaSpotlight;
-
-    private static String langCode;
+    private static WikiLanguage wikiLang;
 
     /**
      * 
      * @param config
      */
     public static void init(WikiLanguage lang) {
-	langCode = lang.getCode();
-	wikiParser = new WikiParser(lang);
-	kg = new KGEndPoint();
+	initAP(lang);
+	initED();
+	initTE();
+    }
+    
+    /**
+     * 
+     * @param lang
+     */
+    public static void initAP(WikiLanguage parsedLang){
+	wikiLang = parsedLang;
+	wikiParser = new WikiParser(wikiLang);
 	markupParser = new MarkupParser();
-	articleTyper = new ArticleTyper(lang);
+	articleTyper = new ArticleTyper(wikiLang);
 	xmlParser = new XMLParser();
-	blockParser = new BlockParser(lang);
-	textParser = new TextParser(lang);
-	triplifier = new Triplifier();
-
+	blockParser = new BlockParser(wikiLang);
+	textParser = new TextParser(wikiLang);
+    }
+    
+    /**
+     * 
+     */
+    public static void initED(){
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
-	
 	//dbpediaSpotlight = new DBPediaSpotlight(0.5, 0);
-
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
-		return new StanfordNLP(langCode);
+		return new StanfordNLP(wikiLang);
 	    }
 	};
 	openNLPExpert = new ThreadLocal<OpenNLP>() {
@@ -88,6 +97,14 @@ public class Lector {
 		return new FSMSeed(openNLPExpert.get());
 	    }
 	};
+    }
+    
+    /**
+     * 
+     */
+    public static void initTE(){
+	kg = new KGEndPoint();
+	triplifier = new Triplifier();
     }
 
 
@@ -187,8 +204,8 @@ public class Lector {
     /**
      * @return the langCode
      */
-    public static String getLangCode() {
-	return langCode;
+    public static Lang getLang() {
+	return wikiLang.getLang();
     }
     
     /**
@@ -233,15 +250,15 @@ public class Lector {
      * @return
      */
     public static Locale getLocale(){
-	if (langCode.equals("en"))
+	if (wikiLang.equals(Lang.en))
 	    return Locale.ENGLISH;
-	if (langCode.equals("es"))
+	if (wikiLang.equals(Lang.en))
 	    return new Locale("es", "ES");
-	if (langCode.equals("it"))
+	if (wikiLang.equals(Lang.it))
 	    return Locale.ITALIAN;
-	if (langCode.equals("ge"))
+	if (wikiLang.equals(Lang.ge))
 	    return Locale.GERMANY;
-	if (langCode.equals("fr"))
+	if (wikiLang.equals(Lang.fr))
 	    return Locale.FRENCH;
 	return null;
     }

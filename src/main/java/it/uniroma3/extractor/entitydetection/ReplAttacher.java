@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.nlp.StupidNLP;
 /**
@@ -162,20 +162,17 @@ public class ReplAttacher {
     public WikiArticle augmentEvidence(WikiArticle article){
 
 	try{
-
 	    /*
 	     * Collect all the patterns for Primary Entity (PE)
 	     */
 	    List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
 	    Set<Pair<String, String>> primaryEntityNames = new HashSet<Pair<String, String>>();
-	    
-	    primaryEntityNames.addAll(getNameRegex(article));
-	 
-	    if (Lector.getLangCode().equals("en"))
-		primaryEntityNames.addAll(getPronounRegex(article));
-	    
-	    primaryEntityNames.addAll(getSeedRegex(article));
-	    primaryEntityNames.addAll(getDisambiguationRegex(article));
+
+	    // add all of those if they exist (check if they are not null)
+	    primaryEntityNames.addAll(getNameRegex(article));    
+	    primaryEntityNames.addAll(getSeedRegex(article));		 // lang dependent
+	    primaryEntityNames.addAll(getDisambiguationRegex(article));  // lang dependent
+	    primaryEntityNames.addAll(getPronounRegex(article));	 // lang dependent
 	    regex2entity.addAll(primaryEntityNames);
 
 	    /*
@@ -217,12 +214,12 @@ public class ReplAttacher {
 			break;
 		    }
 		}
+		
 		/*
 		 * Apply a Named Entity Recognition to find instances of the remaining entities
 		 */
 		//article.getSentences().put(block.getKey(), Lector.getSpotlight().annotateText(block.getValue(), article.getWikid()));
 		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
-		
 		article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
 
 

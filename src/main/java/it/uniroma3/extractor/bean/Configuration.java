@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.configuration;
+package it.uniroma3.extractor.bean;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -268,7 +268,7 @@ public class Configuration {
     /***********************************************************************/
 
     public static String getIndexableRedirectFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("redirectFile");
+	return getNormalizedFilesFolder() + "/" + getLanguageCode() + "_" + keyValue.get("redirectFile");
     }
 
     public static String getIndexableDBPediaAirpediaFile(){

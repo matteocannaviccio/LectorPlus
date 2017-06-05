@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 
@@ -19,6 +19,8 @@ public class FSMSeedTest {
     @BeforeClass
     public static void runOnceBeforeClass() {
 	Configuration.init(new String[0]);
+	// force english
+	Configuration.keyValue.put("languageUsed", "en");
 	fsm = new FSMSeed(new OpenNLP());
     }
     

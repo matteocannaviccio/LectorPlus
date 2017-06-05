@@ -7,9 +7,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.reader.TSVReader;
 
 /**
@@ -30,7 +31,7 @@ public class MarkupParser {
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
 	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
-	if (Lector.getLangCode().equals("en")){
+	if (Lector.getLang().equals(Lang.en)){
 	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
 	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
 	}
@@ -239,7 +240,7 @@ public class MarkupParser {
 
 	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
 
-		if (Configuration.solveRedirect() && Lector.getLangCode().equals("en"))
+		if (Configuration.solveRedirect() && Lector.getLang().equals(Lang.en))
 		    wikid = Lector.getKg().getRedirect(wikid);
 
 		/*

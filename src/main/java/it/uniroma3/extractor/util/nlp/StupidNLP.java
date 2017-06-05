@@ -4,7 +4,7 @@ import java.text.BreakIterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Lector;
 
 public class StupidNLP {
     

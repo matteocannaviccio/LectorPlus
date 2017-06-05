@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -27,8 +26,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.entitydetection.PatternComparator;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -42,6 +40,7 @@ public class DBPediaSpotlight{
     private Process process;
     private double confidence;
     private int support;
+    private HttpClient client;
 
     /**
      * 
@@ -52,6 +51,7 @@ public class DBPediaSpotlight{
 	this.confidence = confidence;
 	this.support = support;
 	this.process = runServer();
+	this.client = new HttpClient();
     }
 
     /**
@@ -100,6 +100,7 @@ public class DBPediaSpotlight{
     private synchronized JsonObject getAnnotatedText(String text){
 	InputStream responseBody = null; 	// Read the response body.
 	try {
+	    
 	    GetMethod getMethod = new GetMethod(
 		    API_URL + "rest/annotate/?"
 			    + "confidence=" + this.confidence + "&support=" + this.support
@@ -108,12 +109,15 @@ public class DBPediaSpotlight{
 	    getMethod.addRequestHeader(new Header("Accept", "application/json"));
 	    getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, 
 		    new DefaultHttpMethodRetryHandler(3, false));
+	    
 	    // Execute the method.
-	    int statusCode = new HttpClient().executeMethod(getMethod);
+	    int statusCode = this.client.executeMethod(getMethod);
 	    if (statusCode != HttpStatus.SC_OK) {
 		System.out.println("Method failed: " + getMethod.getStatusLine());
 	    }
+	    
 	    responseBody = getMethod.getResponseBodyAsStream();
+	    
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}

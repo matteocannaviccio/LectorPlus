@@ -5,16 +5,18 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
 
 public class MarkupParserTest {
 
     @BeforeClass
     public static void runOnceBeforeClass() {
 	Configuration.init(new String[0]);
+	// force english
+	Configuration.keyValue.put("languageUsed", "en");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
     }
 
@@ -37,7 +39,7 @@ public class MarkupParserTest {
 		+ "as well as a record number of FIFA World Player of the Year. Xavi in 2010, together with two "
 		+ "other players who came through the club's youth academy ([[Lionel Messi]], [[Andrés Iniesta]]) "
 		+ "were chosen as the three best players in the world";
-	System.out.println(Lector.getMarkupParser().cleanEmptyTemplateWikilinks(raw));
+
 	assertEquals(Lector.getMarkupParser().cleanEmptyTemplateWikilinks(raw), clean);
     }
 
@@ -75,8 +77,14 @@ public class MarkupParserTest {
 		+ "which became an [[independent school]] in 1975. A keen [[trainspotter]] as a child, he learnt about electronics from tinkering with a"
 		+ " model railway. He studied at [[The Queen's College, Oxford]] from 1973 to 1976, where he received a "
 		+ "[[British undergraduate degree classification#First-class honours|first-class]] [[bachelor of arts]] degree in physics.";
-
-	System.out.println(Lector.getMarkupParser().harvestAllWikilinks(Lector.getMarkupParser().removeCommonSenseWikilinks(raw), article));
+	
+	String parsed = "Berners-Lee was born in <SE-ORG<London>>, England, United Kingdom, one of four children born to <SE-ORG<Mary_Lee_Woods>> and <SE-ORG<Conway_Berners-Lee>>."
+		+ " His parents worked on the first commercially-built computer, the <SE-ORG<Ferranti_Mark_1>>. He attended Sheen Mount Primary School, and then went on to attend "
+		+ "south west London's <SE-ORG<Emanuel_School>> from 1969 to 1973, at the time a direct grant grammar school, which became an independent school in 1975. A keen "
+		+ "trainspotter as a child, he learnt about electronics from tinkering with a model railway. He studied at <SE-ORG<The_Queen's_College,_Oxford>> from 1973 to 1976, "
+		+ "where he received a first-class bachelor of arts degree in physics.";
+	
+	assertEquals(Lector.getMarkupParser().harvestAllWikilinks(Lector.getMarkupParser().removeCommonSenseWikilinks(raw), article), parsed);
     }
 
     @Test
@@ -114,7 +122,6 @@ public class MarkupParserTest {
 		+ "test 7 - a <SE-ORG<Strangewikilink>> molecule that is described.\n"
 		+ "test 8 - a 2001 molecule that is described.";
 
-	System.out.println(Lector.getMarkupParser().harvestAllWikilinks(raw, article));
 	assertEquals(Lector.getMarkupParser().harvestAllWikilinks(raw, article), clean);
 	assertEquals(article.getWikilinks().size(), 6);
     }

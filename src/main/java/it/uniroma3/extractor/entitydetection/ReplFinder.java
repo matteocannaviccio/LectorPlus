@@ -14,9 +14,10 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.google.common.collect.TreeMultiset;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.Pair;
 /**
  * 
@@ -241,13 +242,14 @@ public class ReplFinder {
 	     * Store the first clean sentence of the article and clean it, 
 	     * in order to extract seed types and run NLP tools.
 	     */
-	    if (Lector.getLangCode().equals("en")){
+	    if (Lector.getLang().equals(Lang.en)){
 		String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
 		article.setFirstSentence(firstSentence);
 	    }
+
 	    /* ********************* */
 
-	    if (Lector.getLangCode().equals("en")){
+	    if (Lector.getLang().equals(Lang.en)){
 		if (!article.getFirstSentence().equals("-"))
 		    article.setSeeds(findSeeds(article));
 		article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
@@ -255,12 +257,12 @@ public class ReplFinder {
 
 	    /* ********************* */
 
-	    article.setDisambiguation(getDisambiguation(article.getWikid()));
 	    /*
 	     * we assign subnames only to articles that describe named entities.
 	     * we check it using the presence of an alias in the first sentence.
 	     */
-	    if (Lector.getLangCode().equals("en")){
+	    if (Lector.getLang().equals(Lang.en)){
+		article.setDisambiguation(getDisambiguation(article.getWikid()));
 		if (!article.getAliases().isEmpty()){
 		    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
 		    article.setSubName(candidateSubname);

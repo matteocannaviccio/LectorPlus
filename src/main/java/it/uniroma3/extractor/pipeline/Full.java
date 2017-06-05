@@ -1,8 +1,8 @@
 package it.uniroma3.extractor.pipeline;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.model.extraction.FactsExtractor;
 import it.uniroma3.model.extraction.FactsExtractor.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
@@ -20,27 +20,28 @@ public class Full {
      * @param fe
      */
     public static void pipelinedProcess(String inputPath){
-	
-
 	if (Configuration.getPipelineSteps().contains("AP")){
+	    Lector.initAP(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	    ArticleParser ap = new ArticleParser(inputPath, inputPath.endsWith("bz2"), Configuration.getParsedArticlesFile());
 	    ap.pipelinedProcess();
 	}
-	
+
 	if (Configuration.getPipelineSteps().contains("ED")){
+	    Lector.initED();
 	    EntityDetection ed = new EntityDetection(Configuration.getParsedArticlesFile(), 
 		    Configuration.getAugmentedArticlesFile());
 	    ed.pipelinedProcess();
 	}
 
 	if (Configuration.getPipelineSteps().contains("TE")){
+	    Lector.initTE();
 	    TriplesExtractor te = new TriplesExtractor(Configuration.getAugmentedArticlesFile());
 	    te.pipelinedProcess();
 	}
 
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    FactsExtractor extractor = new FactsExtractor();
-	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 0, 10, PhraseType.TYPED_PHRASES);
+	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
 	    extractor.runExtraction();
 	}
     }
@@ -51,7 +52,6 @@ public class Full {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	pipelinedProcess(Configuration.getOriginalArticlesFile());
     }
 

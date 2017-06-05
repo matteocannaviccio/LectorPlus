@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
-import it.uniroma3.extractor.configuration.Configuration;
 /**
  * 
  * @author matteo

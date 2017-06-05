@@ -12,8 +12,9 @@ import java.util.Map;
 
 import com.hp.hpl.jena.graph.Triple;
 
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.reader.RDFReader;
 import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**
@@ -138,10 +139,11 @@ public class DBPediaNormalizer{
      */
     private static String getResourceName(String uri){
 	String namespace = null;
-	if(Lector.getLangCode().equals("en"))
+	if(Lector.getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
-	if(Lector.getLangCode().equals("es"))
-	    namespace = "http://es.dbpedia.org/resource/";
+	else{
+	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	}
 	return uri.replace(namespace, "");
     }
 
@@ -162,10 +164,11 @@ public class DBPediaNormalizer{
      */
     private static boolean isDBPediaResource(String uri){
 	String namespace = null;
-	if(Lector.getLangCode().equals("en"))
+	if(Lector.getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
-	if(Lector.getLangCode().equals("es"))
-	    namespace = "http://es.dbpedia.org/resource/";
+	else{
+	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	}
 	return uri.contains(namespace);
     }
 

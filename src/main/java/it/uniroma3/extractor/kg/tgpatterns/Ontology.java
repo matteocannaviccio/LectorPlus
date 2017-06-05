@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.hp.hpl.jena.graph.Triple;
 
-import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.util.reader.RDFReader;
 import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**

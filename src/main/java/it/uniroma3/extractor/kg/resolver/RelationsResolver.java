@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.kg.normalizer.DBPediaNormalizer;
 import it.uniroma3.extractor.util.KeyValueIndex;
 /**

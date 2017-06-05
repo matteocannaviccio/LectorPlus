@@ -10,8 +10,8 @@ import java.sql.Statement;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
-import it.uniroma3.extractor.configuration.Configuration;
-import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.Pair;
@@ -56,7 +56,12 @@ public class FactsExtractor {
 	Pair<String, Double> prediction = model.predictRelation(t);
 	String relation = prediction.key;
 	if (relation!=null){
-	    writer.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
+	    if (relation.contains("(-1)")){
+		relation = relation.replace("(-1)", "");
+		writer.statement(t.getWikid(), t.getInvertedSubject(), relation, t.getInvertedObject(), false);
+	    }else{
+		writer.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
+	    }
 	    Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
 	}else{
@@ -89,18 +94,19 @@ public class FactsExtractor {
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
+
 			if (processRecord(t)){
 			    contProcessed+=1;
+			    if (contProcessed % 1000 == 0 && contProcessed > 0)
+				System.out.println("Extracted " + contProcessed + " novel facts.");
 			}
-			if (contProcessed % 1000 == 0 && contProcessed > 0)
-			    System.out.println("Extracted " + contProcessed + " novel facts.");
 		    }
 		}
 	    }
-	   
+
 	    // close the output stream
 	    writer.done();
-	    
+
 	}catch(SQLException e){
 	    e.printStackTrace();
 	} catch (IOException e) {
@@ -120,21 +126,21 @@ public class FactsExtractor {
     public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, 
 	    int topK, PhraseType typePhrase){
 	switch(type){
-	
+
 	case BM25:
 	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
 	    break;
-	    
+
 	case NB:
 	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq, ModelNBType.CLASSIC);
 	    break;
-	    
+
 	case LectorScore:
 	    model = new ModelLS(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
 	    break;
 	}
     }
-    
+
     /**
      * 
      * @param path

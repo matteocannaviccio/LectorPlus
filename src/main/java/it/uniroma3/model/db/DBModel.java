@@ -4,7 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import edu.stanford.nlp.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import it.uniroma3.extractor.triples.WikiMVL;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.model.DB;
