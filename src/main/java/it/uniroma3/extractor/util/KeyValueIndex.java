@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
@@ -35,14 +36,24 @@ import org.apache.lucene.store.FSDirectory;
 public class KeyValueIndex {
 
     private IndexSearcher indexSearcher;
+    
+    /**
+     * This is the constructor if we need to create the index from a list of pairs.
+     * @param kvPairsFilePath
+     * @param kvIndexPath
+     */
+    public KeyValueIndex(List<Pair<String, String>> kvPairsList, String kvIndexPath){
+	this.createIndexFromList(kvPairsList, kvIndexPath);
+	this.indexSearcher = createSearcher(kvIndexPath);
+    }
 
     /**
-     * This is the constructor if we need to create the index.
+     * This is the constructor if we need to create the index a file.
      * @param kvPairsFilePath
      * @param kvIndexPath
      */
     public KeyValueIndex(String kvPairsFilePath, String kvIndexPath){
-	this.createIndex(kvPairsFilePath, kvIndexPath);
+	this.createIndexFromFile(kvPairsFilePath, kvIndexPath);
 	this.indexSearcher = createSearcher(kvIndexPath);
     }
     
@@ -109,6 +120,35 @@ public class KeyValueIndex {
     private String decodeBase64(String keywordToDecode){
 	return new String(Base64.getDecoder().decode(keywordToDecode));
     }
+    
+    /**
+     * 
+     * @param pathToPhrases
+     */
+    private void createIndexFromList(List<Pair<String, String>> kvPairsList, String kvIndexPath) {
+	IndexWriter writer = createWriter(kvIndexPath);
+	int count_bad = 0;
+	int count_ok = 0;
+	try {
+	    for (Pair<String, String> pair : kvPairsList){
+		String key = encodeBase64(pair.key);
+		String value = encodeBase64(pair.value);
+		count_ok +=1;
+		/*
+		 * indexing key-value pairs using the name of the fields
+		 */
+		Document doc = new Document();
+		doc.add(new StringField("key", key, Store.YES));
+		doc.add(new StringField("value", value, Store.YES));
+		writer.addDocument(doc);
+	    }
+	    writer.close();
+	    
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
+    }
 
     /**
      * 
@@ -116,7 +156,7 @@ public class KeyValueIndex {
      * 
      * @param pathToPhrases
      */
-    private void createIndex(String kvPairsFilePath, String kvIndexPath) {
+    private void createIndexFromFile(String kvPairsFilePath, String kvIndexPath) {
 	File kvPairsFile = new File(kvPairsFilePath);
 	IndexWriter writer = createWriter(kvIndexPath);
 	int count_bad = 0;
@@ -195,7 +235,7 @@ public class KeyValueIndex {
 	String encodedKey = this.encodeBase64(key);
 	Query query = new TermQuery(new Term("key", encodedKey));
 	try {
-	    TopDocs hits = this.indexSearcher.search(query, 20);
+	    TopDocs hits = this.indexSearcher.search(query, 10000);
 	    for (ScoreDoc sd : hits.scoreDocs) {
 		Document d = this.indexSearcher.doc(sd.doc);
 		String decodedValue = this.decodeBase64(d.getField("value").stringValue());

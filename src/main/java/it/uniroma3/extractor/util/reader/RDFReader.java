@@ -8,7 +8,6 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RiotReader;
-import org.apache.jena.riot.out.NTriplesWriter;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
 import com.hp.hpl.jena.graph.Triple;

@@ -31,16 +31,20 @@ public class Configuration {
      * @param configFile
      */
     public static void init(String[] args){
+	String lang = null;
 	/*
 	 * get the config file
 	 */
 	String configFile;
 	if (args.length == 0){
-	    configFile = "src/main/resources/config.properties";
+	    configFile = "./config.properties";
+	}else if (args.length == 1){
+	    configFile = args[0];
 	}else{
 	    configFile = args[0];
+	    lang = args[1];
 	}
-
+	    
 	/*
 	 * remove the following instruction when we insert a logger
 	 * we keep it for now to silence all the loggers.
@@ -74,6 +78,10 @@ public class Configuration {
 
 		keyValue.put(key, value);
 	    }
+	    
+	    if (lang != null)
+		keyValue.put("languageUsed", lang);
+	    
 	    br.close();
 	}catch(Exception e){
 	    e.printStackTrace();

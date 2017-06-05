@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.tgpatterns;
+package it.uniroma3.extractor.kg.resolver;
 
 import java.util.LinkedList;
 import java.util.List;
