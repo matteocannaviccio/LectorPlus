@@ -8,7 +8,6 @@ import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.resolver.RedirectResolver;
 import it.uniroma3.extractor.kg.resolver.RelationsResolver;
 import it.uniroma3.extractor.kg.resolver.TypesResolver;
-import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
 /**
  * 
  * @author matteo
@@ -78,11 +77,6 @@ public class KGEndPoint {
 	return typesResolver.assignTypes(entity);
     }
     
-    
-    public TGPattern getTGPattern(String entity) {
-	return typesResolver.getTGpattern(entity);
-    }
-    
     /**
      * 
      * @param args
@@ -111,6 +105,6 @@ public class KGEndPoint {
 	System.out.println("\nTypes in SDTyped: ");
 	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexSDTyped()).forEach(System.out::println);
     }
-    
+        
 
 }

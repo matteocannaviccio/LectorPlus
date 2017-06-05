@@ -10,11 +10,10 @@ import java.util.stream.Collectors;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.bean.WikiLanguage.Lang;
+import it.uniroma3.extractor.kg.Ontology;
 import it.uniroma3.extractor.kg.normalizer.TypesNormalizer;
-import it.uniroma3.extractor.kg.tgpatterns.Ontology;
-import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
 import it.uniroma3.extractor.util.KeyValueIndex;
+import it.uniroma3.extractor.util.Pair;
 /**
  * 
  * @author matteo
@@ -36,77 +35,44 @@ public class TypesResolver {
     public TypesResolver(){
 	// we need the ontology to find subTypes
 	ontology = new Ontology();
+	
+	// we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
+	switch(Lector.getLang()){
+	case en:
+	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaInstanceTypes());
+	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
+	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
+	    indexDBTax = getIndexOrCreate(Configuration.getDBTaxTypesIndex(), Configuration.getSourceDBTaxInstanceTypes());
+	    
+	default:
+	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaInstanceTypes());
+	}
+    }
 
-	if (!new File(Configuration.getTypesIndex()).exists()){
-	    if (!new File(Configuration.getIndexableDBPediaNormalizedTypesFile()).exists()){
-		TypesNormalizer.normalizeTypesFile();
-	    }
-	    System.out.print("Creating [main types] index ...");
+    /**
+     * Returns a KeyValueIndex given the path. If the exists does not exist it create it and then return.
+     * 
+     * @param indexPath
+     * @param sourcePath
+     * @return
+     */
+    private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
+	KeyValueIndex index = null;
+	if (!new File(indexPath).exists()){
+	    System.out.print("Creating " + new File(indexPath).getName() + " index ...");
 	    long start_time = System.currentTimeMillis();
-	    indexOriginal = new KeyValueIndex(Configuration.getIndexableDBPediaNormalizedTypesFile(), Configuration.getTypesIndex());
+	    
+	    List<Pair<String, String>> keyvalues = TypesNormalizer.normalizeTypesDataset(sourcePath);
+	    index = new KeyValueIndex(keyvalues, indexPath);
+	    
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	}
 	else // we already have the index
-	    indexOriginal = new KeyValueIndex(Configuration.getTypesIndex());
-
-	if (!new File(Configuration.getAirpediaIndex()).exists()){
-	    if (!new File(Configuration.getIndexableDBPediaAirpediaFile()).exists()){
-		TypesNormalizer.normalizeTypesFile();
-	    }
-	    System.out.print("Creating [airpedia] index ...");
-	    long start_time = System.currentTimeMillis();
-	    indexAirpedia = new KeyValueIndex(Configuration.getIndexableDBPediaAirpediaFile(), Configuration.getAirpediaIndex());
-	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	}
-	else// we already have the index
-	    indexAirpedia = new KeyValueIndex(Configuration.getAirpediaIndex());
-
-	/**
-	 * for the english version we rely on three more types datasets 
-	 * but the usage is conditioned to some rules: {@link #assignTypes(String wikid)}.
-	 */
-	if (Lector.getLang().equals(Lang.en)){
-	    if (!new File(Configuration.getSDTypesIndex()).exists()){
-		if (!new File(Configuration.getIndexableDBPediaSDTypedFile()).exists()){
-		    TypesNormalizer.normalizeTypesFile();
-		}
-		System.out.print("Creating [sdtyped] index ...");
-		long start_time = System.currentTimeMillis();
-		indexSDTyped = new KeyValueIndex(Configuration.getIndexableDBPediaSDTypedFile(), Configuration.getSDTypesIndex());
-		long end_time = System.currentTimeMillis();
-		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	    }
-	    else// we already have the index
-		indexSDTyped = new KeyValueIndex(Configuration.getSDTypesIndex());
-
-	    if (!new File(Configuration.getLHDTypesIndex()).exists()){
-		if (!new File(Configuration.getIndexableDBPediaLHDFile()).exists()){
-		    TypesNormalizer.normalizeTypesFile();
-		}
-		System.out.print("Creating [lhd] index ...");
-		long start_time = System.currentTimeMillis();
-		indexLHD = new KeyValueIndex(Configuration.getIndexableDBPediaLHDFile(), Configuration.getLHDTypesIndex());
-		long end_time = System.currentTimeMillis();
-		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	    }
-	    else// we already have the index
-		indexLHD = new KeyValueIndex(Configuration.getLHDTypesIndex());
-
-	    if (!new File(Configuration.getDBTaxTypesIndex()).exists()){
-		if (!new File(Configuration.getIndexableDBPediaDBTaxFile()).exists()){
-		    TypesNormalizer.normalizeTypesFile();
-		}
-		System.out.print("Creating [dbtax] index ...");
-		long start_time = System.currentTimeMillis();
-		indexDBTax = new KeyValueIndex(Configuration.getIndexableDBPediaDBTaxFile(), Configuration.getDBTaxTypesIndex());
-		long end_time = System.currentTimeMillis();
-		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
-	    }
-	    else// we already have the index
-		indexDBTax = new KeyValueIndex(Configuration.getDBTaxTypesIndex());
-	}
+	    index = new KeyValueIndex(indexPath);
+	return index;
     }
 
     /**
@@ -227,7 +193,7 @@ public class TypesResolver {
 
 	TypesResolver t = new TypesResolver();
 
-	String entity = "2010_in_Strikeforce";
+	String entity = "Barack_Obama";
 	System.out.println("USED --> " + t.assignTypes(entity));
 
 	System.out.println("\nTypes in orginal mapping: ");

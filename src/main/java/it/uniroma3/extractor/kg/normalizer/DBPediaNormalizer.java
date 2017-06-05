@@ -1,8 +1,5 @@
 package it.uniroma3.extractor.kg.normalizer;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +12,7 @@ import com.hp.hpl.jena.graph.Triple;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
+import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.reader.RDFReader;
 import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**
@@ -31,17 +29,6 @@ import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 public class DBPediaNormalizer{
 
     /**
-     * External call of the normalizer.
-     */
-    public static void normalizeDBPedia(String dumpFile){
-	try {
-	    normalizeMappingBasedDBPediaDump(dumpFile);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
-
-    /**
      * It iterated two times over the rdf dump in order to normalize
      * functional nodes. For example, the occupations of people are expressed 
      * with functional nodes such as: http://dbpedia.org/page/Allan_Dwan__1.
@@ -52,17 +39,19 @@ public class DBPediaNormalizer{
      * @return
      * @throws IOException 
      */
-    private static void normalizeMappingBasedDBPediaDump(String dumpFile) throws IOException{
+    public static List<Pair<String, String>> normalizeMappingBasedDBPediaDump(String dumpFile){
 	int cont = 0;
 	String subject;
 	String object;
 	String pred;
 
+	List<Pair<String, String>> entityPair2relation = new LinkedList<Pair<String, String>>();
+
 	// FIRST iteration: save second parts
 	RDFReader reader = new RDFReader(dumpFile, Encoding.bzip2);
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
 	Iterator<Triple> iter = reader.readTTLFile();
-	
+
 	while(iter.hasNext()){
 	    cont++;
 	    if (cont % 6000000 == 0)
@@ -85,7 +74,6 @@ public class DBPediaNormalizer{
 	reader.closeReader();
 
 	// SECOND iteration: print clean triples in the following file
-	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(Configuration.getIndexableDBPediaFile())));
 	reader = new RDFReader(Configuration.getDBPediaDumpFile(), Encoding.bzip2);
 	cont = 0;
 	iter = reader.readTTLFile();
@@ -94,7 +82,7 @@ public class DBPediaNormalizer{
 	    if (cont % 6000000 == 0)
 		System.out.println("\t-> Second iteration:\t" + cont);
 	    Triple t = iter.next();
-	    
+
 	    // both subject and object have to be DBPedia resources (e.g. not common http addresses)
 	    if (isInterestingTriple(t)){
 		subject = getResourceName(t.getSubject().toString());
@@ -104,15 +92,19 @@ public class DBPediaNormalizer{
 		if (!isIntermediateNode(subject)){
 		    if (isIntermediateNode(object)){
 			if (subject2secondparts.containsKey(object))
-			    for (String secPart : subject2secondparts.get(object))
-				bw.write(subject + "###" + secPart + "\n");
+			    for (String secPart : subject2secondparts.get(object)){
+				String obj = secPart.split("\t")[0];
+				String p = secPart.split("\t")[1];
+				entityPair2relation.add(Pair.make(subject + "###" + obj, p));
+			    }
 		    }else
-			bw.write(subject + "###" + object + "\t" + pred + "\n");
+			entityPair2relation.add(Pair.make(subject + "###" + object, pred));
 		}
 	    }
 	}
-	bw.close();
 	reader.closeReader();
+	System.out.println("done reading");
+	return entityPair2relation;
     }
 
     /**

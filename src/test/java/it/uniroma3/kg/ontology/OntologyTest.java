@@ -1,11 +1,13 @@
 package it.uniroma3.kg.ontology;
 
+import static org.junit.Assert.*;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.kg.tgpatterns.Ontology;
-import it.uniroma3.extractor.kg.tgpatterns.TGPattern;
+import it.uniroma3.extractor.kg.Ontology;
+import it.uniroma3.extractor.kg.resolver.TGPattern;
 
 public class OntologyTest {
     
@@ -28,6 +30,7 @@ public class OntologyTest {
 	TGPattern tg5 = ontology.getTGPattern("Singer");
 	TGPattern tg6 = ontology.getTGPattern("MusicDirector");
 	TGPattern comb = tg1.combine(tg2).combine(tg3).combine(tg4).combine(tg5).combine(tg6);
+	assertFalse(comb.equals(tg6));
 	//System.out.println(comb);
 	//System.out.println(comb.normalize());
 	//System.out.println(comb.getMainPath(0.5));
