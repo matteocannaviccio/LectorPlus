@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.opencsv.CSVWriter;
 
+import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
@@ -157,7 +158,7 @@ public class ModelBM25 extends Model{
      */
     private void printDetails(Map<String, Map<String, Double[]>> relations2phrase_details){
 	try {
-	    CSVWriter writer = new CSVWriter(new FileWriter("/Users/matteo/Desktop/score_model_BM25.csv"), ',');
+	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() + "/score_model_BM25.csv"), ',');
 	    writer.writeNext(new String[]{"relation", "phrase", "c(pR)", "c(pL)", "c(pU)", "nDifRel", "idf","factor", "scoreBM25"});
 	    for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
 		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 6, -1).entrySet()){

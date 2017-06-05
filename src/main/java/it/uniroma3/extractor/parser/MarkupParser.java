@@ -29,10 +29,10 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
-	this.blacklist.addAll(TSVReader.getLines(Configuration.getNationalitiesList()));
+	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
 	if (Lector.getLangCode().equals("en")){
-	    this.blacklist.addAll(TSVReader.getLines(Configuration.getCurrenciesList()));
-	    this.blacklist.addAll(TSVReader.getLines(Configuration.getProfessionsList()));
+	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
+	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
 	}
     }
 

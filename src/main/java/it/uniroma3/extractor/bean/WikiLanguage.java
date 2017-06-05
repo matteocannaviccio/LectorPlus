@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
 /**
@@ -25,7 +26,7 @@ public class WikiLanguage {
     public WikiLanguage(String code, String langProperties) {
 	properties = new Properties();
 	try {
-	    
+
 	    this.code = code;
 	    properties.load(new FileInputStream(langProperties));
 
@@ -81,7 +82,7 @@ public class WikiLanguage {
     public List<String> getRedirectIdentifiers() {
 	return getValues("redirect");
     }
-    
+
     /**
      * 
      * @return
@@ -130,7 +131,7 @@ public class WikiLanguage {
 	return getValues("discussion");
     }
 
-    
+
     /**
      * 
      * @return
@@ -188,5 +189,4 @@ public class WikiLanguage {
     public String getCode() {
 	return code;
     }
-
 }

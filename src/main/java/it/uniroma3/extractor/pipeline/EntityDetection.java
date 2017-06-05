@@ -51,6 +51,7 @@ public class EntityDetection {
 	int cont = 0;
 	while (!(articles = inputReader.nextChunk(Configuration.getChunkSize())).isEmpty() 
 		&& cont < Configuration.getNumArticlesToProcess()) {
+	    
 	    System.out.print("Entity Detection on next: " + articles.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    cont += articles.size();
@@ -65,6 +66,7 @@ public class EntityDetection {
 	    System.out.println("Reading next batch.");
 	    articles.clear();
 	}
+	
 	inputReader.closeBuffer();
 	outputWriter.close();
     }

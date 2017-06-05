@@ -15,7 +15,7 @@ public class DBFacts extends DB{
      */
     public DBFacts(String dbname) {
 	super(dbname);
-	createFactsDB();
+	//createFactsDB();
     }
     
     /**

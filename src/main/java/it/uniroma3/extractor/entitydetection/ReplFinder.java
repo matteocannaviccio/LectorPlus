@@ -17,6 +17,7 @@ import com.google.common.collect.TreeMultiset;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.configuration.Lector;
+import it.uniroma3.extractor.util.Pair;
 /**
  * 
  * @author matteo
@@ -31,8 +32,9 @@ public class ReplFinder {
      * @return
      */
     private List<String> findSeeds(WikiArticle article){
-	List<String> seeds = Lector.getFsm().get().findSeed(article.getFirstSentence());
-	return seeds;
+	Pair<String, List<String>> natioanlityAndSeeds = Lector.getFsm().findNationalityAndSeed(article.getFirstSentence());
+	article.setNationality(natioanlityAndSeeds.key);
+	return natioanlityAndSeeds.value;
     }
 
     /**

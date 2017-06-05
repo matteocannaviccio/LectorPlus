@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.CounterMap;
@@ -189,15 +192,15 @@ public class Evaluator {
      * @param args
      */
     public static void main(String[] args){
-	Evaluator ev = new Evaluator(new DBModel("model.db"));
+	Configuration.init(new String[0]);
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
+	
+	Evaluator ev = new Evaluator(Lector.getDbmodel(false));
 	int nParts = 1;
 	int[] topk = new int[]{5, 100, -1};
 	int[] minF = new int[]{0, 10, 100};
 
-	//for (ModelType model : ModelType.values()){
-	//for(int tk : topk){
-	//for (int mF : minF){
-	ModelType model = ModelType.NB;
+	ModelType model = ModelType.LectorScore;
 	int tk = 100;
 	int mF = 10;
 	Pair<Double, Double> evaluations = ev.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, tk, mF);
@@ -205,8 +208,6 @@ public class Evaluator {
 	System.out.println("Results with model= " + model.name() + ", topk= " + tk + " and minF= " + mF);
 	System.out.println("-> Precision: " + (double) evaluations.key/nParts);
 	System.out.println("-> Recall: " + (double) evaluations.value/nParts);
-	//}
-	// }
-	//}
+
     }
 }

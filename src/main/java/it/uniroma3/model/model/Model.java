@@ -16,7 +16,7 @@ import it.uniroma3.model.db.QueryDB;
 public abstract class Model{
 
     // print the computation
-    protected static boolean verbose = false;
+    protected static boolean verbose = true;
     
     // the type of the phrases used in the model
     protected PhraseType type;

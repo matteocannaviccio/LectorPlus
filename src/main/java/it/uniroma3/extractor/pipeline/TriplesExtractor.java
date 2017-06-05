@@ -39,6 +39,8 @@ public class TriplesExtractor {
 	while (!(articles = reader.nextChunk(Configuration.getChunkSize())).isEmpty()) {
 	    System.out.print("Triples Extraction on next: " + articles.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
+	    Lector.getTriplifier().updateBlock();
+	    
 	    articles
 	    .parallelStream()
 	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
@@ -51,7 +53,7 @@ public class TriplesExtractor {
 	    articles.clear();
 	}
 	//Lector.getTriplifier().endConnection();
-	//System.out.println(Lector.getTriplifier().printEverything());
+	//Lector.getTriplifier().printEveryThing();
 
     }
 

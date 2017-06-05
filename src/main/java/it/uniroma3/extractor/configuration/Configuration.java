@@ -79,8 +79,10 @@ public class Configuration {
 	    e.printStackTrace();
 	}
     }
-    
 
+
+    /***********************************************************************/
+    /*************************    LANGUAGES        *************************/
     /***********************************************************************/
     public static String getLanguageCode(){
 	return keyValue.get("languageUsed");
@@ -89,8 +91,12 @@ public class Configuration {
     public static String getLanguageProperties(){
 	return getDataFolder() + "/languages/" + getLanguageCode() + ".properties";
     }
-    /***********************************************************************/
 
+    public static Set<String> getPipelineSteps(){
+	return new HashSet<String>(Arrays.asList(keyValue.get("pipeline").split(",")));
+    }
+    /***********************************************************************/
+    /*************************    MAIN FOLDERS        **********************/
     /***********************************************************************/
     private static String getDataFolder(){
 	return keyValue.get("dataFile");
@@ -98,6 +104,14 @@ public class Configuration {
 
     private static String getInputFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("inputFolder");
+	File folder = new File(folderPath); 
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+
+    public static String getLectorFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("lectorFolder") + "/" + getLanguageCode();
 	File folder = new File(folderPath); 
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -151,9 +165,19 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    /***********************************************************************/
+
+    private static String getSpotlightFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("spotlightFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
 
     /***********************************************************************/
+    /*************************    DBPEDIA STUFFS        ********************/
+    /***********************************************************************/
+
     private static String getDBPediaPath(){
 	return getInputFolder() + "/" + keyValue.get("dbpediaPath") + "_" + getLanguageCode();
     }
@@ -169,11 +193,14 @@ public class Configuration {
     public static String getIndexableDBPediaFile(){
 	return getDBPediaPath() + "/" + "dbpedia_normalized.tsv";
     }
-    /***********************************************************************/
 
     /***********************************************************************/
+    /**********************    WIKIPEDIA STUFFS        *********************/
+    /***********************************************************************/
+
     private static String getWikipediaPath(){
-	return getInputFolder() + "/" + keyValue.get("wikipediaPath") + "_" + getLanguageCode();
+	return getInputFolder() + "/" + keyValue.get("wikipediaPath") +
+		"_" + getLanguageCode();
     }
 
     public static String getOriginalArticlesFile(){
@@ -192,22 +219,26 @@ public class Configuration {
 	return getWikipediaPath() + "/" + keyValue.get("detailsArticles");
     }
 
-    public static Set<String> getPipelineSteps(){
-	return new HashSet<String>(Arrays.asList(keyValue.get("pipeline").split(",")));
-    }
+    /***********************************************************************/
+    /**********************    OUTPUT & MODELS     *************************/
     /***********************************************************************/
 
-    /***********************************************************************/
     public static String getDBModel(){
-	return keyValue.get("dbmodel");
+	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("dbmodel");
     }
 
     public static String getDBFacts(){
-	return keyValue.get("dbfacts");
+	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("dbfacts");
     }
-    /***********************************************************************/
+
+    public static String getOutputFactsFile(){
+	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
+    }
 
     /***********************************************************************/
+    /***********************    TYPES INDEXES    ***************************/
+    /***********************************************************************/
+
     public static String getTypesIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("typesIndexName");
     } 
@@ -231,9 +262,11 @@ public class Configuration {
     public static String getRedirectIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("redirectIndexName");
     } 
-    /***********************************************************************/
 
     /***********************************************************************/
+    /***********************    NORMALIZED TYPES     ***********************/
+    /***********************************************************************/
+
     public static String getIndexableRedirectFile(){
 	return getNormalizedFilesFolder() + "/" + keyValue.get("redirectFile");
     }
@@ -259,12 +292,14 @@ public class Configuration {
     }
 
 
-    /*********************************/
+    /***********************************************************************/
+    /***********************    SOURCE TYPES     ***************************/
+    /***********************************************************************/
 
     public static String getSourceAirpediaInstanceTypes(){
 	return getTypesFolder() + "/" + keyValue.get("airpediaInstanceType");
     } 
-    
+
     public static String getSourceMainInstanceTypes(){
 	return getTypesFolder() + "/" + keyValue.get("mainInstanceType");
     }
@@ -284,9 +319,11 @@ public class Configuration {
     public static String getDBPediaOntologyFile(){
 	return getOntologyFolder() + "/" + keyValue.get("ontology");
     } 
-    /***********************************************************************/
 
     /***********************************************************************/
+    /***********************    OPEN NLP MODELS     ************************/
+    /***********************************************************************/
+
     public static String getTokenModel(){
 	return getModelsFolder() + "/" + keyValue.get("tokenModel");
     } 
@@ -298,9 +335,29 @@ public class Configuration {
     public static String getPOSModel(){
 	return getModelsFolder() + "/" + keyValue.get("postaggerModel");
     } 
-    /***********************************************************************/
 
     /***********************************************************************/
+    /***********************    SPOTLIGHT FOLDER    ************************/
+    /***********************************************************************/
+    public static String getSpotlightModel(){
+	return getSpotlightFolder() + "/" + getLanguageCode();
+    }
+    
+    public static String getSpotlightJar(){
+	return getSpotlightFolder() + "/" + keyValue.get("pathDBSpotLocalJar");
+    } 
+    
+    public static String getSpotlightLocalERR(){
+	return getSpotlightFolder() + "/" + keyValue.get("pathDBSpotErr");
+    }
+
+    public static String getSpotlightLocalURL(){
+	return keyValue.get("pathDBSpotLocalUrl");
+    }
+    /***********************************************************************/
+    /***********************    RESOURCES LIST     ************************/
+    /***********************************************************************/
+
     public static String getCurrenciesList(){
 	return getListsFolder() + "/" + keyValue.get("currencies");
     }
@@ -318,7 +375,7 @@ public class Configuration {
     }
 
     /***********************************************************************/
-
+    /**************************    PARAMETERS     **************************/
     /***********************************************************************/
 
     public static int getNumArticlesToProcess(){
@@ -352,9 +409,9 @@ public class Configuration {
     public static double getSubnameThreshold(){
 	return Double.parseDouble(keyValue.get("subnameDensityThreshold"));	    
     }
-    
-    public static boolean createModelDB(){
-	return keyValue.get("createModelDB").equalsIgnoreCase("true");
+
+    public static boolean inMemoryProcess(){
+	return keyValue.get("inMemory").equalsIgnoreCase("true");
     }
 
     /***********************************************************************/

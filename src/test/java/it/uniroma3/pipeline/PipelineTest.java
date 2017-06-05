@@ -14,20 +14,18 @@ import it.uniroma3.extractor.pipeline.Full;
  * @author matteo
  *
  */
-public class FullTest {
+public class PipelineTest {
     
-
     @BeforeClass
     public static void runOnceBeforeClass() {
 	Configuration.init(new String[0]);
-	Configuration.keyValue.put("createModelDB", "FALSE");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
     }
     
     @Test
     public void factsExtractorTest(){
-	ClassLoader classLoader = getClass().getClassLoader();
-	File file = new File(classLoader.getResource("Keno.xml").getFile());
+	File file = new File("/Users/matteo/Work/Repository/java/lectorplus/src/test/resources/timbarnerslee.xml");
+	System.out.println("Working with: " + file.getAbsolutePath());
 	Full.pipelinedProcess(file.getAbsolutePath());
     }
 }

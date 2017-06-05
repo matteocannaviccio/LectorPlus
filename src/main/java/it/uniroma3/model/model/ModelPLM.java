@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.opencsv.CSVWriter;
 
+import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
@@ -61,7 +62,7 @@ public class ModelPLM extends Model{
      */
     private void printDetails(Map<String, Map<String, Double>> relations2phrase_details){
 	try {
-	    CSVWriter writer = new CSVWriter(new FileWriter("./plm.csv"), ',');
+	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() + "/score_model_PLM.csv"), ',');
 
 	    // header
 	    writer.writeNext(new String[]{

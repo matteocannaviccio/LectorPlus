@@ -1,13 +1,21 @@
 package it.uniroma3.model.extraction;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+
+import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.extractor.util.reader.NTriplesWriter;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
@@ -23,6 +31,7 @@ public class FactsExtractor {
 
     private Model model;
     public enum ModelType {BM25, LectorScore, NB};
+    private NTriplesWriter writer;
 
     /**
      * 
@@ -31,6 +40,8 @@ public class FactsExtractor {
      */
     public FactsExtractor(){
 	System.out.println("\n**** NEW FACTS EXTRACTION ****");
+	Lector.getDbfacts(true);
+	this.writer = new NTriplesWriter(getOutputStreamBZip2(Configuration.getOutputFactsFile()));
     }
 
     /**
@@ -45,7 +56,8 @@ public class FactsExtractor {
 	Pair<String, Double> prediction = model.predictRelation(t);
 	String relation = prediction.key;
 	if (relation!=null){
-	    Lector.getDbfacts().insertNovelFact(t, relation);
+	    writer.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
+	    Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
 	}else{
 	    return false;
@@ -60,7 +72,7 @@ public class FactsExtractor {
     public void runExtraction(){
 	int contProcessed = 0;
 	String allUnlabeledTriplesQuery = "SELECT * FROM unlabeled_triples";
-	try (Statement stmt = Lector.getDbmodel().getConnection().createStatement()){	
+	try (Statement stmt = Lector.getDbmodel(false).getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
@@ -77,14 +89,21 @@ public class FactsExtractor {
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
-			if (processRecord(t))
+			if (processRecord(t)){
 			    contProcessed+=1;
+			}
 			if (contProcessed % 1000 == 0 && contProcessed > 0)
 			    System.out.println("Extracted " + contProcessed + " novel facts.");
 		    }
 		}
 	    }
+	   
+	    // close the output stream
+	    writer.done();
+	    
 	}catch(SQLException e){
+	    e.printStackTrace();
+	} catch (IOException e) {
 	    e.printStackTrace();
 	}
     }
@@ -101,29 +120,39 @@ public class FactsExtractor {
     public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, 
 	    int topK, PhraseType typePhrase){
 	switch(type){
+	
 	case BM25:
-	    model = new ModelBM25(Lector.getDbmodel(), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
 	    break;
+	    
 	case NB:
-	    model = new ModelNB(Lector.getDbmodel(), labeled_table, minFreq, ModelNBType.CLASSIC);
+	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq, ModelNBType.CLASSIC);
 	    break;
+	    
 	case LectorScore:
-	    model = new ModelLS(Lector.getDbmodel(), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    model = new ModelLS(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
 	    break;
 	}
     }
-
+    
     /**
      * 
+     * @param path
      * @return
      */
-    public static void main(String[] args){
-
-	String labeled = "labeled_triples";
-
-	FactsExtractor extractor = new FactsExtractor();
-	extractor.setModelForEvaluation(ModelType.LectorScore, labeled, 0, 10, PhraseType.TYPED_PHRASES);
-	extractor.runExtraction();
+    @SuppressWarnings("resource")
+    private OutputStream getOutputStreamBZip2(String path) {
+	OutputStream out = null;
+	try {
+	    out = new FileOutputStream(path);
+	    out = new CompressorStreamFactory().createCompressorOutputStream("bzip2", out); 
+	} catch (IOException e) {
+	    e.printStackTrace();
+	} catch (CompressorException e) {
+	    e.printStackTrace();
+	}
+	return out;
     }
+
 
 }

@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.extractor.util.nlp.StupidNLP;
 /**
  * 
  * @author matteo
@@ -205,7 +206,6 @@ public class ReplAttacher {
 		for(Pair<String, String> regex : regex2entity){
 		    try{
 
-			//System.out.println(regex.key + "\t" + regex.value);
 			article.getBlocks().put(block.getKey(), applyRegex(article, block.getValue(), regex.value, regex.key));
 
 		    }catch(Exception e){
@@ -220,7 +220,11 @@ public class ReplAttacher {
 		/*
 		 * Apply a Named Entity Recognition to find instances of the remaining entities
 		 */
-		article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
+		//article.getSentences().put(block.getKey(), Lector.getSpotlight().annotateText(block.getValue(), article.getWikid()));
+		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
+		
+		article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
+
 
 	    }
 	}catch(Exception e){

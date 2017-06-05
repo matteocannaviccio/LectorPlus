@@ -36,6 +36,7 @@ public class Triplifier {
      * 
      */
     public Triplifier() {
+	Lector.getDbmodel(true);
 	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	other_triples = new ConcurrentLinkedQueue<WikiTriple>();
@@ -193,7 +194,7 @@ public class Triplifier {
 	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
 	while(m.find()){
 	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
-	    Lector.getDbmodel().insertMVList(mv);
+	    Lector.getDbmodel(true).insertMVList(mv);
 	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
 	}
 	return sentence;
@@ -275,18 +276,38 @@ public class Triplifier {
      */
     public void updateBlock(){
 	for (Pair<WikiTriple, String> pair : this.labeled_triples){
-	    Lector.getDbmodel().insertLabeledTriple(pair.key, pair.value);
+	    Lector.getDbmodel(false).insertLabeledTriple(pair.key, pair.value);
 	}
 	this.labeled_triples.clear();
 
 	for(WikiTriple t : this.unlabeled_triples){
-	    Lector.getDbmodel().insertUnlabeledTriple(t);
+	    Lector.getDbmodel(false).insertUnlabeledTriple(t);
 	}
 	this.unlabeled_triples.clear();
 
 	for (WikiTriple t : this.other_triples){
-	    Lector.getDbmodel().insertOtherTriple(t);
+	    Lector.getDbmodel(false).insertOtherTriple(t);
 	}
 	this.other_triples.clear();
+    }
+    
+    /**
+     * 
+     */
+    public void printEveryThing(){
+	System.out.println("***** Labeled Triples *****");
+	for (Pair<WikiTriple, String> pair : this.labeled_triples){
+	    System.out.println(pair.key.toString());
+	}
+
+	System.out.println("\n***** Unlabeled Triples *****");
+	for(WikiTriple t : this.unlabeled_triples){
+	    System.out.println(t.toString());
+	}
+
+	System.out.println("\n***** Other Triples *****");
+	for (WikiTriple t : this.other_triples){
+	    System.out.println(t.toString());
+	}
     }
 }

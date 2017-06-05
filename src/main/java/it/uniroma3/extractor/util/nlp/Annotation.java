@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.entitydetection.experiment.tool;
+package it.uniroma3.extractor.util.nlp;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -84,7 +84,7 @@ public class Annotation {
      * 
      */
     public String toString(String type){
-	return this.surfaceForm + "\t" + type + "<" + this.wikid + ">";
+	return "<" + type + "-AUG<" + this.wikid + ">>";
 
     }
 

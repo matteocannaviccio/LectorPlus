@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Token;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.reader.TSVReader;
@@ -18,7 +20,7 @@ import it.uniroma3.extractor.util.reader.TSVReader;
  * @author matteo
  *
  */
-public class SeedFSM {
+public class FSMSeed {
 
     private static final List<String> R_LIST = Arrays.asList("RB", "RBR", "RBS");
     private static final List<String> DT_LIST = Arrays.asList("DT");
@@ -32,20 +34,23 @@ public class SeedFSM {
     private static final List<String> CC_LIST = Arrays.asList("CC", ",");
     private static final List<String> CD_LIST = Arrays.asList("CD");
     private static final List<String> IN_LIST = Arrays.asList("IN");
-    private static final List<String> FINAL_LIST = Arrays.asList("VBG", "JJ","CC", ",", "VB", "VBN", "VBD", "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
+    private static final List<String> FINAL_LIST = Arrays.asList("VBG", "JJ","CC", ",", "VB", "VBN", "VBD", 
+	    "VBZ", "WP", "WDT", "WRB", "TO", "IN", ".");
 
     private FSM finiteStateMachine;
     private OpenNLP expert;
     private Set<String> stopwords; // we need them only for a post-processing filetering
+    private Map<String, String> nationalities;
 
     /**
      * 
      * @param expert
      */
-    public SeedFSM(OpenNLP expert){
+    public FSMSeed(OpenNLP expert){
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
-	this.stopwords = TSVReader.getLines(Configuration.getStopwordsList());
+	this.stopwords = TSVReader.getLines2Set(Configuration.getStopwordsList());
+	this.nationalities = TSVReader.getLines2Map(Configuration.getNationalitiesList());
     }
 
 
@@ -151,13 +156,21 @@ public class SeedFSM {
      * @param sentence --> the first sentence of an article.
      * @return
      */
-    public List<String> findSeed(String sentence){
+    public Pair<String, List<String>> findNationalityAndSeed(String sentence){
 	this.finiteStateMachine.reset();
+	
+	String nationality = "-";
 	List<String> seeds = new LinkedList<String>();
+	
 	Token[] tokens = cutOutFirstPart(expert.applyPOSTagger(sentence));
 	String tmpToken = "-";
+	
 	for(Token token : tokens){
+	    if (nationalities.containsKey(token.getRenderedToken()))
+		nationality = nationalities.get(token.getRenderedToken());
+	    
 	    this.finiteStateMachine.transition(token.getPOS());
+	    
 	    if(this.finiteStateMachine.accepts())
 		seeds.add(tmpToken);
 	    if(NS_LIST.contains(token.getPOS()))
@@ -165,7 +178,8 @@ public class SeedFSM {
 	    else
 		tmpToken = token.getRenderedToken();
 	}
-	return cleanSeeds(seeds);
+	
+	return Pair.make(nationality, cleanSeeds(seeds));
     }
 
     /**
@@ -189,6 +203,7 @@ public class SeedFSM {
     
     /**
      * Clean the list of retrieved seeds from (improbable) stopwords.
+     * 
      * @param seeds
      * @return
      */
@@ -200,76 +215,76 @@ public class SeedFSM {
 	}
 	return filteredSeeds;
     }
-
+    
     /**
+     * Implementation of a simple finite state machine.
      * 
      * @author matteo
      *
      */
     public class FSM{
-	public final String START = "-";
-	public final String ACCEPT = "*1";
-	public MultiValueMap transitions; // this is a map that allows for repeated keys
-	public Set<String> states;
+        public final String START = "-";
+        public final String ACCEPT = "*1";
+        public MultiValueMap transitions; // this is a map that allows for repeated keys
+        public Set<String> states;
 
-	/**
-	 * Creates a new FSM.
-	 * 
-	 */
-	public FSM(){
-	    transitions = new MultiValueMap();
-	    states = new TreeSet<String>();
-	    reset();
-	}
+        /**
+         * Creates a new FSM.
+         * 
+         */
+        public FSM(){
+    	transitions = new MultiValueMap();
+    	states = new TreeSet<String>();
+    	reset();
+        }
 
-	/**
-	 * Initializes an empty FSM.
-	 * 
-	 */
-	public void reset(){
-	    states.clear();
-	    states.add(START);
-	}
+        /**
+         * Initializes an empty FSM.
+         * 
+         */
+        public void reset(){
+    	states.clear();
+    	states.add(START);
+        }
 
-	/**
-	 * Adds a transition (arrow) to our FSM.
-	 * 
-	 * @param from
-	 * @param symbol
-	 * @param to
-	 */
-	public void addTransition(String from, String symbol, String to){
-	    transitions.put(from + " + " + symbol, to);
-	}
+        /**
+         * Adds a transition (arrow) to our FSM.
+         * 
+         * @param from
+         * @param symbol
+         * @param to
+         */
+        public void addTransition(String from, String symbol, String to){
+    	transitions.put(from + " + " + symbol, to);
+        }
 
-	/**
-	 * The FSM is complete if states contains a terminal state.
-	 * 
-	 * @return
-	 */
-	public boolean accepts(){
-	    boolean isInAcceptanceState = states.contains(ACCEPT);
-	    if(isInAcceptanceState)
-		states.remove(ACCEPT);
-	    return isInAcceptanceState;
-	}
+        /**
+         * The FSM is complete if states contains a terminal state.
+         * 
+         * @return
+         */
+        public boolean accepts(){
+    	boolean isInAcceptanceState = states.contains(ACCEPT);
+    	if(isInAcceptanceState)
+    	    states.remove(ACCEPT);
+    	return isInAcceptanceState;
+        }
 
-	/**
-	 * Changes the states of the FSM given the symbol in input.
-	 * 
-	 * @param symbol
-	 */
-	public void transition(String symbol){
-	    Set<String> newState = new TreeSet<String>();
-	    for (String s1 : states){
-		@SuppressWarnings("unchecked")
-		List<String> t = (List<String>) transitions.get(s1+" + "+symbol);
-		if (t != null)
-		    newState.addAll(t);
-	    }
-	    states = newState;
-	}
+        /**
+         * Changes the states of the FSM given the symbol in input.
+         * 
+         * @param symbol
+         */
+        public void transition(String symbol){
+    	Set<String> newState = new TreeSet<String>();
+    	for (String s1 : states){
+    	    @SuppressWarnings("unchecked")
+    	    List<String> t = (List<String>) transitions.get(s1+" + "+symbol);
+    	    if (t != null)
+    		newState.addAll(t);
+    	}
+    	states = newState;
+        }
     }
   
-
 }

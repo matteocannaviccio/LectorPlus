@@ -39,12 +39,13 @@ public class WikiArticle {
     // content
     private Map<String, String> blocks;
     private Map<String, List<String>> sentences; // used only for DBpedia Spotlight
+    private String nationality;
     private String firstSentence;
 
     // Article composite structures
     private Map<String, List<String>> tables;
     private Map<String, List<String>> lists;
-    
+
     // DBpedia types
     private List<String> dbpedia_types;
 
@@ -52,7 +53,7 @@ public class WikiArticle {
 	    .disableHtmlEscaping()
 	    .setPrettyPrinting()
 	    .create();
-    
+
     private static transient Gson gson = new GsonBuilder()
 	    .disableHtmlEscaping()
 	    .create();
@@ -77,7 +78,7 @@ public class WikiArticle {
 	this.wikilinks = new HashMap<String, Set<String>>();
 	this.originalMarkup = originalMarkup;
     }
-    
+
     /**
      * 
      * @return
@@ -122,7 +123,7 @@ public class WikiArticle {
 	    this.sentences = new LinkedHashMap<String, List<String>>();
 	return sentences;
     }
-    
+
     /**
      * 
      * @return
@@ -279,7 +280,7 @@ public class WikiArticle {
     public String toJson() {
 	return gson.toJson(this);
     }
-    
+
     /**
      * 
      * @return
@@ -424,28 +425,43 @@ public class WikiArticle {
      * @return the url
      */
     public String getUrl() {
-        return url;
+	return url;
     }
 
     /**
      * @param url the url to set
      */
     public void setUrl(String url) {
-        this.url = url;
+	this.url = url;
     }
 
     /**
      * @return the types
      */
     public List<String> getDBpediaTypes() {
-        return dbpedia_types;
+	return dbpedia_types;
     }
 
     /**
      * @param types the types to set
      */
     public void setDBpediaTypes(List<String> types) {
-        this.dbpedia_types = types;
+	this.dbpedia_types = types;
+    }
+
+    /**
+     * @return the nationality
+     */
+    public String getNationality() {
+	return nationality;
+    }
+
+    /**
+     * @param nationality the nationality to set
+     */
+    public void setNationality(String nationality) {
+	if (!nationality.equals("-"))
+	    this.nationality = nationality;
     }
 
 

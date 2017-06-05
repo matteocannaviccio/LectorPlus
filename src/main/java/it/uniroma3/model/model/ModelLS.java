@@ -4,21 +4,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.opencsv.CSVWriter;
 
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.model.model.Model.PhraseType;
 /**
  * This is the implementation of a score-based model.
  * Assuming that a phrase can represent only one relation, a score-based model can be 
@@ -230,7 +228,7 @@ public class ModelLS extends Model{
      */
     private void printDetails(Map<String, Map<String, Double[]>> relations2phrase_details){
 	try {
-	    CSVWriter writer = new CSVWriter(new FileWriter("./score_model.csv"), ',');
+	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() + "/score_model_LECTOR.csv"), ',');
 
 	    // header
 	    writer.writeNext(new String[]{
@@ -359,7 +357,7 @@ public class ModelLS extends Model{
      * @param args
      */
     public static void main(String[] args){
-	ModelLS model = new ModelLS(new DBModel("model.db"), "labeled_triples", 100, 100, PhraseType.TYPED_PHRASES);
+	ModelLS model = new ModelLS(Lector.getDbmodel(false), "labeled_triples", 100, 100, PhraseType.TYPED_PHRASES);
 	System.out.println("*****");
 	System.out.println(model.findSimilarRelations("child"));
 	System.out.println("*****");

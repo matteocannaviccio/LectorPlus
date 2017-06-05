@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import it.uniroma3.extractor.configuration.Configuration;
+import it.uniroma3.extractor.configuration.Lector;
 /**
  * Obtain a connection to a specific DB, specified by its name.
  * 
@@ -11,7 +14,7 @@ import java.sql.Statement;
  *
  */
 public abstract class DB {
-    
+
     private Connection connection;
     private String dbname;
 
@@ -23,7 +26,7 @@ public abstract class DB {
 	this.dbname = dbname;
 	this.connection = obtainConnection();
     }
-    
+
     /**
      * 
      * @return
@@ -34,8 +37,13 @@ public abstract class DB {
 	try {
 	    Class.forName(sDriverName);
 	    String sJdbc = "jdbc:sqlite";
-	    //String sDbUrl = sJdbc + ":" + this.dbname;
-	    String sDbUrl = sJdbc + "::memory:";
+	    
+	    String sDbUrl;
+	    if(Configuration.inMemoryProcess())
+		sDbUrl = sJdbc + "::memory:";
+	    else
+		sDbUrl = sJdbc + ":" + this.dbname;
+	    
 	    conn = DriverManager.getConnection(sDbUrl);
 	    Statement st = conn.createStatement();        
 	    st.execute("PRAGMA synchronous=OFF");
@@ -50,14 +58,14 @@ public abstract class DB {
      * @return the connection
      */
     public Connection getConnection() {
-        return connection;
+	return connection;
     }
 
     /**
      * @return the dbname
      */
     public String getDbname() {
-        return dbname;
+	return dbname;
     }
 
 }

@@ -95,12 +95,12 @@ public class RelationsResolver {
 	Configuration.init(args);
 	RelationsResolver res = new RelationsResolver();
 
-	String subject = "Barbara_Pierce_Bush";
-	String object = "George_W._Bush";
-	res.findRelations(object, subject);
+	//String subject = "Barbara_Pierce_Bush";
+	//String object = "George_W._Bush";
+	//res.findRelations(object, subject);
 
-	//String relation = "managerTitle";
-	//res.getInstances(relation);
+	String relation = "nationality";
+	res.getInstances(relation);
 
     }
 

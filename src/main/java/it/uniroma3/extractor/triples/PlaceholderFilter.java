@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.configuration.Configuration;
 import it.uniroma3.extractor.configuration.Lector;
 import it.uniroma3.extractor.util.reader.TSVReader;
@@ -28,7 +27,7 @@ public class PlaceholderFilter {
      * 
      */
     public PlaceholderFilter(){
-	nationalities = TSVReader.getLines(Configuration.getNationalitiesList());
+	nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
     }
 
     /**
@@ -211,14 +210,4 @@ public class PlaceholderFilter {
 
 	return phrase = phrase.trim();
     }
-
-
-    public static void main(String[] args){
-	Configuration.init(new String[0]);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	PlaceholderFilter p = new PlaceholderFilter();
-	Set<String> s = TSVReader.getLines("/Users/matteo/Desktop/test.tsv");
-	s.stream().map(t -> t.split("\t")[0]).map(t -> t + "\t" + p.preprocess(t)).forEach(System.out::println);
-    }
-
 }
