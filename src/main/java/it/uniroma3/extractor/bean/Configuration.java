@@ -51,9 +51,9 @@ public class Configuration {
      */
     private static Map<String, String> parseOptions(String[] args){
 	Map<String, String> options = new HashMap<String, String>();
-	for (int i=0; i<args.length; i++){
-	    if (args[i].contains("="))
-		keyValue.put(args[i].split("=")[0], args[i].split("=")[1]);
+	for (String arg : args){
+	    if (arg.contains("="))
+		options.put(arg.split("=")[0], arg.split("=")[1]);
 	}
 	return options;
     }
