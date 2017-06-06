@@ -34,7 +34,8 @@ public class Configuration {
     private static Map<String, String> parseOptions(String[] args){
 	Map<String, String> options = new HashMap<String, String>();
 	for (int i=0; i<args.length; i++){
-	    keyValue.put(args[i].split("=")[0], args[i].split("=")[1]);
+	    if (args[i].contains("="))
+		keyValue.put(args[i].split("=")[0], args[i].split("=")[1]);
 	}
 	return options;
     }
@@ -55,7 +56,7 @@ public class Configuration {
 	}
 	else if (args.length >= 1){
 	    configFile = args[0];
-	    optionsCommmandLine = parseOptions(Arrays.copyOfRange(args, 1, args.length));
+	    optionsCommmandLine = parseOptions(args);
 	}
 	else{
 	    System.out.println("Error in parsing config file.");
