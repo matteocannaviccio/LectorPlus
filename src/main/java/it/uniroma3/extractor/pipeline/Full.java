@@ -52,6 +52,7 @@ public class Full {
      */
     public static void main(String[] args){
 	Configuration.init(args);
+	Configuration.printDetails();
 	pipelinedProcess(Configuration.getOriginalArticlesFile());
     }
 

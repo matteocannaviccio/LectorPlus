@@ -25,6 +25,22 @@ import org.apache.log4j.varia.NullAppender;
 public class Configuration {
 
     public static Map<String, String> keyValue = new TreeMap<String, String>();
+    
+    /**
+     * 
+     */
+    public static void printDetails(){
+	System.out.println("-------------");
+	System.out.println("Configuration");
+	System.out.println("-------------");
+	System.out.println("Language: " + Configuration.getLanguageCode());
+	System.out.println("Input Wikipedia: " + Configuration.getOriginalArticlesFile());
+	System.out.println("Input DBPedia: " + Configuration.getDBPediaDumpFile());
+	System.out.println("Pipeline: " + Configuration.getPipelineSteps().toString());
+	System.out.println("Tot. Articles: " + Configuration.getNumArticlesToProcess());
+	System.out.println("by: " + Configuration.getChunkSize());
+	System.out.println("--------------");
+    }
 
     /**
      * 
