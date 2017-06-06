@@ -143,6 +143,11 @@ public class ArticleTyper {
 		return ArticleType.LIST;
 	    }
 
+	/* Filter to capture DRAFT articles (hard-coded) */
+	if (article.getWikid().startsWith("Draft:")){
+	    return ArticleType.DRAFT;
+	}
+
 	return ArticleType.ARTICLE;
     }
 
