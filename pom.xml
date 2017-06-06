@@ -20,7 +20,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>it.uniroma3.pipeline.ArticleParser</mainClass>
+							<mainClass>it.uniroma3.extractor.pipeline.Full</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
