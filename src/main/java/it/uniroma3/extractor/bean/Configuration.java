@@ -33,14 +33,14 @@ public class Configuration {
 	System.out.println("-------------");
 	System.out.println("Configuration");
 	System.out.println("-------------");
-	System.out.println("Data Folder: \t\t" + Configuration.getDataFolder());
-	System.out.println("Language: \t\t" + Configuration.getLanguageCode());
-	System.out.println("Input Wikipedia: \t\t" + Configuration.getOriginalArticlesFile());
-	System.out.println("Input DBPedia: \t\t" + Configuration.getDBPediaDumpFile());
-	System.out.println("Pipeline: \t\t" + Configuration.getPipelineSteps().toString());
-	System.out.println("Tot. Articles: \t\t" + Configuration.getNumArticlesToProcess());
-	System.out.println("by: \t\t" + Configuration.getChunkSize());
-	System.out.println("Output: \t\t" + Configuration.getOutputFactsFile());
+	System.out.printf("%-10s %-15s\n", "Data Folder:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Language:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Input Wikipedia:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Input DBPedia:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Pipeline:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Tot. Articles:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "by:", Configuration.getDataFolder());
+	System.out.printf("%-10s %-15s\n", "Output file:", Configuration.getDataFolder());
 	System.out.println("--------------");
     }
 
