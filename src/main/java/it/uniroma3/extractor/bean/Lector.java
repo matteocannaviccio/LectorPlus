@@ -255,11 +255,11 @@ public class Lector {
 	if (wikiLang.equals(Lang.en))
 	    return new Locale("es", "ES");
 	if (wikiLang.equals(Lang.it))
-	    return Locale.ITALIAN;
+	    return Locale.getDefault();
 	if (wikiLang.equals(Lang.ge))
 	    return Locale.GERMANY;
 	if (wikiLang.equals(Lang.fr))
-	    return Locale.FRENCH;
+	    return Locale.FRANCE;
 	return null;
     }
 

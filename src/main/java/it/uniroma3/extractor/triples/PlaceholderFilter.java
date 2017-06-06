@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.reader.TSVReader;
 /**
  * 
@@ -27,7 +28,9 @@ public class PlaceholderFilter {
      * 
      */
     public PlaceholderFilter(){
-	nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
+	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
+	    nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
+	}
     }
 
     /**
@@ -36,10 +39,12 @@ public class PlaceholderFilter {
      * @return
      */
     private String replaceNationalities(String phrase){
-	for (String nat : nationalities){
-	    nat = nat.replaceAll("_", " ");
-	    Pattern NAT = Pattern.compile("\\b"+nat+"\\b", Pattern.CASE_INSENSITIVE);
-	    phrase = NAT.matcher(phrase).replaceAll("#NAT#");
+	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
+	    for (String nat : nationalities){
+		nat = nat.replaceAll("_", " ");
+		Pattern NAT = Pattern.compile("\\b"+nat+"\\b", Pattern.CASE_INSENSITIVE);
+		phrase = NAT.matcher(phrase).replaceAll("#NAT#");
+	    }
 	}
 	return phrase;
     }
