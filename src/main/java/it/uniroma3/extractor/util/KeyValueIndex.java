@@ -27,9 +27,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-
-import it.uniroma3.extractor.bean.Configuration;
 /**
  * 
  * 
@@ -75,16 +72,11 @@ public class KeyValueIndex {
      */
     private IndexWriter createWriter(String kvIndexPath) {
 	IndexWriter writer = null;
-	boolean inMemory = Configuration.inMemoryProcess();
 	try {
 	    Directory dir = null;
-	    if (inMemory){
-		dir = new RAMDirectory();
-	    }else{
-		if (new File(kvIndexPath).exists())
-		    new File(kvIndexPath).delete();
-		dir = FSDirectory.open(Paths.get(kvIndexPath));
-	    }
+	    if (new File(kvIndexPath).exists())
+		new File(kvIndexPath).delete();
+	    dir = FSDirectory.open(Paths.get(kvIndexPath));
 	    IndexWriterConfig config = new IndexWriterConfig(new WhitespaceAnalyzer());
 	    config.setOpenMode(OpenMode.CREATE);
 	    writer = new IndexWriter(dir, config);
@@ -103,6 +95,7 @@ public class KeyValueIndex {
     private IndexSearcher createSearcher(String kvIndexPath){
 	IndexSearcher searcher = null;
 	try {
+
 	    Directory dir = FSDirectory.open(Paths.get(kvIndexPath));
 	    IndexReader reader = DirectoryReader.open(dir);
 	    searcher = new IndexSearcher(reader);
