@@ -27,6 +27,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
+
+import it.uniroma3.extractor.bean.Configuration;
 /**
  * 
  * 
@@ -36,7 +39,7 @@ import org.apache.lucene.store.FSDirectory;
 public class KeyValueIndex {
 
     private IndexSearcher indexSearcher;
-    
+
     /**
      * This is the constructor if we need to create the index from a list of pairs.
      * @param kvPairsFilePath
@@ -56,7 +59,7 @@ public class KeyValueIndex {
 	this.createIndexFromFile(kvPairsFilePath, kvIndexPath);
 	this.indexSearcher = createSearcher(kvIndexPath);
     }
-    
+
     /**
      * This is the constructor if we already have the index.
      * @param kvIndexPath
@@ -72,13 +75,20 @@ public class KeyValueIndex {
      */
     private IndexWriter createWriter(String kvIndexPath) {
 	IndexWriter writer = null;
+	boolean inMemory = Configuration.inMemoryProcess();
 	try {
-	    if (new File(kvIndexPath).exists())
-		new File(kvIndexPath).delete();
-	    FSDirectory dir = FSDirectory.open(Paths.get(kvIndexPath));
+	    Directory dir = null;
+	    if (inMemory){
+		dir = new RAMDirectory();
+	    }else{
+		if (new File(kvIndexPath).exists())
+		    new File(kvIndexPath).delete();
+		dir = FSDirectory.open(Paths.get(kvIndexPath));
+	    }
 	    IndexWriterConfig config = new IndexWriterConfig(new WhitespaceAnalyzer());
 	    config.setOpenMode(OpenMode.CREATE);
 	    writer = new IndexWriter(dir, config);
+
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
@@ -120,7 +130,7 @@ public class KeyValueIndex {
     private String decodeBase64(String keywordToDecode){
 	return new String(Base64.getDecoder().decode(keywordToDecode));
     }
-    
+
     /**
      * 
      * @param pathToPhrases
@@ -143,7 +153,7 @@ public class KeyValueIndex {
 		writer.addDocument(doc);
 	    }
 	    writer.close();
-	    
+
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
@@ -169,7 +179,7 @@ public class KeyValueIndex {
 		 * we read the key-value file and index the encoded strings
 		 */
 		String[] field = line.split("\t");
-		
+
 		// skip bad-formatted lines
 		if (field.length != 2){
 		    count_bad ++;
@@ -178,7 +188,7 @@ public class KeyValueIndex {
 		}else{
 		    count_ok ++;
 		}
-		
+
 		String key = encodeBase64(field[0]);
 		String value = encodeBase64(field[1]);
 
@@ -195,11 +205,11 @@ public class KeyValueIndex {
 
 	    input.close();
 	    writer.close();
-	    
+
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	
+
 	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
     }
 

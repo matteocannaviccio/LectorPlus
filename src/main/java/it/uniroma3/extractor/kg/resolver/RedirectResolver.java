@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.KeyValueIndex;
 
 public class RedirectResolver {
@@ -20,22 +19,17 @@ public class RedirectResolver {
      * 
      */
     public RedirectResolver(){
-	/*
-	 * TODO: parses redirect for new languages!
-	 */
-	if (Lector.getLang().equals(Lang.en)){
-	    if (!new File(Configuration.getRedirectIndex()).exists()){
-		System.out.print("Creating REDIRECT resolver ...");
-		long start_time = System.currentTimeMillis();
-		this.indexRedirect = new KeyValueIndex(Configuration.getRedirectFile(), Configuration.getRedirectIndex());
-		long end_time = System.currentTimeMillis();
-		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
-	    }
-	    else // we already have the index
-		this.indexRedirect = new KeyValueIndex(Configuration.getRedirectIndex());
-	}else{
-	    System.out.println("redirect are only for ENGLISH VERSION");
+	
+	if (!new File(Configuration.getRedirectIndex()).exists()){
+	    System.out.print("Creating REDIRECT resolver ...");
+	    long start_time = System.currentTimeMillis();
+	    this.indexRedirect = new KeyValueIndex(Configuration.getRedirectFile(), Configuration.getRedirectIndex());
+	    long end_time = System.currentTimeMillis();
+	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	}
+	else // we already have the index
+	    this.indexRedirect = new KeyValueIndex(Configuration.getRedirectIndex());
+
     }
 
     /**

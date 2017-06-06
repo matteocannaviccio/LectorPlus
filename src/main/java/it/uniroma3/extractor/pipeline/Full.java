@@ -21,20 +21,17 @@ public class Full {
      */
     public static void pipelinedProcess(String inputPath){
 	if (Configuration.getPipelineSteps().contains("AP")){
-	    Lector.initAP(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	    ArticleParser ap = new ArticleParser(inputPath, inputPath.endsWith("bz2"), Configuration.getParsedArticlesFile());
 	    ap.pipelinedProcess();
 	}
 
 	if (Configuration.getPipelineSteps().contains("ED")){
-	    Lector.initED();
 	    EntityDetection ed = new EntityDetection(Configuration.getParsedArticlesFile(), 
 		    Configuration.getAugmentedArticlesFile());
 	    ed.pipelinedProcess();
 	}
 
 	if (Configuration.getPipelineSteps().contains("TE")){
-	    Lector.initTE();
 	    TriplesExtractor te = new TriplesExtractor(Configuration.getAugmentedArticlesFile());
 	    te.pipelinedProcess();
 	}
@@ -53,6 +50,7 @@ public class Full {
     public static void main(String[] args){
 	Configuration.init(args);
 	Configuration.printDetails();
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
 	pipelinedProcess(Configuration.getOriginalArticlesFile());
     }
 

@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
 /**
  * Obtain a connection to a specific DB, specified by its name.
  * 

@@ -56,6 +56,7 @@ public class Lector {
      * @param config
      */
     public static void init(WikiLanguage lang) {
+	System.out.println("\n**** INITIALIZING LECTOR ****");
 	initAP(lang);
 	initED();
 	initTE();
@@ -81,7 +82,6 @@ public class Lector {
     public static void initED(){
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
-	//dbpediaSpotlight = new DBPediaSpotlight(0.5, 0);
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
 		return new StanfordNLP(wikiLang);
