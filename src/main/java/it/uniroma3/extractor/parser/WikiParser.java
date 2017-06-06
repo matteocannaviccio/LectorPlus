@@ -56,6 +56,7 @@ public class WikiParser {
 	    switch(type){
 
 	    case ARTICLE:
+	    case LIST:
 		article.setType(type);
 		processArticle(article);
 		break;
