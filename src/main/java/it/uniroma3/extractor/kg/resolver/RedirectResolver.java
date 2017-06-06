@@ -27,7 +27,7 @@ public class RedirectResolver {
 	    if (!new File(Configuration.getRedirectIndex()).exists()){
 		System.out.print("Creating REDIRECT resolver ...");
 		long start_time = System.currentTimeMillis();
-		this.indexRedirect = new KeyValueIndex(Configuration.getIndexableRedirectFile(), Configuration.getRedirectIndex());
+		this.indexRedirect = new KeyValueIndex(Configuration.getRedirectFile(), Configuration.getRedirectIndex());
 		long end_time = System.currentTimeMillis();
 		System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	    }

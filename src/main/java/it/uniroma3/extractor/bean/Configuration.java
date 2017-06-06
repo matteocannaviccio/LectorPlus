@@ -134,14 +134,6 @@ public class Configuration {
 	return folder.getAbsolutePath();
     }
 
-    private static String getNormalizedFilesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode() + "/" + keyValue.get("normalizedFolder");
-	File folder = new File(folderPath);
-	if(!folder.exists())
-	    folder.mkdirs();
-	return folder.getAbsolutePath();
-    }
-
     private static String getTypesFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode() + "/" + keyValue.get("typesFolder");
 	File folder = new File(folderPath);
@@ -275,30 +267,9 @@ public class Configuration {
     /***********************    NORMALIZED TYPES     ***********************/
     /***********************************************************************/
 
-    public static String getIndexableRedirectFile(){
-	return getNormalizedFilesFolder() + "/" + getLanguageCode() + "_" + keyValue.get("redirectFile");
+    public static String getRedirectFile(){
+	return  keyValue.get("sourceFolder") + "/" + getLanguageCode() + "/" + keyValue.get("redirectFile");
     }
-
-    public static String getIndexableDBPediaAirpediaFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("typesAirpediaFile");
-    }
-
-    public static String getIndexableDBPediaSDTypedFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("typesSDTypedFile");
-    }
-
-    public static String getIndexableDBPediaLHDFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("typesLHDFile");
-    }
-
-    public static String getIndexableDBPediaDBTaxFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("typesDBTaxFile");
-    }
-
-    public static String getIndexableDBPediaNormalizedTypesFile(){
-	return getNormalizedFilesFolder() + "/" + keyValue.get("normalizedDBpediaTypes");
-    }
-
 
     /***********************************************************************/
     /***********************    SOURCE TYPES     ***************************/
