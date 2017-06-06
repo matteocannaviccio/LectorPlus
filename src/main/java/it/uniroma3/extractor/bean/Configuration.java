@@ -170,7 +170,15 @@ public class Configuration {
     }
 
     private static String getTypesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode() + "/" + keyValue.get("typesFolder");
+	String folderPath = getSourceFolder() + "/" + keyValue.get("typesFolder");
+	File folder = new File(folderPath);
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
+    
+    private static String getSourceFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode();
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -303,7 +311,7 @@ public class Configuration {
     /***********************************************************************/
 
     public static String getRedirectFile(){
-	return  keyValue.get("sourceFolder") + "/" + getLanguageCode() + "/" + keyValue.get("redirectFile");
+	return  getSourceFolder() + "/" + keyValue.get("redirectFile");
     }
 
     /***********************************************************************/
