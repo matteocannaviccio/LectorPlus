@@ -179,7 +179,8 @@ public class Configuration {
     /***********************************************************************/
 
     private static String getDBPediaPath(){
-	return getInputFolder() + "/" + keyValue.get("dbpediaPath") + "_" + getLanguageCode();
+	return getInputFolder() + "/" + keyValue.get("dbpediaPath") +
+		"/" + getLanguageCode();
     }
 
     public static String getDBPediaIndex(){
@@ -200,7 +201,7 @@ public class Configuration {
 
     private static String getWikipediaPath(){
 	return getInputFolder() + "/" + keyValue.get("wikipediaPath") +
-		"_" + getLanguageCode();
+		"/" + getLanguageCode();
     }
 
     public static String getOriginalArticlesFile(){
