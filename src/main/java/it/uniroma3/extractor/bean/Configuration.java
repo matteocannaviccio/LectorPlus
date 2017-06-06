@@ -27,18 +27,20 @@ public class Configuration {
     public static Map<String, String> keyValue = new TreeMap<String, String>();
     
     /**
-     * 
+     * Print all the (interesting) details of the config file.
      */
     public static void printDetails(){
 	System.out.println("-------------");
 	System.out.println("Configuration");
 	System.out.println("-------------");
-	System.out.println("Language: " + Configuration.getLanguageCode());
-	System.out.println("Input Wikipedia: " + Configuration.getOriginalArticlesFile());
-	System.out.println("Input DBPedia: " + Configuration.getDBPediaDumpFile());
-	System.out.println("Pipeline: " + Configuration.getPipelineSteps().toString());
-	System.out.println("Tot. Articles: " + Configuration.getNumArticlesToProcess());
-	System.out.println("by: " + Configuration.getChunkSize());
+	System.out.println("Data Folder: \t" + Configuration.getDataFolder());
+	System.out.println("Language: \t" + Configuration.getLanguageCode());
+	System.out.println("Input Wikipedia: \t" + Configuration.getOriginalArticlesFile());
+	System.out.println("Input DBPedia: \t" + Configuration.getDBPediaDumpFile());
+	System.out.println("Pipeline: \t" + Configuration.getPipelineSteps().toString());
+	System.out.println("Tot. Articles: \t" + Configuration.getNumArticlesToProcess());
+	System.out.println("by: \t" + Configuration.getChunkSize());
+	System.out.println("Output: \t" + Configuration.getOutputFactsFile());
 	System.out.println("--------------");
     }
 
