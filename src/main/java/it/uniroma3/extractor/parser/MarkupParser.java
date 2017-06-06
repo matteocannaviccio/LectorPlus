@@ -30,13 +30,10 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
-	// so far just for english and spanish
-	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
-	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
-	    if (Lector.getLang().equals(Lang.en)){
-		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
-		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
-	    }
+	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
+	if (Lector.getLang().equals(Lang.en)){
+	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
+	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
 	}
     }
 
