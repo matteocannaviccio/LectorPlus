@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,25 +27,41 @@ public class Configuration {
     public static Map<String, String> keyValue = new TreeMap<String, String>();
 
     /**
+     * 
+     * @param args
+     * @return
+     */
+    private static Map<String, String> parseOptions(String[] args){
+	Map<String, String> options = new HashMap<String, String>();
+	for (int i=0; i<args.length; i++){
+	    keyValue.put(args[i].split("=")[0], args[i].split("=")[1]);
+	}
+	return options;
+    }
+
+    /**
      * Effectively reads the config file.
      * 
      * @param configFile
      */
     public static void init(String[] args){
-	String lang = null;
+	Map<String, String> optionsCommmandLine = new HashMap<String, String>();
 	/*
 	 * get the config file
 	 */
-	String configFile;
+	String configFile = null;
 	if (args.length == 0){
 	    configFile = "./config.properties";
-	}else if (args.length == 1){
-	    configFile = args[0];
-	}else{
-	    configFile = args[0];
-	    lang = args[1];
 	}
-	    
+	else if (args.length >= 1){
+	    configFile = args[0];
+	    optionsCommmandLine = parseOptions(Arrays.copyOfRange(args, 1, args.length));
+	}
+	else{
+	    System.out.println("Error in parsing config file.");
+	    System.exit(1);
+	}
+
 	/*
 	 * remove the following instruction when we insert a logger
 	 * we keep it for now to silence all the loggers.
@@ -78,10 +95,9 @@ public class Configuration {
 
 		keyValue.put(key, value);
 	    }
-	    
-	    if (lang != null)
-		keyValue.put("languageUsed", lang);
-	    
+
+	    keyValue.putAll(optionsCommmandLine);
+
 	    br.close();
 	}catch(Exception e){
 	    e.printStackTrace();
@@ -321,11 +337,11 @@ public class Configuration {
     public static String getSpotlightModel(){
 	return getSpotlightFolder() + "/" + getLanguageCode();
     }
-    
+
     public static String getSpotlightJar(){
 	return getSpotlightFolder() + "/" + keyValue.get("pathDBSpotLocalJar");
     } 
-    
+
     public static String getSpotlightLocalERR(){
 	return getSpotlightFolder() + "/" + keyValue.get("pathDBSpotErr");
     }
