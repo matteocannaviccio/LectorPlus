@@ -110,7 +110,7 @@ public class Configuration {
     /*************************    LANGUAGES        *************************/
     /***********************************************************************/
     public static String getLanguageCode(){
-	return keyValue.get("languageUsed");
+	return keyValue.get("language");
     }
 
     public static String getLanguageProperties(){
