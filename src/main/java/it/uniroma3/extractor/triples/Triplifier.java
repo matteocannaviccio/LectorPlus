@@ -40,7 +40,7 @@ public class Triplifier {
 	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	other_triples = new ConcurrentLinkedQueue<WikiTriple>();
-	placeholderFilter = new PlaceholderFilter();
+	placeholderFilter = PlaceholderFilter.getPlaceholderFilter(PlaceholderFilter.PlaceholderLang.ENG);
     }
 
     /**
