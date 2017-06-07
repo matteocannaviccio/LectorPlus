@@ -5,7 +5,6 @@ import java.util.Map;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 /**
  * 
@@ -15,15 +14,6 @@ import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
  *
  */
 public class WikiParser {
-    private WikiLanguage lang;
-
-    /**
-     * 
-     * @param lang
-     */
-    public WikiParser(WikiLanguage lang){
-	this.lang = lang;
-    }
 
     /**
      * It parses the XML extracting all the metadata 
@@ -45,7 +35,7 @@ public class WikiParser {
 	String id = Lector.getXmlParser().getFieldFromXmlPage(page, "id");
 	String namespace = Lector.getXmlParser().getFieldFromXmlPage(page, "ns");
 	String originalMarkup = Lector.getXmlParser().getWikiMarkup(page);
-	WikiArticle article = new WikiArticle(wikid, id, title, namespace, lang.getLang().name(), originalMarkup);
+	WikiArticle article = new WikiArticle(wikid, id, title, namespace, Lector.getWikiLang().getLang(), originalMarkup);
 
 	try{
 	    /*
@@ -116,7 +106,7 @@ public class WikiParser {
 	 */
 	for (Map.Entry<String, String> block : blocks.entrySet()){
 	    String blockContent = Lector.getTextParser().fixSomeTemplates(block.getValue()); 	// we try to fix easy templates
-	    blockContent = Lector.getTextParser().removeNoise(blockContent, lang); 		// lang is needed for categories
+	    blockContent = Lector.getTextParser().removeNoise(blockContent); 		
 	    blockContent = Lector.getTextParser().removeUselessWikilinks(blockContent); 	// commonsense wikilinks
 	    blocks.put(block.getKey(), blockContent);
 	}
@@ -159,7 +149,7 @@ public class WikiParser {
 	/*
 	 * Finally we remove undesired sections, expressed in the WikiLanguage file.
 	 */
-	Lector.getBlockParser().removeUndesiredBlocks(blocks, lang);
+	Lector.getBlockParser().removeUndesiredBlocks(blocks);
 	/* ********************* */
 
 	/* 

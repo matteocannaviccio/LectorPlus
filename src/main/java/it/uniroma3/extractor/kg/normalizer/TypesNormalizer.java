@@ -30,17 +30,21 @@ public class TypesNormalizer{
 	Iterator<Triple> iter = null;
 	RDFReader reader = null;
 	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
-
 	if (!sourceBzip2File.contains("airpedia")){
 	    reader = new RDFReader(sourceBzip2File, Encoding.bzip2);
-	    iter = reader.readTTLFile();
+	    try{
+		iter = reader.readTTLFile();
+	    }catch(Exception e){
+		// possible illegal escape sequence, particularly into airpedia!
+	    }
 	}else{
 	    reader = new RDFReader(sourceBzip2File, Encoding.gz);
 	    try{
 		iter = reader.readNTFile();
-	    }catch(Exception e){}
+	    }catch(Exception e){
+		// possible illegal escape sequence, particularly into airpedia!
+	    }
 	}
-
 	while(iter.hasNext()){
 	    Triple t = iter.next();
 	    subject = t.getSubject().getURI();
@@ -49,6 +53,7 @@ public class TypesNormalizer{
 		normalizedKeyValue.add(Pair.make(getResourceName(subject), getPredicateName(object)));
 	    }
 	}
+
 	reader.closeReader();
 	return normalizedKeyValue;
     }
@@ -60,10 +65,10 @@ public class TypesNormalizer{
      */
     private static String getResourceName(String uri){
 	String namespace = null;
-	if(Lector.getLang().equals(Lang.en))
+	if(Lector.getWikiLang().getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
 	else{
-	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	    namespace = "http://" + Lector.getWikiLang().getLang() +".dbpedia.org/resource/";
 	}
 	return uri.replace(namespace, "");
     }
@@ -85,10 +90,10 @@ public class TypesNormalizer{
      */
     private static boolean isDBPediaResource(String uri){
 	String namespace = null;
-	if(Lector.getLang().equals(Lang.en))
+	if(Lector.getWikiLang().getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
 	else{
-	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	    namespace = "http://" + Lector.getWikiLang().getLang() +".dbpedia.org/resource/";
 	}
 	return uri.contains(namespace);
     }

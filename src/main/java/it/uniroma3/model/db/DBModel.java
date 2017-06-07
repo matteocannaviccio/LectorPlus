@@ -68,6 +68,12 @@ public class DBModel extends DB{
 		+ "section text, "
 		+ "wikid text, "
 		+ "list text)";
+	String dropNationalitiesCollection = "DROP TABLE IF EXISTS nationality_collection";
+	String createNationalitiesCollection = "CREATE TABLE nationality_collection("
+		+ "wikid text, "
+		+ "sentence text, "
+		+ "subject_type text, "
+		+ "object text)";
 	try (Statement stmt = this.getConnection().createStatement()){
 	    stmt.executeUpdate(dropLabeled);
 	    stmt.executeUpdate(createLabeled);
@@ -77,6 +83,8 @@ public class DBModel extends DB{
 	    stmt.executeUpdate(createOther);
 	    stmt.executeUpdate(dropMVLCollection);
 	    stmt.executeUpdate(createMVLCollection);
+	    stmt.executeUpdate(dropNationalitiesCollection);
+	    stmt.executeUpdate(createNationalitiesCollection);
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();
@@ -275,12 +283,27 @@ public class DBModel extends DB{
 	    e.printStackTrace();
 	}
     }
-
+    
     /**
      * 
+     * @param list
      */
-    public void closeConnection() {
-	this.closeConnection();
+    public void insertNationalityTriple(String wikid, String sentence, String subject_type, String object){
+	String insert = "INSERT INTO nationality_collection VALUES(?,?,?,?)";
+	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
+	    stmt.setString(1, wikid);
+	    stmt.setString(2, sentence);
+	    stmt.setString(3, subject_type);
+	    stmt.setString(4, object);
+	    stmt.execute();
+	}catch(SQLException e){
+	    try {
+		this.getConnection().rollback();
+	    } catch (SQLException e1) {
+		e1.printStackTrace();
+	    }
+	    e.printStackTrace();
+	}
     }
 
 }

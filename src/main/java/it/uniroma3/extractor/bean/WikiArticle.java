@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 /**
  *
  * 
@@ -69,12 +71,12 @@ public class WikiArticle {
      * @param id
      * @param text
      */
-    public WikiArticle(String wikid, String id, String title, String namespace, String langCode, String originalMarkup) {
+    public WikiArticle(String wikid, String id, String title, String namespace, Lang lang, String originalMarkup) {
 	this.wikid = wikid;
 	this.id = id;
 	this.title = title;
 	this.namespace = namespace;
-	this.url = "http://" + langCode + ".wikipedia.org/wiki/" + wikid;
+	this.url = "http://" + lang.name() + ".wikipedia.org/wiki/" + wikid;
 	this.wikilinks = new HashMap<String, Set<String>>();
 	this.originalMarkup = originalMarkup;
     }
@@ -84,7 +86,7 @@ public class WikiArticle {
      * @return
      */
     public static WikiArticle makeDummyArticle() { 
-	return new WikiArticle("dummy", "dummy", "dummy", "dummy", "dummy", "dummy");
+	return new WikiArticle("dummy", "dummy", "dummy", "dummy", Lang.en, "dummy");
     }
 
     /**
@@ -460,8 +462,7 @@ public class WikiArticle {
      * @param nationality the nationality to set
      */
     public void setNationality(String nationality) {
-	if (!nationality.equals("-"))
-	    this.nationality = nationality;
+	this.nationality = nationality;
     }
 
 

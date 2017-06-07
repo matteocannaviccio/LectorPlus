@@ -28,7 +28,7 @@ public class PlaceholderFilter {
      * 
      */
     public PlaceholderFilter(){
-	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
+	if (Lector.getWikiLang().getLang().equals(Lang.en) || Lector.getWikiLang().getLang().equals(Lang.es)){
 	    nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
 	}
     }
@@ -39,7 +39,7 @@ public class PlaceholderFilter {
      * @return
      */
     private String replaceNationalities(String phrase){
-	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
+	if (Lector.getWikiLang().getLang().equals(Lang.en) || Lector.getWikiLang().getLang().equals(Lang.es)){
 	    for (String nat : nationalities){
 		nat = nat.replaceAll("_", " ");
 		Pattern NAT = Pattern.compile("\\b"+nat+"\\b", Pattern.CASE_INSENSITIVE);

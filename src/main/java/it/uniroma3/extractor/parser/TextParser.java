@@ -8,9 +8,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.util.nlp.StupidNLP;
 /**
  * 
  * @author matteo
@@ -24,8 +23,8 @@ public class TextParser {
      * 
      * @param lang
      */
-    public TextParser(WikiLanguage lang){
-	this.cleaner = new Cleaner(lang);
+    public TextParser(){
+	this.cleaner = new Cleaner();
     }
     
     /**
@@ -63,11 +62,11 @@ public class TextParser {
      * @param lang
      * @return
      */
-    public String removeNoise(String block, WikiLanguage lang){
+    public String removeNoise(String block){
 	String cleanBlock = removeNoToc(block);
 	cleanBlock = removeInterWikiLinks(cleanBlock);
 	cleanBlock = removeRefs(cleanBlock);
-	cleanBlock = removeCategoryLinks(cleanBlock, lang);
+	cleanBlock = removeCategoryLinks(cleanBlock);
 	cleanBlock = removeHtmlComments(cleanBlock);
 	cleanBlock = removeHtmlTags(cleanBlock);
 	cleanBlock = removeIndentation(cleanBlock);
@@ -155,8 +154,8 @@ public class TextParser {
      * @param lang
      * @return
      */
-    private String removeCategoryLinks(String text, WikiLanguage lang) {
-	List<String> keywordsCategory = lang.getCategoryIdentifiers();
+    private String removeCategoryLinks(String text) {
+	List<String> keywordsCategory = Lector.getWikiLang().getCategoryIdentifiers();
 	for (String keyword : keywordsCategory){
 	    text = text.replaceAll("\\[\\[" + Pattern.quote(keyword) + ":([^\\]]*)\\]\\]", "");
 	}
@@ -327,7 +326,7 @@ public class TextParser {
      * @return
      */
     public String removeParenthesis(String block){
-	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*(?!>)");// detect parenthesis and content
+	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*(?!>)");	// detect parenthesis and content
 	Matcher m = PARENTHESIS.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");
@@ -346,36 +345,15 @@ public class TextParser {
      */
     public String obtainCleanFirstSentence(String abstractSection) {
 	String firstSentence = removeParenthesis(abstractSection);
-	
 	firstSentence = removeEmphasis(firstSentence, false);
-	firstSentence = firstSentence.replaceAll("\"", "");		// remove ""
-	firstSentence = firstSentence.replaceAll(" {2,}", " ");		// remove double spaces
-	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");	// remove double new lines
-	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();	// remove space before commma
-	
-	if(!Configuration.getOnlyTextWikilinks())
-	    firstSentence = Lector.getMarkupParser().cleanAllWikilinks(firstSentence);
-	else
-	    firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);
-	
-	// here we use a "light" sentence splitter
-	return stupidSplitOfSentences(firstSentence).get(0);
+	firstSentence = firstSentence.replaceAll("\"", "");				// remove ""
+	firstSentence = firstSentence.replaceAll(" {2,}", " ");				// remove double spaces
+	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");			// remove double new lines
+	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();			// remove space before commma
+	firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);	// remove wikilinks: <SE-ORG<...>> become ...
+	return StupidNLP.splitSentence(firstSentence).get(0);				// here we use a "light" sentence splitter
+
     }
     
-    /**
-     * Splits the paragraphs in sentences.
-     * 
-     * @param paragraphs
-     * @return
-     */
-    private static List<String> stupidSplitOfSentences(String text){
-	List<String> sentences = new LinkedList<String>();
-	String regex = "((?<=[a-z0-9\\]\\\"]{2}?[.?!])|(?<=[a-z0-9\\]\\\"]{2}?[.?!]\\\"))(\\s+|(\\r)*\\n|(\\s)*\\n)(?=\\\"?(\\[\\[)?[A-Z])";
-	for(String sent : text.split(regex)){
-	    sentences.add(sent);
-	}
-	return sentences;
-    }
-
 
 }

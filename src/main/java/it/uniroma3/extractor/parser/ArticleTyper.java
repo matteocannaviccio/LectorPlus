@@ -3,8 +3,8 @@ package it.uniroma3.extractor.parser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 /**
  * This parser is able to assign a specific type to 
@@ -15,16 +15,6 @@ import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
  */
 public class ArticleTyper {
 
-    private WikiLanguage lang;
-
-    /**
-     * 
-     * @param lang
-     */
-    public ArticleTyper(WikiLanguage lang){
-	this.lang = lang;
-    }
-
     /**
      * Check if the article can be a REDIRECT using the whole text.
      * if it contains the reference #REDIRECT.
@@ -33,7 +23,7 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsRedirect(WikiArticle article){
-	for(String red : lang.getRedirectIdentifiers()){
+	for(String red : Lector.getWikiLang().getRedirectIdentifiers()){
 	    Pattern REDIRECT = Pattern.compile("#" + red, Pattern.CASE_INSENSITIVE);
 	    Matcher m = REDIRECT.matcher(article.getOriginalMarkup());
 	    if (m.find())
@@ -50,7 +40,7 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsDate(WikiArticle article){
-	for (String da_id : lang.getDayArticleIdentifiers()){
+	for (String da_id : Lector.getWikiLang().getDayArticleIdentifiers()){
 	    if (article.getOriginalMarkup().contains(da_id))
 		return true;
 	}
@@ -66,7 +56,7 @@ public class ArticleTyper {
      * @return
      */
     private boolean checkIsDisambiguation(WikiArticle article){
-	for (String p : lang.getDisambiguationIdentifiers()){
+	for (String p : Lector.getWikiLang().getDisambiguationIdentifiers()){
 	    Pattern DIS = Pattern.compile("\\{\\{" + "[^\\(\\[]*?" + "\\b(" + p + ")\\b" + "([^\\)\\]]*?)" + "\\}\\}", 
 		    Pattern.CASE_INSENSITIVE);
 	    Matcher m = DIS.matcher(article.getOriginalMarkup());
@@ -102,43 +92,43 @@ public class ArticleTyper {
 	    return ArticleType.DATE;
 
 	/* Filter to capture WIKIPEDIA portal articles */
-	for (String portalHook : lang.getPortalIdentifiers())
+	for (String portalHook : Lector.getWikiLang().getPortalIdentifiers())
 	    if (article.getWikid().startsWith(portalHook + ":")){
 		return ArticleType.PORTAL;
 	    }
 
 	/* Filter to capture FILE articles */
-	for (String fileHook : lang.getFileIdentifiers())
+	for (String fileHook : Lector.getWikiLang().getFileIdentifiers())
 	    if (article.getWikid().startsWith(fileHook + ":")){
 		return ArticleType.FILE;
 	    }
 
 	/* Filter to capture HELP articles */
-	for (String helpHook : lang.getHelpIdentifiers())
+	for (String helpHook : Lector.getWikiLang().getHelpIdentifiers())
 	    if (article.getWikid().startsWith(helpHook + ":")){
 		return ArticleType.HELP;
 	    }
 
 	/* Filter to capture CATEGORY articles */
-	for (String categoryHook : lang.getCategoryIdentifiers())
+	for (String categoryHook : Lector.getWikiLang().getCategoryIdentifiers())
 	    if (article.getWikid().startsWith(categoryHook + ":")){
 		return ArticleType.CATEGORY;
 	    }
 
 	/* Filter to capture TEMPLATE articles */
-	for (String templateHook : lang.getTemplateIdentifiers())
+	for (String templateHook : Lector.getWikiLang().getTemplateIdentifiers())
 	    if (article.getWikid().startsWith(templateHook + ":")){
 		return ArticleType.TEMPLATE;
 	    }
 
 	/* Filter to capture DISCUSSION articles */
-	for (String discussionHook : lang.getDiscussionIdentifiers())
+	for (String discussionHook : Lector.getWikiLang().getDiscussionIdentifiers())
 	    if (article.getWikid().startsWith(discussionHook + ":")){
 		return ArticleType.DISCUSSION;
 	    }
 
 	/* Filter to capture LIST articles */
-	for (String listHook : lang.getListIdentifiers())
+	for (String listHook : Lector.getWikiLang().getListIdentifiers())
 	    if (article.getWikid().startsWith(listHook)){
 		return ArticleType.LIST;
 	    }

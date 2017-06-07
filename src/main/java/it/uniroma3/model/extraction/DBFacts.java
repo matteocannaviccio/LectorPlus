@@ -100,12 +100,6 @@ public class DBFacts extends DB{
 	    e.printStackTrace();
 	}
     }
-    
-    /**
-     * 
-     */
-    public void closeConnection() {
-	this.closeConnection();
-    }
+   
 
 }

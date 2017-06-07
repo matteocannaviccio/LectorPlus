@@ -66,5 +66,13 @@ public abstract class DB {
     public String getDbname() {
 	return dbname;
     }
+    
+    public void closeConnection(){
+	try {
+	    this.connection.close();
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	}
+    }
 
 }

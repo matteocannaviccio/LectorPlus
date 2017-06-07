@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+
+import it.uniroma3.extractor.bean.Lector;
 /**
  * A simplified NTriples serializer, used for writing the link file to
  * NTriples format.
  */
 public class NTriplesWriter {
     private Writer out;
-    private static String resource = "http://dbpedia.org/resource/";
+    private static String resource = "http://" + Lector.getWikiLang().getLang().name() + ".dbpedia.org/resource/";
     private static String property = "http://dbpedia.org/ontology/";
 
     /**

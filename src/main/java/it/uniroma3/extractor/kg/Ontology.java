@@ -11,8 +11,8 @@ import java.util.Set;
 import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.kg.resolver.Node;
-import it.uniroma3.extractor.kg.resolver.TGPattern;
+import it.uniroma3.extractor.kg.normalizer.Node;
+import it.uniroma3.extractor.kg.normalizer.TGPattern;
 import it.uniroma3.extractor.util.reader.RDFReader;
 import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
 /**

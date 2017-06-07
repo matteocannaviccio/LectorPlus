@@ -33,7 +33,8 @@ public class PatternComparator implements Comparator<Pair<String, String>> {
 	Pattern REGEXCONTENT = Pattern.compile("^.+\\Q(.*)\\E.*$");
 	Matcher m = REGEXCONTENT.matcher(regex);
 	if(m.find()){
-	    regex = m.replaceAll(m.group(1));
+	    if (m.group(1) != null)
+		regex = m.replaceAll(m.group(1));
 	}
 	return regex;
 

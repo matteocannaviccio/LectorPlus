@@ -16,7 +16,6 @@ import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.DB;
-import it.uniroma3.model.db.DBModel;
 /**
  * This is the implementation of a score-based model.
  * Assuming that a phrase can represent only one relation, a score-based model can be 
@@ -39,11 +38,11 @@ public class ModelLS extends Model{
      * score (p, r) = log c(p,r) * (alpha) c(p, r)/|c(p, other r)| * (beta) c(p_seed, r)/|c(p_seed, other r)| 
      */
     // parameters
-    private double generality_cutoff = 0.15;
+    private double generality_cutoff = 0.0;
     private double alpha = 0.5;
     private double beta = 0.5; 
     private int topk;
-    
+
     /**
      * Constructor without the parameters.
      * 
@@ -228,8 +227,8 @@ public class ModelLS extends Model{
      */
     private void printDetails(Map<String, Map<String, Double[]>> relations2phrase_details){
 	try {
-	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() + "/score_model_LECTOR.csv"), ',');
-
+	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() 
+		    + "/lector_score_" + Lector.getWikiLang().getLang().name() + ".csv"), ',');
 	    // header
 	    writer.writeNext(new String[]{
 		    "relation", 
@@ -289,7 +288,7 @@ public class ModelLS extends Model{
 	}
 	return Pair.make(relation, 1.0);
     }
-    
+
     /**
      * 
      * @param relationA
@@ -304,7 +303,7 @@ public class ModelLS extends Model{
 	}
 	return phrases;
     }
-    
+
     /**
      * 
      * @param relationA
@@ -323,7 +322,7 @@ public class ModelLS extends Model{
 	}
 	return sim;
     }
-    
+
     /**
      * 
      * @param relation

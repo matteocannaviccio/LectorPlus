@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.resolver;
+package it.uniroma3.extractor.kg;
 
 import java.io.File;
 import java.util.Comparator;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.kg.Ontology;
+import it.uniroma3.extractor.kg.normalizer.TGPattern;
 import it.uniroma3.extractor.kg.normalizer.TypesNormalizer;
 import it.uniroma3.extractor.util.KeyValueIndex;
 import it.uniroma3.extractor.util.Pair;
@@ -37,7 +37,7 @@ public class TypesResolver {
 	ontology = new Ontology();
 	
 	// we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
-	switch(Lector.getLang()){
+	switch(Lector.getWikiLang().getLang()){
 	case en:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
 	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaInstanceTypes());
@@ -169,14 +169,14 @@ public class TypesResolver {
      */
     public String assignTypes(String wikid){
 	String type = selectDeepest(getTypes(wikid, indexOriginal));
-	if (Lector.getLang().equals("en")){
+	if (Lector.getWikiLang().getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexSDTyped));
 	}
 	if (type.equals("[none]"))
 	    type = selectDeepest(getTypes(wikid, indexAirpedia));
 
-	if (Lector.getLang().equals("en")){
+	if (Lector.getWikiLang().getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexLHD));
 	}

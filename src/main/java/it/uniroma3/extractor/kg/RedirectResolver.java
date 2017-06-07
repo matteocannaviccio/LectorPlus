@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.resolver;
+package it.uniroma3.extractor.kg;
 
 import java.io.File;
 import java.util.Optional;

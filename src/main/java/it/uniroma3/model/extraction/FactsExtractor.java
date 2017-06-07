@@ -31,7 +31,8 @@ public class FactsExtractor {
 
     private Model model;
     public enum ModelType {BM25, LectorScore, NB};
-    private NTriplesWriter writer;
+    
+    private NTriplesWriter writer_facts;
 
     /**
      * 
@@ -41,7 +42,8 @@ public class FactsExtractor {
     public FactsExtractor(){
 	System.out.println("\n**** NEW FACTS EXTRACTION ****");
 	Lector.getDbfacts(true);
-	this.writer = new NTriplesWriter(getOutputStreamBZip2(Configuration.getOutputFactsFile()));
+	this.writer_facts = new NTriplesWriter(getOutputStreamBZip2(Configuration.getOutputFactsFile()));
+
     }
 
     /**
@@ -58,9 +60,9 @@ public class FactsExtractor {
 	if (relation!=null){
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
-		writer.statement(t.getWikid(), t.getInvertedSubject(), relation, t.getInvertedObject(), false);
+		writer_facts.statement(t.getWikid(), t.getInvertedSubject(), relation, t.getInvertedObject(), false);
 	    }else{
-		writer.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
+		writer_facts.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
 	    }
 	    Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
@@ -94,7 +96,6 @@ public class FactsExtractor {
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
-
 			if (processRecord(t)){
 			    contProcessed+=1;
 			    if (contProcessed % 1000 == 0 && contProcessed > 0)
@@ -105,7 +106,7 @@ public class FactsExtractor {
 	    }
 
 	    // close the output stream
-	    writer.done();
+	    writer_facts.done();
 
 	}catch(SQLException e){
 	    e.printStackTrace();

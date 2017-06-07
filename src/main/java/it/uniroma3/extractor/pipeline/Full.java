@@ -41,6 +41,8 @@ public class Full {
 	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
 	    extractor.runExtraction();
 	}
+	
+	Lector.closeAllConnections();
     }
 
     /**
@@ -48,10 +50,15 @@ public class Full {
      * @param args
      */
     public static void main(String[] args){
-	Configuration.init(args);
-	Configuration.printDetails();
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-	pipelinedProcess(Configuration.getOriginalArticlesFile());
+	for (String lang : new String[]{"en", "es", "de", "it", "fr"}){
+	    Configuration.init(args);
+	    Configuration.setParameter("language", lang);
+	    Configuration.printDetails();
+	    
+	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
+	    Lector.init(wikiLang);
+	    pipelinedProcess(Configuration.getOriginalArticlesFile());
+	}
     }
 
 }

@@ -31,6 +31,7 @@ public class Triplifier {
     private Queue<WikiTriple> unlabeled_triples;
     private Queue<WikiTriple> other_triples;
     private PlaceholderFilter placeholderFilter;
+    private Queue<String[]> nationalities;
 
     /**
      * 
@@ -40,6 +41,7 @@ public class Triplifier {
 	labeled_triples = new ConcurrentLinkedQueue<Pair<WikiTriple, String>>();
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	other_triples = new ConcurrentLinkedQueue<WikiTriple>();
+	nationalities = new ConcurrentLinkedQueue<String[]>();
 	placeholderFilter = new PlaceholderFilter();
     }
 
@@ -51,18 +53,31 @@ public class Triplifier {
      * @param article
      */
     public void extractTriples(WikiArticle article) {
-	try{
-	    for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
-		for (String sentence : sentenceCollection.getValue()) {
-		    sentence = Lector.getTextParser().removeParenthesis(sentence);
-		    sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
-		    for (WikiTriple t : createTriples(article, sentence)) {
-			processTriple(t);
-		    }
+	for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
+	    for (String sentence : sentenceCollection.getValue()) {
+		sentence = Lector.getTextParser().removeParenthesis(sentence);
+		sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
+		for (WikiTriple t : createTriples(article, sentence)) {
+		    processTriple(t);
 		}
 	    }
-	}catch(Exception e){
-	    e.printStackTrace();
+	}
+	
+	extractNationality(article);
+    }
+
+    /**
+     * 
+     * @param article
+     */
+    private void extractNationality(WikiArticle article) {
+	if (article.getNationality() != null){
+	    String[] nat = new String[4];
+	    nat[0] = article.getWikid();
+	    nat[1] = article.getFirstSentence();
+	    nat[2] = Lector.getKg().getType(article.getWikid());
+	    nat[3] = article.getNationality();
+	    nationalities.add(nat);
 	}
     }
 
@@ -144,7 +159,8 @@ public class Triplifier {
 		post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
 		phrase = sentence.substring(subjectEndPos, objectStartPos).trim();
 
-		String phrase_placeholders = placeholderFilter.preprocess(phrase);
+		//String phrase_placeholders = placeholderFilter.preprocess(phrase);
+		String phrase_placeholders = phrase;
 		if (!phrase.equals("")){
 		    WikiTriple t = new WikiTriple(article.getWikid(), pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);
@@ -279,6 +295,11 @@ public class Triplifier {
 	    Lector.getDbmodel(false).insertLabeledTriple(pair.key, pair.value);
 	}
 	this.labeled_triples.clear();
+	
+	for (String[] nat : this.nationalities){
+	    Lector.getDbmodel(false).insertNationalityTriple(nat[0], nat[1], nat[2], nat[3]);
+	}
+	this.nationalities.clear();
 
 	for(WikiTriple t : this.unlabeled_triples){
 	    Lector.getDbmodel(false).insertUnlabeledTriple(t);
@@ -290,7 +311,7 @@ public class Triplifier {
 	}
 	this.other_triples.clear();
     }
-    
+
     /**
      * 
      */

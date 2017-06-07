@@ -14,7 +14,7 @@ import java.util.Scanner;
  *
  */
 public class WikiLanguage {
-    public enum Lang {en, es, it, fr, ge};
+    public enum Lang {en, es, it, fr, de};
     
     private Lang lang;
     private Properties properties;

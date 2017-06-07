@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.resolver;
+package it.uniroma3.extractor.kg;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.normalizer.DBPediaNormalizer;
+import it.uniroma3.extractor.kg.normalizer.InverseDBPediaRelations;
 import it.uniroma3.extractor.util.KeyValueIndex;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -90,7 +90,7 @@ public class RelationsResolver {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	Lector.initAP(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
+	Lector.initAP();
 	
 	RelationsResolver res = new RelationsResolver();
 

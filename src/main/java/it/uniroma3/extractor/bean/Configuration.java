@@ -33,15 +33,24 @@ public class Configuration {
 	System.out.println("-------------");
 	System.out.println("Configuration");
 	System.out.println("-------------");
-	System.out.printf("%-10s %-30s\n", "Data Folder:", Configuration.getDataFolder());
-	System.out.printf("%-10s %-30s\n", "Language:", Configuration.getLanguageCode());
-	System.out.printf("%-10s %-30s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
-	System.out.printf("%-10s %-30s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
-	System.out.printf("%-10s %-30s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
-	System.out.printf("%-10s %-30s\n", "Tot. Articles:", Configuration.getNumArticlesToProcess());
-	System.out.printf("%-10s %-30s\n", "by:", Configuration.getChunkSize());
-	System.out.printf("%-10s %-30s\n", "Output file:", Configuration.getOutputFactsFile());
+	System.out.printf("%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
+	System.out.printf("%-30s %s\n", "Language:", Configuration.getLanguageCode());
+	System.out.printf("%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
+	System.out.printf("%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
+	System.out.printf("%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
+	System.out.printf("%-30s %s\n", "Tot. Articles:", Configuration.getNumArticlesToProcess());
+	System.out.printf("%-30s %s\n", "by:", Configuration.getChunkSize());
+	System.out.printf("%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
 	System.out.println("--------------");
+    }
+    
+    /**
+     * 
+     * @param key
+     * @param value
+     */
+    public static void setParameter(String key, String value){
+	keyValue.put(key, value);
     }
 
     /**

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.bean.Lector;
 /**
  * Finite state machine to capture composite structures in Wikipedia Markup Language.
  * Those structures can be: infobox, bio, tables, template, etc.
@@ -25,17 +25,6 @@ public class Cleaner {
     private static final int DEFAULT = 0;
     private static final int CLOSE = 1;
     private static final int OPEN = 2;
-
-    private WikiLanguage lang;
-
-    /**
-     * 
-     * @param lang
-     */
-    public Cleaner(WikiLanguage lang){
-	this.lang = lang;
-    }
-
 
     /**
      * Returns a list of all the composite structures in the page. 
@@ -96,7 +85,7 @@ public class Cleaner {
 	    String specification, String finalDoubleCharacterLabel){
 
 	List<String> structureList = new ArrayList<String>();
-	List<String> keywords = this.lang.getIdentifiers(specification);
+	List<String> keywords = Lector.getWikiLang().getIdentifiers(specification);
 	if(keywords.isEmpty())
 	    keywords.add("");
 
@@ -146,7 +135,7 @@ public class Cleaner {
     public String cleanBlockOfContentFromSpecific(String blockOfContent, String initialDoubleCharacterLabel, 
 	    String specification, String finalDoubleCharacterLabel){
 
-	List<String> keywords = this.lang.getIdentifiers(specification);
+	List<String> keywords = Lector.getWikiLang().getIdentifiers(specification);
 	if(keywords.isEmpty())
 	    keywords.add("");
 

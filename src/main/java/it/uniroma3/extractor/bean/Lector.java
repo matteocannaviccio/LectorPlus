@@ -3,6 +3,7 @@ package it.uniroma3.extractor.bean;
 import java.util.Locale;
 
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
+import it.uniroma3.extractor.entitydetection.FSMNationality;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.entitydetection.ReplAttacher;
 import it.uniroma3.extractor.entitydetection.ReplFinder;
@@ -14,7 +15,6 @@ import it.uniroma3.extractor.parser.TextParser;
 import it.uniroma3.extractor.parser.WikiParser;
 import it.uniroma3.extractor.parser.XMLParser;
 import it.uniroma3.extractor.triples.Triplifier;
-import it.uniroma3.extractor.util.nlp.DBPediaSpotlight;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
@@ -25,12 +25,14 @@ import it.uniroma3.model.extraction.DBFacts;
  *
  */
 public class Lector {
+    
+    private static WikiLanguage wikiLang;
 
     /* Needed in Article Parsing */
-    private static WikiParser wikiParser;
-    private static MarkupParser markupParser; 
-    private static ArticleTyper articleTyper;
     private static XMLParser xmlParser;
+    private static WikiParser wikiParser;
+    private static ArticleTyper articleTyper;
+    private static MarkupParser markupParser; 
     private static BlockParser blockParser;
     private static TextParser textParser;
 
@@ -38,6 +40,7 @@ public class Lector {
     private static ThreadLocal<StanfordNLP> stanfordExpert;
     private static ThreadLocal<OpenNLP> openNLPExpert;
     private static ThreadLocal<FSMSeed> fsm;
+    private static ThreadLocal<FSMNationality> fsm_nat;
     private static ReplFinder entitiesFinder;
     private static ReplAttacher entitiesTagger;
 
@@ -48,32 +51,29 @@ public class Lector {
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
     
-    private static DBPediaSpotlight dbpediaSpotlight;
-    private static WikiLanguage wikiLang;
-
     /**
      * 
      * @param config
      */
     public static void init(WikiLanguage lang) {
 	System.out.println("\n**** INITIALIZING LECTOR ****");
-	initAP(lang);
+	wikiLang = lang;
+	initAP();
 	initED();
 	initTE();
     }
     
     /**
      * 
-     * @param lang
+     * @param parsedLang
      */
-    public static void initAP(WikiLanguage parsedLang){
-	wikiLang = parsedLang;
-	wikiParser = new WikiParser(wikiLang);
+    public static void initAP(){
+	wikiParser = new WikiParser();
 	markupParser = new MarkupParser();
-	articleTyper = new ArticleTyper(wikiLang);
+	articleTyper = new ArticleTyper();
 	xmlParser = new XMLParser();
-	blockParser = new BlockParser(wikiLang);
-	textParser = new TextParser(wikiLang);
+	blockParser = new BlockParser();
+	textParser = new TextParser();
     }
     
     /**
@@ -82,19 +82,28 @@ public class Lector {
     public static void initED(){
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
+	
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
-		return new StanfordNLP(wikiLang);
+		return new StanfordNLP();
 	    }
 	};
+	
 	openNLPExpert = new ThreadLocal<OpenNLP>() {
 	    @Override protected OpenNLP initialValue() {
 		return new OpenNLP();
 	    }
 	};
+	
 	fsm = new ThreadLocal<FSMSeed>() {
 	    @Override protected FSMSeed initialValue() {
 		return new FSMSeed(openNLPExpert.get());
+	    }
+	};
+	
+	fsm_nat = new ThreadLocal<FSMNationality>() {
+	    @Override protected FSMNationality initialValue() {
+		return new FSMNationality();
 	    }
 	};
     }
@@ -171,6 +180,13 @@ public class Lector {
     public static FSMSeed getFsm() {
 	return fsm.get();
     }
+    
+    /**
+     * @return the fsm_nat
+     */
+    public static FSMNationality getFsmNat() {
+	return fsm_nat.get();
+    }
 
     /**
      * @return the kg
@@ -199,22 +215,15 @@ public class Lector {
     public static ReplAttacher getEntitiesTagger() {
 	return entitiesTagger;
     }
-
-
-    /**
-     * @return the langCode
-     */
-    public static Lang getLang() {
-	return wikiLang.getLang();
-    }
     
     /**
      * 
      * @return
      */
-    public static DBPediaSpotlight getSpotlight(){
-	return dbpediaSpotlight;
+    public static WikiLanguage getWikiLang() {
+	return wikiLang;
     }
+
 
     /**
      * 
@@ -247,6 +256,16 @@ public class Lector {
     
     /**
      * 
+     */
+    public static void closeAllConnections(){
+	dbmodel.closeConnection();
+	dbfacts.closeConnection();
+	dbmodel = null;
+	dbfacts = null;
+    }
+    
+    /**
+     * 
      * @return
      */
     public static Locale getLocale(){
@@ -256,7 +275,7 @@ public class Lector {
 	    return new Locale("es", "ES");
 	if (wikiLang.equals(Lang.it))
 	    return Locale.getDefault();
-	if (wikiLang.equals(Lang.ge))
+	if (wikiLang.equals(Lang.de))
 	    return Locale.GERMANY;
 	if (wikiLang.equals(Lang.fr))
 	    return Locale.FRANCE;

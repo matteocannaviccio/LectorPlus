@@ -39,6 +39,15 @@ public class ReplFinder {
     }
 
     /**
+     * Run a simple nationality-detector on the first sentence.
+     * 
+     * @return
+     */
+    private String findNationality(WikiArticle article){
+	return Lector.getFsmNat().detectNationalityFromSentence(article.getFirstSentence());
+    }
+
+    /**
      * Detect the pronoun used in the article to mention 
      * the primary entities: (e.g. find "He" for male person).
      * 
@@ -225,8 +234,10 @@ public class ReplFinder {
      * - pronoun			
      * - subnames 	(only named-entities NE)
      * 
-     * We use this constraint to determine if it is a NE:
+     * We use this constraint to determine if it is a named entity (NE):
      * - the article needs to have at least one alias (bold names)
+     * This allows to avoid finding subnames for articles such as "List of 
+     * Albanian lakes", which should not have a bold name in the first sentence.
      * 
      * Also, the subname can not override one of the secondary 
      * entities (for constraint).
@@ -242,14 +253,14 @@ public class ReplFinder {
 	     * Store the first clean sentence of the article and clean it, 
 	     * in order to extract seed types and run NLP tools.
 	     */
-	    if (Lector.getLang().equals(Lang.en)){
-		String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
-		article.setFirstSentence(firstSentence);
-	    }
+	    String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
+	    article.setFirstSentence(firstSentence);
+	    if (Lector.getWikiLang().getLang().equals(Lang.en))
+		article.setNationality(findNationality(article));
 
 	    /* ********************* */
 
-	    if (Lector.getLang().equals(Lang.en)){
+	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
 		if (!article.getFirstSentence().equals("-"))
 		    article.setSeeds(findSeeds(article));
 		article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
@@ -261,7 +272,7 @@ public class ReplFinder {
 	     * we assign subnames only to articles that describe named entities.
 	     * we check it using the presence of an alias in the first sentence.
 	     */
-	    if (Lector.getLang().equals(Lang.en)){
+	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
 		article.setDisambiguation(getDisambiguation(article.getWikid()));
 		if (!article.getAliases().isEmpty()){
 		    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());

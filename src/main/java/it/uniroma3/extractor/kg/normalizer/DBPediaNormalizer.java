@@ -131,10 +131,10 @@ public class DBPediaNormalizer{
      */
     private static String getResourceName(String uri){
 	String namespace = null;
-	if(Lector.getLang().equals(Lang.en))
+	if(Lector.getWikiLang().getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
 	else{
-	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	    namespace = "http://" + Lector.getWikiLang().getLang() +".dbpedia.org/resource/";
 	}
 	return uri.replace(namespace, "");
     }
@@ -156,10 +156,10 @@ public class DBPediaNormalizer{
      */
     private static boolean isDBPediaResource(String uri){
 	String namespace = null;
-	if(Lector.getLang().equals(Lang.en))
+	if(Lector.getWikiLang().getLang().equals(Lang.en))
 	    namespace = "http://dbpedia.org/resource/";
 	else{
-	    namespace = "http://" + Lector.getLang() +".dbpedia.org/resource/";
+	    namespace = "http://" + Lector.getWikiLang().getLang() +".dbpedia.org/resource/";
 	}
 	return uri.contains(namespace);
     }

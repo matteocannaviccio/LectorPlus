@@ -30,9 +30,9 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
-	if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)){
+	if (Lector.getWikiLang().getLang().equals(Lang.en) || Lector.getWikiLang().getLang().equals(Lang.es)){
 	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
-	    if (Lector.getLang().equals(Lang.en)){
+	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
 		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
 		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
 	    }
@@ -242,7 +242,7 @@ public class MarkupParser {
 
 	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
 
-		if (Configuration.solveRedirect() && Lector.getLang().equals(Lang.en))
+		if (Configuration.solveRedirect() && Lector.getWikiLang().getLang().equals(Lang.en))
 		    wikid = Lector.getKg().getRedirect(wikid);
 
 		/*

@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.resolver;
+package it.uniroma3.extractor.kg.normalizer;
 
 import java.util.LinkedList;
 import java.util.List;

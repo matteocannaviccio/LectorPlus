@@ -51,7 +51,7 @@ public class ArticleParser {
      * @param configFile
      */
     public ArticleParser(String inputFile, boolean bzip2, String outputFile){
-	System.out.println("**** ARTICLE PARSER ****");
+	System.out.println("\n**** ARTICLE PARSER ****");
 	this.stats = new Statistics();
 	this.inputReader = new XMLReader(inputFile, bzip2);
 
@@ -86,7 +86,8 @@ public class ArticleParser {
 	    processedArticles = lines.parallelStream()
 	    .map(s -> Lector.getWikiParser().createArticleFromXml(s))
 	    .map(s -> stats.addArticleToStats(s))
-	    .filter(s -> s.getType() == ArticleType.ARTICLE).collect(Collectors.toList());
+	    .filter(s -> s.getType() == ArticleType.ARTICLE)
+	    .collect(Collectors.toList());
 
 	    processedArticles.parallelStream().forEach(s -> outputWriter.println(s.toJson()));
 
@@ -101,6 +102,7 @@ public class ArticleParser {
 	stats.writeDetailsFile();
 	inputReader.closeBuffer();
 	outputWriter.close();
+	
     }
 
 }

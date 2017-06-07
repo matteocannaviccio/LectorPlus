@@ -14,7 +14,7 @@ import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.entitydetection.PatternComparator;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -29,11 +29,11 @@ public class StanfordNLP {
     /**
      * 
      */
-    public StanfordNLP(WikiLanguage lang){
+    public StanfordNLP(){
 	/********* this code only makes all writes to the System.err stream silent to avoid the print "Loading classifier ... " *****/
 	PrintStream err = System.err;
 	System.setErr(new PrintStream(new OutputStream() {public void write(int b) {}}));
-	switch(lang.getLang()){
+	switch(Lector.getWikiLang().getLang()){
 	case en:
 	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
 	    break;

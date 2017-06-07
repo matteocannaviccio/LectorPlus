@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.bean.Lector;
 /**
  * 
  * @author matteo
@@ -22,8 +22,8 @@ public class BlockParser {
      * 
      * @param lang
      */
-    public BlockParser(WikiLanguage lang){
-	this.cleaner = new Cleaner(lang);
+    public BlockParser(){
+	this.cleaner = new Cleaner();
     }
 
     /**
@@ -149,11 +149,11 @@ public class BlockParser {
      * @param blocks
      * @return
      */
-    public Map<String, String> removeUndesiredBlocks(Map<String, String> blocks, WikiLanguage lang) {
+    public Map<String, String> removeUndesiredBlocks(Map<String, String> blocks) {
 
 	/* get the titles of all undesired sections ... */
 	Set<String> undesiredSectionNames = new HashSet<String>();
-	undesiredSectionNames.addAll(lang.getFooterIdentifiers());	
+	undesiredSectionNames.addAll(Lector.getWikiLang().getFooterIdentifiers());	
 
 	/* get the titles of all empty sections and add to the undesired */
 	for(Map.Entry<String, String> entry : blocks.entrySet()){
