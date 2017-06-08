@@ -6,14 +6,14 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 /**
- * A simplified NTriples serializer, used for writing the link file to
- * NTriples format.
+ * A simplified NTriples serializer, used for writing output NTriples file.
  */
 public class NTriplesWriter {
     private Writer out;
-    private static String resource = "http://" + Lector.getWikiLang().getLang().name() + ".dbpedia.org/resource/";
-    private static String property = "http://dbpedia.org/ontology/";
+    private static String RESOURCE;
+    private static String PROPERTY;
 
     /**
      * Using a stream so we can control the encoding.
@@ -21,11 +21,25 @@ public class NTriplesWriter {
      * @param out
      */
     public NTriplesWriter(OutputStream out) {
+	setURILang();
+	
 	try {
 	    this.out = new OutputStreamWriter(out, "utf-8");
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException(e);
 	}
+    }
+    
+    /**
+     * Use the right URIs depending on the language.
+     * 
+     */
+    private void setURILang(){
+	if (!Lector.getWikiLang().getLang().equals(Lang.en))
+	    RESOURCE = "http://" + Lector.getWikiLang().getLang().name() + ".dbpedia.org/resource/";
+	else
+	    RESOURCE = "http://dbpedia.org/resource/";
+	PROPERTY = "http://dbpedia.org/ontology/";
     }
 
     /**
@@ -36,9 +50,9 @@ public class NTriplesWriter {
      * @param literal
      */
     public void statement(String wikid, String subject, String predicate, String object, boolean literal) {
-	subject = resource + subject;
-	predicate = property + predicate;
-	object = resource + object;
+	subject = RESOURCE + subject;
+	predicate = PROPERTY + predicate;
+	object = RESOURCE + object;
 	try {
 	    out.write(wikid + "\t");
 

@@ -1,5 +1,7 @@
 package it.uniroma3.extractor.kg;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import it.uniroma3.extractor.bean.Configuration;
@@ -81,7 +83,8 @@ public class KGEndPoint {
     
     public static void main(String[] args){
 	Configuration.init(args);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
 	KGEndPoint t = new KGEndPoint();
 

@@ -1,7 +1,11 @@
 package it.uniroma3.model.model;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
 
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
@@ -23,7 +27,10 @@ public abstract class Model{
     public enum PhraseType {TYPED_PHRASES, NO_TYPES_PHRASES};
     
     // these are all the phrases that are considered in the model
-    protected CounterMap<String> available_phrases;    
+    protected CounterMap<String> available_phrases;  
+    protected CounterMap<String> unlabeled_phrases;
+    protected Map<String, CounterMap<String>> relation2phrasesCount;
+    
     protected QueryDB db_read;
     protected int minFreq;
 
@@ -39,7 +46,19 @@ public abstract class Model{
 	this.db_read = new QueryDB(dbModel, labeled);
 	this.type = type;
 	this.minFreq = minFreq;
+
+	System.out.println("---------------------------------------------------------------");
+	System.out.println("Scoring model");
+	System.out.println("---------------------------------------------------------------");
+	System.out.printf("%-30s %s\n", "model: ", "LectorScore with " + type);
+	System.out.printf("%-30s %s\n", "minFreq: ", minFreq);
 	this.available_phrases = availabePhrases(minFreq);
+	System.out.printf("%-30s %s\n", "labeled phrases: ", this.available_phrases.keySet().size());
+	this.unlabeled_phrases = availableUnlabeledPhrases(available_phrases.keySet());
+	System.out.printf("%-30s %s\n", "un-labeled phrases: ", unlabeled_phrases.keySet().size());
+	this.relation2phrasesCount = availableRelations2phrases(available_phrases.keySet());
+	System.out.printf("%-30s %s\n", "relations: ", relation2phrasesCount.keySet().stream().map(s -> s.replace("(-1)", "")).collect(Collectors.toSet()).size());
+	System.out.printf("%-30s %s\n", "avg. phrases/relation: ", String.format("%.2f", calcAvgValue(relation2phrasesCount)) + " p/r");
     }
     
     /**
@@ -57,9 +76,6 @@ public abstract class Model{
      * @return
      */
     private CounterMap<String> availabePhrases(int minFreq) {
-	if(verbose)
-	    System.out.println("**** Filtering " + type +" phrases by (minFreq: " + minFreq +") ****");
-	
 	CounterMap<String> phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
@@ -69,8 +85,6 @@ public abstract class Model{
 	    phrases = db_read.getAvailablePhrases(minFreq);
 	    break;
 	}
-	if(verbose)
-	    System.out.println(" --> "+ phrases.size() + " different labeled phrases.");
 	return phrases;
     }
     
@@ -81,8 +95,6 @@ public abstract class Model{
      * @return
      */
     protected CounterMap<String> availableUnlabeledPhrases(Set<String> lab_phrases){
-	if(verbose)
-	    System.out.println("**** Obtaining " + type +" phrases from the unlabeled ****");
 	CounterMap<String> unlab_phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
@@ -92,8 +104,6 @@ public abstract class Model{
 	    unlab_phrases = db_read.getUnlabeledPhrasesCount(lab_phrases);
 	    break;
 	}
-	if(verbose)
-	    System.out.println(" --> "+ unlab_phrases.size() + " different un-labeled phrases.");
 	return unlab_phrases;
     } 
 
@@ -159,6 +169,18 @@ public abstract class Model{
     }
     
 
+    /**
+     * 
+     * @param map
+     * @return
+     */
+    private double calcAvgValue(Map<String, CounterMap<String>> map){
+	int countPhrases = 0;
+	for (Map.Entry<String, CounterMap<String>> entry : map.entrySet()){
+	    countPhrases += entry.getValue().size();
+	}
+	return (double)countPhrases/map.size();
+    }
 
     /**
      * This is the only method that can be used from the clients.
@@ -175,6 +197,4 @@ public abstract class Model{
      */
     public abstract boolean canPredict(String expectedRelation);
     
-
-
 }

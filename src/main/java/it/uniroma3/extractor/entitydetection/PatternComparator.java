@@ -30,7 +30,7 @@ public class PatternComparator implements Comparator<Pair<String, String>> {
      * @return
      */
     public String normalizePattern(String regex){
-	Pattern REGEXCONTENT = Pattern.compile("^.+\\Q(.*)\\E.*$");
+	Pattern REGEXCONTENT = Pattern.compile("^.*\\Q(.+)\\E.*$");
 	Matcher m = REGEXCONTENT.matcher(regex);
 	if(m.find()){
 	    if (m.group(1) != null)

@@ -1,6 +1,7 @@
 package it.uniroma3.extractor.bean;
 
 import java.util.Locale;
+import java.util.Set;
 
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.entitydetection.FSMNationality;
@@ -25,7 +26,7 @@ import it.uniroma3.model.extraction.DBFacts;
  *
  */
 public class Lector {
-    
+
     private static WikiLanguage wikiLang;
 
     /* Needed in Article Parsing */
@@ -50,19 +51,23 @@ public class Lector {
     /* Keep the (open) connections here */
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
-    
+
     /**
      * 
      * @param config
      */
-    public static void init(WikiLanguage lang) {
+    public static void init(WikiLanguage lang, Set<String> pipeline) {
 	System.out.println("\n**** INITIALIZING LECTOR ****");
 	wikiLang = lang;
-	initAP();
-	initED();
-	initTE();
+	if (pipeline.contains("AP"))
+	    initAP();
+	if (pipeline.contains("ED"))
+	    initED();
+	if (pipeline.contains("TE"))
+	    initTE();
+	initDBpedia();
     }
-    
+
     /**
      * 
      * @param parsedLang
@@ -75,45 +80,47 @@ public class Lector {
 	blockParser = new BlockParser();
 	textParser = new TextParser();
     }
-    
+
     /**
      * 
      */
     public static void initED(){
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
-	
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
 		return new StanfordNLP();
 	    }
 	};
-	
 	openNLPExpert = new ThreadLocal<OpenNLP>() {
 	    @Override protected OpenNLP initialValue() {
 		return new OpenNLP();
 	    }
 	};
-	
 	fsm = new ThreadLocal<FSMSeed>() {
 	    @Override protected FSMSeed initialValue() {
 		return new FSMSeed(openNLPExpert.get());
 	    }
 	};
-	
 	fsm_nat = new ThreadLocal<FSMNationality>() {
 	    @Override protected FSMNationality initialValue() {
 		return new FSMNationality();
 	    }
 	};
     }
-    
+
     /**
      * 
      */
     public static void initTE(){
-	kg = new KGEndPoint();
 	triplifier = new Triplifier();
+    }
+
+    /**
+     * 
+     */
+    public static void initDBpedia(){
+	kg = new KGEndPoint();
     }
 
 
@@ -180,7 +187,7 @@ public class Lector {
     public static FSMSeed getFsm() {
 	return fsm.get();
     }
-    
+
     /**
      * @return the fsm_nat
      */
@@ -215,7 +222,7 @@ public class Lector {
     public static ReplAttacher getEntitiesTagger() {
 	return entitiesTagger;
     }
-    
+
     /**
      * 
      * @return
@@ -253,7 +260,7 @@ public class Lector {
 	}
 	return dbfacts;
     }
-    
+
     /**
      * 
      */
@@ -263,7 +270,7 @@ public class Lector {
 	dbmodel = null;
 	dbfacts = null;
     }
-    
+
     /**
      * 
      * @return

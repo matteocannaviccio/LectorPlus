@@ -38,7 +38,7 @@ public class ModelLS extends Model{
      * score (p, r) = log c(p,r) * (alpha) c(p, r)/|c(p, other r)| * (beta) c(p_seed, r)/|c(p_seed, other r)| 
      */
     // parameters
-    private double generality_cutoff = 0.1;
+    private double generality_cutoff = 0.15;
     private double alpha = 0.5;
     private double beta = 0.5; 
     private int topk;
@@ -50,8 +50,13 @@ public class ModelLS extends Model{
      */
     public ModelLS(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
+	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
+	System.out.println("---------------------------------------------------------------\n");
+	
 	this.topk = topk;
 	this.model = createModel();
+
     }
 
     /**
@@ -61,6 +66,10 @@ public class ModelLS extends Model{
      */
     public ModelLS(DB db, String labeled, int minFreq, int topk, double alpha, double beta, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
+	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
+	System.out.println("---------------------------------------------------------------\n");
+	
 	this.alpha = alpha;
 	this.beta = beta;
 	this.topk = topk;
@@ -75,37 +84,17 @@ public class ModelLS extends Model{
      * @return
      */
     private Map<String, String> createModel(){
-	if(verbose)
-	    System.out.println("-> Creating score-based model");
-
-	CounterMap<String> unlab_phrases = availableUnlabeledPhrases(this.available_phrases.keySet());
-	Map<String, CounterMap<String>> relation2phrasesCount = availableRelations2phrases(this.available_phrases.keySet());
-
 	/*
 	 * get the counts of seed phrases, both from labeled and unlabeled triples
 	 */
-	if(verbose)
-	    System.out.println("-> Obtaining seed statistics");
-
 	CounterMap<String> seed_labeledPhrases = db_read.getAvailablePhrases(0);
 	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(seed_labeledPhrases.keySet());
 	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(seed_labeledPhrases.keySet());
 
-	if(verbose){
-	    System.out.println("\t--------");
-	    System.out.println("\t -> Total labeled distinct phrases(> " + minFreq + " occ.): " + this.available_phrases.keySet().size());
-	    System.out.println("\t -> Total unlabeled distinct phrases: " + unlab_phrases.size());
-	    System.out.println("\t -> Total relations: " + relation2phrasesCount.keySet().size());
-	    //System.out.println("Total relations (shrinked): " + relation2phrasesCount_shrinked.keySet().size());
-	    System.out.println("\t-----------------------");
-
-	    System.out.println("-> Creating model");
-	}
-
 	Map<String, String> model = createScoredBasedModel(
 		this.available_phrases, 
-		unlab_phrases, 
-		relation2phrasesCount,
+		this.unlabeled_phrases, 
+		this.relation2phrasesCount,
 		seed_labeledPhrases,
 		seed_unlabeledPhrases,
 		seed_relphraseCounts);

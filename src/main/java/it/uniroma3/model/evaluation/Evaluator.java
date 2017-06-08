@@ -3,6 +3,8 @@ package it.uniroma3.model.evaluation;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
@@ -193,7 +195,8 @@ public class Evaluator {
      */
     public static void main(String[] args){
 	Configuration.init(new String[0]);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 	
 	Evaluator ev = new Evaluator(Lector.getDbmodel(false));
 	int nParts = 1;

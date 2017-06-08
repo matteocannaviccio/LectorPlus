@@ -2,6 +2,7 @@ package it.uniroma3.extractor.bean;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,7 @@ public class WikiLanguage {
 	properties = new Properties();
 	try {
 	    this.lang = Lang.valueOf(code);
-	    properties.load(new FileInputStream(langProperties));
+	    properties.load(new InputStreamReader(new FileInputStream(langProperties), "ISO-8859-1"));
 	} catch (IOException e) {
 	    System.out.println("Language not found.");
 	    e.printStackTrace();

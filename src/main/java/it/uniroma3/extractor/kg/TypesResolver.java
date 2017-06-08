@@ -1,7 +1,9 @@
 package it.uniroma3.extractor.kg;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -189,8 +191,9 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
+	
 	TypesResolver t = new TypesResolver();
 
 	String entity = "Barack_Obama";

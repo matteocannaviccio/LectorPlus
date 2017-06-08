@@ -210,7 +210,7 @@ public class Triplifier {
 	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
 	while(m.find()){
 	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
-	    Lector.getDbmodel(true).insertMVList(mv);
+	    Lector.getDbmodel(false).insertMVList(mv);
 	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
 	}
 	return sentence;

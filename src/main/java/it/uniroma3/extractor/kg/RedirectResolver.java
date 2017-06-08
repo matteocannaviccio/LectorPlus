@@ -1,6 +1,8 @@
 package it.uniroma3.extractor.kg;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -52,8 +54,9 @@ public class RedirectResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()));
-
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
+	
 	RedirectResolver t = new RedirectResolver();
 
 	String entity = "Matteo_Carcassi";

@@ -15,9 +15,16 @@ public class Full {
 
     /**
      * 
-     * @param ap
-     * @param ed
-     * @param fe
+     * @param inputPath
+     */
+    public static void completeInMemoryProcess(String inputPath){
+	CompletePipeline cp = new CompletePipeline(inputPath, inputPath.endsWith("bz2"));
+	cp.pipelinedProcess();
+    }
+
+    /**
+     * 
+     * @param inputPath
      */
     public static void pipelinedProcess(String inputPath){
 	if (Configuration.getPipelineSteps().contains("AP")){
@@ -38,10 +45,10 @@ public class Full {
 
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    FactsExtractor extractor = new FactsExtractor();
-	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
+	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 50, -1, PhraseType.TYPED_PHRASES);
 	    extractor.runExtraction();
 	}
-	
+
 	Lector.closeAllConnections();
     }
 
@@ -54,10 +61,10 @@ public class Full {
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
 	    Configuration.printDetails();
-	    
+
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
-	    Lector.init(wikiLang);
-	    pipelinedProcess(Configuration.getOriginalArticlesFile());
+	    Lector.init(wikiLang, Configuration.getPipelineSteps());
+	    completeInMemoryProcess(Configuration.getOriginalArticlesFile());
 	}
     }
 

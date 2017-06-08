@@ -33,7 +33,7 @@ public class Statistics {
 	ArticleType type = a.getType();
 	if(!countTypes.containsKey(type))
 	    countTypes.put(type, new LinkedList<String>());
-	countTypes.get(type).add(a.getWikid());
+	countTypes.get(type).add(a.getWikid() + "\t" + a.getNamespace());
 	return a;
     }
 

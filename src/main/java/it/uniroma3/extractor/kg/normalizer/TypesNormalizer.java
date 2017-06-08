@@ -31,15 +31,15 @@ public class TypesNormalizer{
 	RDFReader reader = null;
 	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
 	if (!sourceBzip2File.contains("airpedia")){
-	    reader = new RDFReader(sourceBzip2File, Encoding.bzip2);
 	    try{
+		reader = new RDFReader(sourceBzip2File, Encoding.bzip2);
 		iter = reader.readTTLFile();
 	    }catch(Exception e){
 		// possible illegal escape sequence, particularly into airpedia!
 	    }
 	}else{
-	    reader = new RDFReader(sourceBzip2File, Encoding.gz);
 	    try{
+		reader = new RDFReader(sourceBzip2File, Encoding.gz);
 		iter = reader.readNTFile();
 	    }catch(Exception e){
 		// possible illegal escape sequence, particularly into airpedia!

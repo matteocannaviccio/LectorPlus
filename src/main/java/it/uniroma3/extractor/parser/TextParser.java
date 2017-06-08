@@ -26,7 +26,7 @@ public class TextParser {
     public TextParser(){
 	this.cleaner = new Cleaner();
     }
-    
+
     /**
      * It clean the wikid obtaining the title,
      * without underscores or disambiguations.
@@ -344,16 +344,19 @@ public class TextParser {
      * @return
      */
     public String obtainCleanFirstSentence(String abstractSection) {
-	String firstSentence = removeParenthesis(abstractSection);
-	firstSentence = removeEmphasis(firstSentence, false);
-	firstSentence = firstSentence.replaceAll("\"", "");				// remove ""
-	firstSentence = firstSentence.replaceAll(" {2,}", " ");				// remove double spaces
-	firstSentence = firstSentence.replaceAll("\n{2,}", "\n");			// remove double new lines
-	firstSentence = firstSentence.replaceAll(" , ", ", ").trim();			// remove space before commma
-	firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);	// remove wikilinks: <SE-ORG<...>> become ...
-	return StupidNLP.splitSentence(firstSentence).get(0);				// here we use a "light" sentence splitter
-
+	String firstSentence = null;
+	try{
+	    firstSentence = removeParenthesis(abstractSection);
+	    firstSentence = removeEmphasis(firstSentence, false);
+	    firstSentence = firstSentence.replaceAll("\"", "");				// remove ""
+	    firstSentence = firstSentence.replaceAll(" {2,}", " ");			// remove double spaces
+	    firstSentence = firstSentence.replaceAll("\n{2,}", "\n");			// remove double new lines
+	    firstSentence = firstSentence.replaceAll(" , ", ", ").trim();		// remove space before commma
+	    firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);	// remove wikilinks: <SE-ORG<...>> become ...
+	    firstSentence = StupidNLP.splitSentence(firstSentence).get(0);	   	// here we use a "light" sentence splitter
+	}catch(Exception e){}
+	return firstSentence;
     }
-    
+
 
 }
