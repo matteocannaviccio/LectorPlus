@@ -20,6 +20,7 @@ public class Full {
     public static void completeInMemoryProcess(String inputPath){
 	CompletePipeline cp = new CompletePipeline(inputPath, inputPath.endsWith("bz2"));
 	cp.pipelinedProcess();
+	Lector.closeAllConnections();
     }
 
     /**

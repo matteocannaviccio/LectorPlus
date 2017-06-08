@@ -57,11 +57,11 @@ public class CompletePipeline {
 	}
 
 	System.out.println("************\nProcessed articles:\n" + stats.printStats());
-	stats.writeDetailsFile();
+	
 	inputReader.closeBuffer();
 
 	FactsExtractor extractor = new FactsExtractor();
-	extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 50, -1, PhraseType.TYPED_PHRASES);
+	extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 10, -1, PhraseType.TYPED_PHRASES);
 	extractor.runExtraction();
     }
 

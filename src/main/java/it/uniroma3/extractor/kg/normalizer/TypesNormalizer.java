@@ -45,13 +45,16 @@ public class TypesNormalizer{
 		// possible illegal escape sequence, particularly into airpedia!
 	    }
 	}
+	
 	while(iter.hasNext()){
-	    Triple t = iter.next();
-	    subject = t.getSubject().getURI();
-	    object = t.getObject().getURI();
-	    if (isDBPediaResource(subject) && !isIntermediateNode(subject) && isInDBPediaOntology(object)){
-		normalizedKeyValue.add(Pair.make(getResourceName(subject), getPredicateName(object)));
-	    }
+	    try{
+		Triple t = iter.next();
+		subject = t.getSubject().getURI();
+		object = t.getObject().getURI();
+		if (isDBPediaResource(subject) && !isIntermediateNode(subject) && isInDBPediaOntology(object)){
+		    normalizedKeyValue.add(Pair.make(getResourceName(subject), getPredicateName(object)));
+		}
+	    }catch(Exception e){}
 	}
 
 	reader.closeReader();

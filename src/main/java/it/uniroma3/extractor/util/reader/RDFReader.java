@@ -54,7 +54,6 @@ public class RDFReader{
 	try {
 	    is = new FileInputStream(path);
 	} catch (IOException e) {
-	    e.printStackTrace();
 	}
 	return is;
     }
@@ -72,7 +71,6 @@ public class RDFReader{
 	    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
 	    is = new CBZip2InputStream((fis));
 	} catch (IOException e) {
-	    e.printStackTrace();
 	}
 	return is;
     }
@@ -88,7 +86,6 @@ public class RDFReader{
 	    FileInputStream fis = new FileInputStream(path);
 	    is = new GZIPInputStream((fis));
 	} catch (IOException e) {
-	    e.printStackTrace();
 	}
 	return is;
     }
