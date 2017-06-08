@@ -3,11 +3,13 @@ package it.uniroma3.model.db;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Queue;
 
 import org.apache.commons.lang3.StringUtils;
 
 import it.uniroma3.extractor.triples.WikiMVL;
 import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.model.DB;
 /**
  * 
@@ -38,6 +40,7 @@ public class DBModel extends DB{
 	String dropUnlabeled = "DROP TABLE IF EXISTS unlabeled_triples";
 	String createUnlabeled = "CREATE TABLE unlabeled_triples("
 		+ "wikid text, "
+		+ "sentence text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
 		+ "phrase_pre text, "
@@ -148,22 +151,28 @@ public class DBModel extends DB{
      * @param triple
      * @param relation
      */
-    public void insertLabeledTriple(WikiTriple triple, String relation){
+    public void batchInsertLabeledTriple(Queue<Pair<WikiTriple, String>> labeled_triples){
 	String insert = "INSERT INTO labeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
-	    stmt.setString(1, triple.getWikid());
-	    stmt.setString(2, triple.getPhraseOriginal());
-	    stmt.setString(3, triple.getPhrasePlaceholders());
-	    stmt.setString(4, triple.getPre());
-	    stmt.setString(5, triple.getPost());
-	    stmt.setString(6, triple.getSubject());
-	    stmt.setString(7, triple.getWikiSubject());
-	    stmt.setString(8, triple.getSubjectType());
-	    stmt.setString(9, triple.getObject());
-	    stmt.setString(10, triple.getWikiObject());
-	    stmt.setString(11, triple.getObjectType());
-	    stmt.setString(12, relation);
-	    stmt.execute();
+	try {
+	    this.getConnection().setAutoCommit(false);
+	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
+	    for (Pair<WikiTriple, String> triple : labeled_triples){
+		stmt.setString(1, triple.key.getWikid());
+		stmt.setString(2, triple.key.getPhraseOriginal());
+		stmt.setString(3, triple.key.getPhrasePlaceholders());
+		stmt.setString(4, triple.key.getPre());
+		stmt.setString(5, triple.key.getPost());
+		stmt.setString(6, triple.key.getSubject());
+		stmt.setString(7, triple.key.getWikiSubject());
+		stmt.setString(8, triple.key.getSubjectType());
+		stmt.setString(9, triple.key.getObject());
+		stmt.setString(10, triple.key.getWikiObject());
+		stmt.setString(11, triple.key.getObjectType());
+		stmt.setString(12, triple.value);
+		stmt.addBatch();
+	    }	    
+	    stmt.executeBatch();
+	    this.getConnection().commit();
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();
@@ -178,35 +187,42 @@ public class DBModel extends DB{
      * This is the schema of unlabeled_triples:
      * 
      * 		01- wikid text
-     * 		02- phrase_original text
-     * 		03- phrase_placeholder text
-     *      	04- phrase_pre text
-     * 		05- phrase_post text
-     * 		06- subject text
-     * 		07- wiki_subject text
-     * 		08- type_subject text
-     * 		09- object text
-     * 		10- wiki_object text
-     * 		11- type_object text
-     * 		12- type text
+     * 		02- sentence text
+     * 		03- phrase_original text
+     * 		04- phrase_placeholder text
+     *      	05- phrase_pre text
+     * 		06- phrase_post text
+     * 		07- subject text
+     * 		08- wiki_subject text
+     * 		09- type_subject text
+     * 		10- object text
+     * 		11- wiki_object text
+     * 		12- type_object text
      * 
      * @param triple
      */
-    public void insertUnlabeledTriple(WikiTriple triple){
-	String insert = "INSERT INTO unlabeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?)";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
-	    stmt.setString(1, triple.getWikid());
-	    stmt.setString(2, triple.getPhraseOriginal());
-	    stmt.setString(3, triple.getPhrasePlaceholders());
-	    stmt.setString(4, triple.getPre());
-	    stmt.setString(5, triple.getPost());
-	    stmt.setString(6, triple.getSubject());
-	    stmt.setString(7, triple.getWikiSubject());
-	    stmt.setString(8, triple.getSubjectType());
-	    stmt.setString(9, triple.getObject());
-	    stmt.setString(10, triple.getWikiObject());
-	    stmt.setString(11, triple.getObjectType());
-	    stmt.execute();
+    public void batchInsertUnlabeledTriple(Queue<WikiTriple> unlabeled_triples){
+	String insert = "INSERT INTO unlabeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	try {
+	    this.getConnection().setAutoCommit(false);
+	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
+	    for (WikiTriple triple : unlabeled_triples){
+		stmt.setString(1, triple.getWikid());
+		stmt.setString(2, triple.getWholeSentence());
+		stmt.setString(3, triple.getPhraseOriginal());
+		stmt.setString(4, triple.getPhrasePlaceholders());
+		stmt.setString(5, triple.getPre());
+		stmt.setString(6, triple.getPost());
+		stmt.setString(7, triple.getSubject());
+		stmt.setString(8, triple.getWikiSubject());
+		stmt.setString(9, triple.getSubjectType());
+		stmt.setString(10, triple.getObject());
+		stmt.setString(11, triple.getWikiObject());
+		stmt.setString(12, triple.getObjectType());
+		stmt.addBatch();
+	    }	    
+	    stmt.executeBatch();
+	    this.getConnection().commit();
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();
@@ -235,22 +251,28 @@ public class DBModel extends DB{
      * 
      * @param triple
      */
-    public void insertOtherTriple(WikiTriple triple){
+    public void batchInsertOtherTriple(Queue<WikiTriple> other_triples){
 	String insert = "INSERT INTO other_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
-	    stmt.setString(1, triple.getWikid());
-	    stmt.setString(2, triple.getPhraseOriginal());
-	    stmt.setString(3, triple.getPhrasePlaceholders());
-	    stmt.setString(4, triple.getPre());
-	    stmt.setString(5, triple.getPost());
-	    stmt.setString(6, triple.getSubject());
-	    stmt.setString(7, triple.getWikiSubject());
-	    stmt.setString(8, triple.getSubjectType());
-	    stmt.setString(9, triple.getObject());
-	    stmt.setString(10, triple.getWikiObject());
-	    stmt.setString(11, triple.getObjectType());
-	    stmt.setString(12, triple.getType().name());
-	    stmt.execute();
+	try {
+	    this.getConnection().setAutoCommit(false);
+	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
+	    for (WikiTriple triple : other_triples){
+		stmt.setString(1, triple.getWikid());
+		stmt.setString(2, triple.getPhraseOriginal());
+		stmt.setString(3, triple.getPhrasePlaceholders());
+		stmt.setString(4, triple.getPre());
+		stmt.setString(5, triple.getPost());
+		stmt.setString(6, triple.getSubject());
+		stmt.setString(7, triple.getWikiSubject());
+		stmt.setString(8, triple.getSubjectType());
+		stmt.setString(9, triple.getObject());
+		stmt.setString(10, triple.getWikiObject());
+		stmt.setString(11, triple.getObjectType());
+		stmt.setString(12, triple.getType().name());
+		stmt.addBatch();
+	    }	    
+	    stmt.executeBatch();
+	    this.getConnection().commit();
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();
@@ -266,14 +288,20 @@ public class DBModel extends DB{
      * 
      * @param list
      */
-    public void insertMVList(WikiMVL list){
+    public void batchInsertMVList(Queue<WikiMVL> lists){
 	String insert = "INSERT INTO mvl_collection VALUES(?,?,?,?)";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
-	    stmt.setString(1, list.getCode());
-	    stmt.setString(2, list.getWikid());
-	    stmt.setString(3, list.getSection());
-	    stmt.setString(4, StringUtils.join(list.getListWikid(), ","));
-	    stmt.execute();
+	try {
+	    this.getConnection().setAutoCommit(false);
+	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
+	    for (WikiMVL mvl : lists){
+		stmt.setString(1, mvl.getCode());
+		stmt.setString(2, mvl.getWikid());
+		stmt.setString(3, mvl.getSection());
+		stmt.setString(4, StringUtils.join(mvl.getListWikid(), ","));
+		stmt.addBatch();
+	    }	    
+	    stmt.executeBatch();
+	    this.getConnection().commit();
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();
@@ -283,19 +311,25 @@ public class DBModel extends DB{
 	    e.printStackTrace();
 	}
     }
-    
+
     /**
      * 
      * @param list
      */
-    public void insertNationalityTriple(String wikid, String sentence, String subject_type, String object){
+    public void batchInsertNationalityTriple(Queue<String[]> nationalities){
 	String insert = "INSERT INTO nationality_collection VALUES(?,?,?,?)";
-	try (PreparedStatement stmt = this.getConnection().prepareStatement(insert)){
-	    stmt.setString(1, wikid);
-	    stmt.setString(2, sentence);
-	    stmt.setString(3, subject_type);
-	    stmt.setString(4, object);
-	    stmt.execute();
+	try {
+	    this.getConnection().setAutoCommit(false);
+	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
+	    for (String[] nat : nationalities){
+		stmt.setString(1, nat[0]);
+		stmt.setString(2, nat[1]);
+		stmt.setString(3, nat[2]);
+		stmt.setString(4, nat[3]);
+		stmt.addBatch();
+	    }	    
+	    stmt.executeBatch();
+	    this.getConnection().commit();
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();

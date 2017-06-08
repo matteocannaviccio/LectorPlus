@@ -125,7 +125,7 @@ public class Evaluator {
 		    String object_type = rs.getString(11);
 		    String relation = rs.getString(12);
 
-		    WikiTriple t = new WikiTriple(wikid, phrase_original, phrase_placeholder, pre, post, 
+		    WikiTriple t = new WikiTriple(wikid, "",phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){

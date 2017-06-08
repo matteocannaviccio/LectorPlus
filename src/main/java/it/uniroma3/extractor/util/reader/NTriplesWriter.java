@@ -74,6 +74,22 @@ public class NTriplesWriter {
 	    throw new RuntimeException(e);
 	}
     }
+    
+    /**
+     * 
+     * @param subject
+     * @param property
+     * @param object
+     * @param literal
+     */
+    public void provenance(String sentence) {
+	try {
+	    out.write("# \"" + sentence);
+	    out.write("\" .\n");
+	} catch (IOException e) {
+	    throw new RuntimeException(e);
+	}
+    }
 
     /**
      * 

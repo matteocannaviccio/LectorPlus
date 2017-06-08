@@ -30,6 +30,7 @@ public class Triplifier {
     private Queue<Pair<WikiTriple, String>> labeled_triples;
     private Queue<WikiTriple> unlabeled_triples;
     private Queue<WikiTriple> other_triples;
+    private Queue<WikiMVL> mvlists;
     private PlaceholderFilter placeholderFilter;
     private Queue<String[]> nationalities;
 
@@ -42,6 +43,7 @@ public class Triplifier {
 	unlabeled_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	other_triples = new ConcurrentLinkedQueue<WikiTriple>();
 	nationalities = new ConcurrentLinkedQueue<String[]>();
+	mvlists = new ConcurrentLinkedQueue<WikiMVL>();
 	placeholderFilter = new PlaceholderFilter();
     }
 
@@ -62,7 +64,7 @@ public class Triplifier {
 		}
 	    }
 	}
-	
+
 	extractNationality(article);
     }
 
@@ -162,7 +164,7 @@ public class Triplifier {
 		//String phrase_placeholders = placeholderFilter.preprocess(phrase);
 		String phrase_placeholders = phrase;
 		if (!phrase.equals("")){
-		    WikiTriple t = new WikiTriple(article.getWikid(), pre, subject, phrase, phrase_placeholders, object, post);
+		    WikiTriple t = new WikiTriple(article.getWikid(), sentence, pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);
 		}
 		// change subject now for the next triple
@@ -210,7 +212,7 @@ public class Triplifier {
 	Matcher m = WikiMVL.getRegexMVL().matcher(sentence);
 	while(m.find()){
 	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
-	    Lector.getDbmodel(false).insertMVList(mv);
+	    this.mvlists.add(mv);
 	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
 	}
 	return sentence;
@@ -291,25 +293,21 @@ public class Triplifier {
      * 
      */
     public void updateBlock(){
-	for (Pair<WikiTriple, String> pair : this.labeled_triples){
-	    Lector.getDbmodel(false).insertLabeledTriple(pair.key, pair.value);
-	}
+	Lector.getDbmodel(false).batchInsertLabeledTriple(this.labeled_triples);
 	this.labeled_triples.clear();
 	
-	for (String[] nat : this.nationalities){
-	    Lector.getDbmodel(false).insertNationalityTriple(nat[0], nat[1], nat[2], nat[3]);
-	}
+	Lector.getDbmodel(false).batchInsertNationalityTriple(this.nationalities);
 	this.nationalities.clear();
 
-	for(WikiTriple t : this.unlabeled_triples){
-	    Lector.getDbmodel(false).insertUnlabeledTriple(t);
-	}
+	Lector.getDbmodel(false).batchInsertUnlabeledTriple(this.unlabeled_triples);
 	this.unlabeled_triples.clear();
 
-	for (WikiTriple t : this.other_triples){
-	    Lector.getDbmodel(false).insertOtherTriple(t);
-	}
+	Lector.getDbmodel(false).batchInsertOtherTriple(this.other_triples);
 	this.other_triples.clear();
+	
+	Lector.getDbmodel(false).batchInsertMVList(this.mvlists);
+	this.mvlists.clear();
+
     }
 
     /**

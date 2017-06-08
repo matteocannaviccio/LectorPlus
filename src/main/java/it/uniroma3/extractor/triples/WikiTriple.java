@@ -23,6 +23,7 @@ public class WikiTriple {
     private String phrase_original;
     private String phrase_placeholders;
     private String post;
+    private String wholeSentence;
     private TType type;
 
     public enum TType {
@@ -41,6 +42,7 @@ public class WikiTriple {
      * This constructor is used when we retrieve the triple from the DB.
      * 
      * @param wikid
+     * @param wholeSentence
      * @param phrase_original
      * @param phrase_placeholders
      * @param pre
@@ -51,9 +53,10 @@ public class WikiTriple {
      * @param objectType
      * @param articleType
      */
-    public WikiTriple(String wikid, String phrase_original, String phrase_placeholders, String pre, String post, 
+    public WikiTriple(String wikid, String wholeSentence, String phrase_original, String phrase_placeholders, String pre, String post, 
 	    String subject,  String object, String subjectType, String objectType, String tripleType){
 	this.wikid = wikid;
+	this.wholeSentence = wholeSentence;
 	this.subject = subject;
 	this.wikiSubject = getWikipediaName(subject);
 	this.subjectType = subjectType;
@@ -71,6 +74,7 @@ public class WikiTriple {
      * This constructor is used when we harvest the triple from the text.
      * 
      * @param wikid
+     * @param wholeSentence
      * @param pre
      * @param subject
      * @param phrase_original
@@ -78,8 +82,9 @@ public class WikiTriple {
      * @param object
      * @param post
      */
-    public WikiTriple(String wikid, String pre, String subject, String phrase_original, String phrase_placeholders, String object, String post){
+    public WikiTriple(String wikid, String wholeSentence, String pre, String subject, String phrase_original, String phrase_placeholders, String object, String post){
 	this.wikid = wikid;
+	this.wholeSentence = wholeSentence;
 	this.subject = subject;
 	this.wikiSubject = getWikipediaName(subject);
 	this.subjectType = getEntityType(subject);
@@ -402,6 +407,13 @@ public class WikiTriple {
      */
     public String getInvertedObject(){
 	return this.wikiSubject;
+    }
+
+    /**
+     * @return the wholeSentence
+     */
+    public String getWholeSentence() {
+        return wholeSentence;
     }
 
 }

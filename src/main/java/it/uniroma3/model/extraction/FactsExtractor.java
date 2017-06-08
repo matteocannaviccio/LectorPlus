@@ -60,8 +60,10 @@ public class FactsExtractor {
 	if (relation!=null){
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
+		writer_facts.provenance(t.getWholeSentence());
 		writer_facts.statement(t.getWikid(), t.getInvertedSubject(), relation, t.getInvertedObject(), false);
 	    }else{
+		writer_facts.provenance(t.getWholeSentence());
 		writer_facts.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
 	    }
 	    Lector.getDbfacts(false).insertNovelFact(t, relation);
@@ -83,16 +85,17 @@ public class FactsExtractor {
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String phrase_original = rs.getString(2);
-		    String phrase_placeholder = rs.getString(3);
-		    String pre = rs.getString(4);
-		    String post = rs.getString(5);
-		    String subject = rs.getString(6);
-		    String subject_type = rs.getString(8);
-		    String object = rs.getString(9);
-		    String object_type = rs.getString(11);
+		    String sentence = rs.getString(2);
+		    String phrase_original = rs.getString(3);
+		    String phrase_placeholder = rs.getString(4);
+		    String pre = rs.getString(5);
+		    String post = rs.getString(6);
+		    String subject = rs.getString(7);
+		    String subject_type = rs.getString(9);
+		    String object = rs.getString(10);
+		    String object_type = rs.getString(12);
 
-		    WikiTriple t = new WikiTriple(wikid, phrase_original, phrase_placeholder, pre, post, 
+		    WikiTriple t = new WikiTriple(wikid, sentence, phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){

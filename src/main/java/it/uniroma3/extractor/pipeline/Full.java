@@ -45,7 +45,7 @@ public class Full {
 
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    FactsExtractor extractor = new FactsExtractor();
-	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 50, -1, PhraseType.TYPED_PHRASES);
+	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
 	    extractor.runExtraction();
 	}
 

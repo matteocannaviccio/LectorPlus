@@ -156,6 +156,8 @@ public class Lector {
      * @return the blockParser
      */
     public static BlockParser getBlockParser() {
+	if (blockParser == null)
+	    blockParser = new BlockParser();
 	return blockParser;
     }
 
@@ -163,6 +165,8 @@ public class Lector {
      * @return the textParser
      */
     public static TextParser getTextParser() {
+	if (textParser == null)
+	    textParser = new TextParser();
 	return textParser;
     }
 
@@ -265,10 +269,14 @@ public class Lector {
      * 
      */
     public static void closeAllConnections(){
-	dbmodel.closeConnection();
-	dbfacts.closeConnection();
-	dbmodel = null;
-	dbfacts = null;
+	if (dbfacts != null){
+	    dbfacts.closeConnection();
+	    dbfacts = null;
+	}
+	if (dbmodel != null){
+	    dbmodel.closeConnection();
+	    dbmodel = null;
+	}
     }
 
     /**

@@ -84,7 +84,7 @@ public class QueryDB {
 		    String object = rs.getString(9);
 		    String type_object = rs.getString(11);
 		    String relation = rs.getString(12);
-		    triples.add(Pair.make(new WikiTriple(wikid, phrase_original,
+		    triples.add(Pair.make(new WikiTriple(wikid, "", phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name()), relation));
 		}
@@ -107,15 +107,16 @@ public class QueryDB {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String phrase_original = rs.getString(2);
-		    String phrase_placeholder = rs.getString(3);
-		    String pre = rs.getString(4);
-		    String post = rs.getString(5);
-		    String subject = rs.getString(6);
-		    String type_subject = rs.getString(8);
-		    String object = rs.getString(9);
-		    String type_object = rs.getString(11);
-		    triples.add(new WikiTriple(wikid, phrase_original,
+		    String sentence = rs.getString(2);
+		    String phrase_original = rs.getString(3);
+		    String phrase_placeholder = rs.getString(4);
+		    String pre = rs.getString(5);
+		    String post = rs.getString(6);
+		    String subject = rs.getString(7);
+		    String type_subject = rs.getString(9);
+		    String object = rs.getString(10);
+		    String type_object = rs.getString(12);
+		    triples.add(new WikiTriple(wikid, sentence, phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name()));
 		}
