@@ -38,7 +38,7 @@ public class ModelLS extends Model{
      * score (p, r) = log c(p,r) * (alpha) c(p, r)/|c(p, other r)| * (beta) c(p_seed, r)/|c(p_seed, other r)| 
      */
     // parameters
-    private double generality_cutoff = 0.0;
+    private double generality_cutoff = 0.1;
     private double alpha = 0.5;
     private double beta = 0.5; 
     private int topk;
