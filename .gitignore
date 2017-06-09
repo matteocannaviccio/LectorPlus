@@ -9,3 +9,5 @@ javadoc
 *.csv
 *.jardesc
 export.jardesc
+.gitignore
+.idea
