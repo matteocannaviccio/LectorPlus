@@ -30,7 +30,7 @@ public class TypesNormalizer{
 
 	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
 	LectorRDFReader reader = new LectorRDFReader(sourceBzip2File, Encoding.bzip2);
-	Iterator<Triple> iter = reader.readNTFile();
+	Iterator<Triple> iter = reader.readTTLFile();
 
 	while(iter.hasNext()){
 	    Triple t = iter.next();
