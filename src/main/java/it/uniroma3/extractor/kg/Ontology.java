@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.hp.hpl.jena.graph.Triple;
+import org.apache.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.kg.normalizer.Node;
 import it.uniroma3.extractor.kg.normalizer.TGPattern;
-import it.uniroma3.extractor.util.reader.RDFReader;
-import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
+import it.uniroma3.extractor.util.reader.LectorRDFReader;
+import it.uniroma3.extractor.util.reader.LectorRDFReader.Encoding;
+
 /**
  * 
  * @author matteo
@@ -42,7 +43,7 @@ public class Ontology {
      * @param pathOntology
      */
     private void initOntology(String pathOntology){
-	RDFReader reader = new RDFReader(pathOntology, Encoding.tsv);
+	LectorRDFReader reader = new LectorRDFReader(pathOntology, Encoding.tsv);
 	Iterator<Triple> iter = reader.readNTFile();
 	String ontologyNameSpace = "http://dbpedia.org/ontology/";
 	String schemaNameSpace = "http://www.w3.org/2000/01/rdf-schema#subClassOf";

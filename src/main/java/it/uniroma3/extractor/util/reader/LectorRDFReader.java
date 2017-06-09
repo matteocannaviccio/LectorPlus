@@ -6,18 +6,17 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RiotReader;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
-import com.hp.hpl.jena.graph.Triple;
 /**
  * 
  * @author matteo
  *
  */
-public class RDFReader{
-
+public class LectorRDFReader{
     public enum Encoding {tsv, gz, bzip2};
 
     private InputStream is;
@@ -27,7 +26,7 @@ public class RDFReader{
      * @param path
      * @param encoding
      */
-    public RDFReader(String path, Encoding encoding){
+    public LectorRDFReader(String path, Encoding encoding){
 	switch(encoding){
 	case tsv:
 	    this.is = getInputStream(path);
@@ -40,7 +39,6 @@ public class RDFReader{
 	case bzip2:
 	    this.is = getInputStreamBZip2(path);
 	    break;
-
 	}
     }
 
@@ -74,7 +72,7 @@ public class RDFReader{
 	}
 	return is;
     }
-    
+
     /**
      * 
      * @param path
@@ -96,7 +94,7 @@ public class RDFReader{
      * @return
      */
     public Iterator<Triple> readTTLFile(){
-	return RiotReader.createIteratorTriples(is, Lang.TTL, null);
+	return RDFDataMgr.createIteratorTriples(is, Lang.TTL, null);
     }
 
     /**
@@ -105,10 +103,10 @@ public class RDFReader{
      * @return
      */
     public Iterator<Triple> readNTFile(){
-	return RiotReader.createIteratorTriples(is, Lang.N3, null);
+	return RDFDataMgr.createIteratorTriples(is, Lang.NTRIPLES, null);
     }
-    
-   
+
+
     /**
      * 
      */

@@ -1,16 +1,20 @@
 package it.uniroma3.extractor.util.reader;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 /**
  * A simplified NTriples serializer, used for writing output NTriples file.
  */
-public class NTriplesWriter {
+public class NTriplesWriterWrapper {
     private Writer out;
     private static String RESOURCE;
     private static String PROPERTY;
@@ -20,11 +24,11 @@ public class NTriplesWriter {
      * 
      * @param out
      */
-    public NTriplesWriter(OutputStream out) {
+    public NTriplesWriterWrapper(String path) {
 	setURILang();
 	
 	try {
-	    this.out = new OutputStreamWriter(out, "utf-8");
+	    this.out = new OutputStreamWriter(getOutputStreamBZip2(path), "utf-8");
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException(e);
 	}
@@ -49,13 +53,11 @@ public class NTriplesWriter {
      * @param object
      * @param literal
      */
-    public void statement(String wikid, String subject, String predicate, String object, boolean literal) {
+    public void statement(String subject, String predicate, String object, boolean literal) {
 	subject = RESOURCE + subject;
 	predicate = PROPERTY + predicate;
 	object = RESOURCE + object;
 	try {
-	    out.write(wikid + "\t");
-
 	    if (subject.startsWith("_:"))
 		out.write(subject + " ");
 	    else
@@ -75,21 +77,6 @@ public class NTriplesWriter {
 	}
     }
     
-    /**
-     * 
-     * @param subject
-     * @param property
-     * @param object
-     * @param literal
-     */
-    public void provenance(String sentence) {
-	try {
-	    out.write("# \"" + sentence);
-	    out.write("\" .\n");
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
-    }
 
     /**
      * 
@@ -155,6 +142,25 @@ public class NTriplesWriter {
 	    return (char) ('0' + (char) ch);
 	else
 	    return (char) ('A' + (char) (ch - 10));
+    }
+    
+    /**
+     * 
+     * @param path
+     * @return
+     */
+    @SuppressWarnings("resource")
+    private OutputStream getOutputStreamBZip2(String path) {
+	OutputStream out = null;
+	try {
+	    out = new FileOutputStream(path);
+	    out = new CompressorStreamFactory().createCompressorOutputStream("bzip2", out); 
+	} catch (IOException e) {
+	    e.printStackTrace();
+	} catch (CompressorException e) {
+	    e.printStackTrace();
+	}
+	return out;
     }
 
 

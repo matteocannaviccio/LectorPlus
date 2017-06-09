@@ -7,14 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.hp.hpl.jena.graph.Triple;
+import org.apache.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.reader.RDFReader;
-import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
+import it.uniroma3.extractor.util.reader.LectorRDFReader;
+import it.uniroma3.extractor.util.reader.LectorRDFReader.Encoding;
 /**
  * This module reads a DBPedia .ttl dump and normalize it writing a tsv file.
  * The file is composed only by triples that have a subject and object entity,
@@ -48,7 +48,7 @@ public class DBPediaNormalizer{
 	List<Pair<String, String>> entityPair2relation = new LinkedList<Pair<String, String>>();
 
 	// FIRST iteration: save second parts
-	RDFReader reader = new RDFReader(dumpFile, Encoding.bzip2);
+	LectorRDFReader reader = new LectorRDFReader(dumpFile, Encoding.bzip2);
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
 	Iterator<Triple> iter = reader.readTTLFile();
 
@@ -74,7 +74,7 @@ public class DBPediaNormalizer{
 	reader.closeReader();
 
 	// SECOND iteration: print clean triples in the following file
-	reader = new RDFReader(Configuration.getDBPediaDumpFile(), Encoding.bzip2);
+	reader = new LectorRDFReader(Configuration.getDBPediaDumpFile(), Encoding.bzip2);
 	cont = 0;
 	iter = reader.readTTLFile();
 	while(iter.hasNext()){

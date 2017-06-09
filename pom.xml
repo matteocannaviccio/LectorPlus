@@ -56,9 +56,9 @@
 			<version>1.2.17</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>2.3</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -117,7 +117,7 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>6.0.0</version>
 		</dependency>
-		
+
 		<!-- for Stanford NER -->
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
@@ -130,13 +130,8 @@
 			<version>3.7.0</version>
 			<classifier>models</classifier>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>3.7.0</version>
-			<classifier>models-spanish</classifier>
-		</dependency> -->
+		<!-- <dependency> <groupId>edu.stanford.nlp</groupId> <artifactId>stanford-corenlp</artifactId> 
+			<version>3.7.0</version> <classifier>models-spanish</classifier> </dependency> -->
 
 		<!-- for DBPedia Spotlight -->
 		<dependency>
@@ -150,7 +145,7 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>
 			<type>pom</type>
-			<version>2.10.0</version>
+			<version>3.3.0</version>
 		</dependency>
 
 		<!-- for storing the model -->

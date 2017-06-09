@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
+
 /**
  * Loads the configuration file and set all the parameters.
  * 
@@ -285,6 +286,10 @@ public class Configuration {
 
     public static String getOutputFactsFile(){
 	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
+    }
+    
+    public static String getProvenanceFile() {
+	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
 
     /***********************************************************************/

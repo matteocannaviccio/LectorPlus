@@ -4,13 +4,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.hp.hpl.jena.graph.Triple;
+import org.apache.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.reader.RDFReader;
-import it.uniroma3.extractor.util.reader.RDFReader.Encoding;
+import it.uniroma3.extractor.util.reader.LectorRDFReader;
+import it.uniroma3.extractor.util.reader.LectorRDFReader.Encoding;
 /**
  * 
  * @author matteo
@@ -28,18 +28,17 @@ public class TypesNormalizer{
 	String subject;
 	String object;
 	Iterator<Triple> iter = null;
-	RDFReader reader = null;
+	LectorRDFReader reader = null;
 	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
 	if (!sourceBzip2File.contains("airpedia")){
 	    try{
-		reader = new RDFReader(sourceBzip2File, Encoding.bzip2);
+		reader = new LectorRDFReader(sourceBzip2File, Encoding.bzip2);
 		iter = reader.readTTLFile();
 	    }catch(Exception e){
-		// possible illegal escape sequence, particularly into airpedia!
 	    }
 	}else{
 	    try{
-		reader = new RDFReader(sourceBzip2File, Encoding.gz);
+		reader = new LectorRDFReader(sourceBzip2File, Encoding.gz);
 		iter = reader.readNTFile();
 	    }catch(Exception e){
 		// possible illegal escape sequence, particularly into airpedia!

@@ -1,21 +1,17 @@
 package it.uniroma3.model.extraction;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.reader.NTriplesWriter;
+import it.uniroma3.extractor.util.reader.NTriplesWriterWrapper;
+import it.uniroma3.extractor.util.reader.ResultsWriterWrapper;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
@@ -32,7 +28,8 @@ public class FactsExtractor {
     private Model model;
     public enum ModelType {BM25, LectorScore, NB};
     
-    private NTriplesWriter writer_facts;
+    private NTriplesWriterWrapper writer_facts;
+    private ResultsWriterWrapper writer_provenance;
 
     /**
      * 
@@ -42,7 +39,8 @@ public class FactsExtractor {
     public FactsExtractor(){
 	System.out.println("\n**** NEW FACTS EXTRACTION ****");
 	Lector.getDbfacts(true);
-	this.writer_facts = new NTriplesWriter(getOutputStreamBZip2(Configuration.getOutputFactsFile()));
+	this.writer_facts = new NTriplesWriterWrapper(Configuration.getOutputFactsFile());
+	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
 
     }
 
@@ -60,11 +58,11 @@ public class FactsExtractor {
 	if (relation!=null){
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
-		writer_facts.provenance(t.getWholeSentence());
-		writer_facts.statement(t.getWikid(), t.getInvertedSubject(), relation, t.getInvertedObject(), false);
+		writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getInvertedSubject(), relation, t.getInvertedObject());
+		writer_facts.statement(t.getInvertedSubject(), relation, t.getInvertedObject(), false);
 	    }else{
-		writer_facts.provenance(t.getWholeSentence());
-		writer_facts.statement(t.getWikid(), t.getWikiSubject(), relation, t.getWikiObject(), false);
+		writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getWikiSubject(), relation, t.getWikiObject());
+		writer_facts.statement(t.getWikiSubject(), relation, t.getWikiObject(), false);
 	    }
 	    Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
@@ -110,6 +108,7 @@ public class FactsExtractor {
 
 	    // close the output stream
 	    writer_facts.done();
+	    writer_provenance.done();
 
 	}catch(SQLException e){
 	    e.printStackTrace();
@@ -144,25 +143,5 @@ public class FactsExtractor {
 	    break;
 	}
     }
-
-    /**
-     * 
-     * @param path
-     * @return
-     */
-    @SuppressWarnings("resource")
-    private OutputStream getOutputStreamBZip2(String path) {
-	OutputStream out = null;
-	try {
-	    out = new FileOutputStream(path);
-	    out = new CompressorStreamFactory().createCompressorOutputStream("bzip2", out); 
-	} catch (IOException e) {
-	    e.printStackTrace();
-	} catch (CompressorException e) {
-	    e.printStackTrace();
-	}
-	return out;
-    }
-
 
 }

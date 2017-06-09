@@ -58,14 +58,14 @@ public class Full {
      * @param args
      */
     public static void main(String[] args){
-	for (String lang : new String[]{"en", "es", "de", "it", "fr"}){
+	for (String lang : new String[]{"en","es","it","fr","de"}){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
 	    Configuration.printDetails();
 
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    Lector.init(wikiLang, Configuration.getPipelineSteps());
-	    completeInMemoryProcess(Configuration.getOriginalArticlesFile());
+	    pipelinedProcess(Configuration.getOriginalArticlesFile());
 	}
     }
 
