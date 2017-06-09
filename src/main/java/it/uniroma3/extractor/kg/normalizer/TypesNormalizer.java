@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.jena.graph.Triple;
+import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;

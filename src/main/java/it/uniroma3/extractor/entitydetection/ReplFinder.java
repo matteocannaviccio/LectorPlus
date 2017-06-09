@@ -18,7 +18,6 @@ import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
-import it.uniroma3.extractor.util.Pair;
 /**
  * 
  * @author matteo
@@ -33,9 +32,7 @@ public class ReplFinder {
      * @return
      */
     private List<String> findSeeds(WikiArticle article){
-	Pair<String, List<String>> natioanlityAndSeeds = Lector.getFsm().findNationalityAndSeed(article.getFirstSentence());
-	article.setNationality(natioanlityAndSeeds.key);
-	return natioanlityAndSeeds.value;
+	return Lector.getFsm().findSeed(article.getFirstSentence());
     }
 
     /**
@@ -44,7 +41,7 @@ public class ReplFinder {
      * @return
      */
     private String findNationality(WikiArticle article){
-	return Lector.getFsmNat().detectNationalityFromSentence(article.getFirstSentence());
+	return Lector.getFsmNat().detectNationality(article.getFirstSentence());
     }
 
     /**
@@ -255,18 +252,16 @@ public class ReplFinder {
 	     */
 	    String firstSentence = Lector.getTextParser().obtainCleanFirstSentence(Lector.getBlockParser().getAbstractSection(article.getBlocks()));
 	    article.setFirstSentence(firstSentence);
-	    if (Lector.getWikiLang().getLang().equals(Lang.en))
-		article.setNationality(findNationality(article));
+	    article.setNationality(findNationality(article));
 
-	    /* ********************* */
-
+	    /*
+	     * Pronouns and seeds are used only in ENGLISH.
+	     */
 	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
 		if (!article.getFirstSentence().equals("-"))
 		    article.setSeeds(findSeeds(article));
 		article.setPronoun(findPronoun(article, Configuration.getPronounThreshold()));
 	    }
-
-	    /* ********************* */
 
 	    /*
 	     * we assign subnames only to articles that describe named entities.

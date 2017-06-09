@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.filters;
+package it.uniroma3.extractor.triples.filters;
 
 import java.util.List;
 import java.util.regex.Pattern;

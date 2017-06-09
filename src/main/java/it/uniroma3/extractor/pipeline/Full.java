@@ -65,7 +65,7 @@ public class Full {
 
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    Lector.init(wikiLang, Configuration.getPipelineSteps());
-	    pipelinedProcess(Configuration.getOriginalArticlesFile());
+	    completeInMemoryProcess(Configuration.getOriginalArticlesFile());
 	}
     }
 

@@ -68,8 +68,8 @@ public class DBModel extends DB{
 	String dropMVLCollection = "DROP TABLE IF EXISTS mvl_collection";
 	String createMVLCollection = "CREATE TABLE mvl_collection("
 		+ "code text, "
-		+ "section text, "
 		+ "wikid text, "
+		+ "section text, "
 		+ "list text)";
 	String dropNationalitiesCollection = "DROP TABLE IF EXISTS nationality_collection";
 	String createNationalitiesCollection = "CREATE TABLE nationality_collection("

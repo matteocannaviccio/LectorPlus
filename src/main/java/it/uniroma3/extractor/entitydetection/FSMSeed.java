@@ -50,7 +50,6 @@ public class FSMSeed {
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
 	this.stopwords = TSVReader.getLines2Set(Configuration.getStopwordsList());
-	this.nationalities = TSVReader.getLines2Map(Configuration.getNationalitiesList());
     }
 
 
@@ -156,21 +155,14 @@ public class FSMSeed {
      * @param sentence --> the first sentence of an article.
      * @return
      */
-    public Pair<String, List<String>> findNationalityAndSeed(String sentence){
+    public List<String> findSeed(String sentence){
 	this.finiteStateMachine.reset();
-	
-	String nationality = "-";
 	List<String> seeds = new LinkedList<String>();
-	
 	Token[] tokens = cutOutFirstPart(expert.applyPOSTagger(sentence));
 	String tmpToken = "-";
 	
 	for(Token token : tokens){
-	    if (nationalities.containsKey(token.getRenderedToken()))
-		nationality = nationalities.get(token.getRenderedToken());
-	    
 	    this.finiteStateMachine.transition(token.getPOS());
-	    
 	    if(this.finiteStateMachine.accepts())
 		seeds.add(tmpToken);
 	    if(NS_LIST.contains(token.getPOS()))
@@ -179,7 +171,7 @@ public class FSMSeed {
 		tmpToken = token.getRenderedToken();
 	}
 	
-	return Pair.make(nationality, cleanSeeds(seeds));
+	return cleanSeeds(seeds);
     }
 
     /**

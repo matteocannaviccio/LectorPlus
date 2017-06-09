@@ -6,12 +6,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RIOT;
-import org.apache.jena.riot.lang.RiotParsers;
+import org.apache.jena.riot.RiotReader;
 import org.apache.tools.bzip2.CBZip2InputStream;
+
+import com.hp.hpl.jena.graph.Triple;
 
 /**
  * 
@@ -96,7 +95,7 @@ public class LectorRDFReader{
      * @return
      */
     public Iterator<Triple> readTTLFile(){
-	return RDFDataMgr.createIteratorTriples(is, Lang.TTL, null);
+	return RiotReader.createIteratorTriples(is, Lang.TTL, null);
     }
 
     /**
@@ -105,7 +104,7 @@ public class LectorRDFReader{
      * @return
      */
     public Iterator<Triple> readNTFile(){
-	return RDFDataMgr.createIteratorTriples(is, Lang.N3, null);
+	return RiotReader.createIteratorTriples(is, Lang.N3, null);
     }
 
 

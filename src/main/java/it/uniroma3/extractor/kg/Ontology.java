@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.jena.graph.Triple;
+import com.hp.hpl.jena.graph.Triple;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.kg.normalizer.Node;

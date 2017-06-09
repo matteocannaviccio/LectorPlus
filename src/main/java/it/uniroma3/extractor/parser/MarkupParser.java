@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.util.reader.TSVReader;
 
 /**
@@ -30,13 +29,9 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist = new HashSet<String>();
-	if (Lector.getWikiLang().getLang().equals(Lang.en) || Lector.getWikiLang().getLang().equals(Lang.es)){
-	    this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
-	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
-		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
-		this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
-	    }
-	}
+	this.blacklist.addAll(TSVReader.getLines2Map(Configuration.getNationalitiesList()).values());
+	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
+	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
     }
 
     /**
@@ -239,14 +234,16 @@ public class MarkupParser {
 		rendered = m.group(4);
 		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
-
+	    
+	    // still language based.
+	    // TODO: change it
 	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
-
-		if (Configuration.solveRedirect() && Lector.getWikiLang().getLang().equals(Lang.en))
+		if (Configuration.solveRedirect())
 		    wikid = Lector.getKg().getRedirect(wikid);
 
 		/*
-		 * eliminate blacklisted entities 
+		 * eliminate blacklisted entities
+		 * nationalities, currencies, professions 
 		 */
 		if (blacklist.contains(wikid) || blacklist.contains(rendered.replaceAll(" ", "_"))){
 		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
@@ -267,7 +264,6 @@ public class MarkupParser {
 
 	m.appendTail(cleanText);
 	article.addWikilinks(wikilinks);
-
 
 	return cleanText.toString();
     }

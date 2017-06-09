@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.filters;
+package it.uniroma3.extractor.triples.filters;
 
 import it.uniroma3.extractor.bean.WikiLanguage;
 
@@ -102,7 +102,6 @@ public abstract class PlaceholderFilter {
 
 
     public static PlaceholderFilter getPlaceholderFilter(WikiLanguage.Lang lang) {
-
         switch (lang){
             case en:
                 return new PlaceholderFilterEnglish();
@@ -110,7 +109,7 @@ public abstract class PlaceholderFilter {
                 return new PlaceholderFilterSpanish();
             case fr:
                 return new PlaceholderFilterFrench();
-            case ge:
+            case de:
                 return new PlaceholderFilterGerman();
             case it:
                 return new PlaceholderFilterItalian();

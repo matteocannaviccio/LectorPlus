@@ -36,7 +36,7 @@ public class TypesResolver {
     public TypesResolver(){
 	// we need the ontology to find subTypes
 	ontology = new Ontology();
-	
+
 	// we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
 	switch(Lector.getWikiLang().getLang()){
 	case en:
@@ -44,6 +44,11 @@ public class TypesResolver {
 	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
 	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
 	    indexDBTax = getIndexOrCreate(Configuration.getDBTaxTypesIndex(), Configuration.getSourceDBTaxInstanceTypes());
+	    
+	case de:
+	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
+	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
 	    
 	default:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
@@ -62,10 +67,10 @@ public class TypesResolver {
 	if (!new File(indexPath).exists()){
 	    System.out.print("Creating " + new File(indexPath).getName() + " index ...");
 	    long start_time = System.currentTimeMillis();
-	    
+
 	    List<Pair<String, String>> keyvalues = TypesNormalizer.normalizeTypesDataset(sourcePath);
 	    index = new KeyValueIndex(keyvalues, indexPath);
-	    
+
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	}
@@ -154,18 +159,17 @@ public class TypesResolver {
 
     /**
      * Here we express the rules that are used to assign a type to an input entity.
-     * Not all the dictionaries of types that we used have the same reliability!
-     * 
+     * We use the standard instance types dictionary. In case it does not contains 
+     * a type, for english and germany we can use two further dictionaries.
+     *   
      * @param wikid
      * @return
      */
     public String assignTypes(String wikid){
 	String type = selectDeepest(getTypes(wikid, indexOriginal));
-	if (Lector.getWikiLang().getLang().equals("en")){
+	if (Lector.getWikiLang().getLang().equals("en") || Lector.getWikiLang().getLang().equals("de")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexSDTyped));
-	}
-	if (Lector.getWikiLang().getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexLHD));
 	}
@@ -180,7 +184,7 @@ public class TypesResolver {
 	Configuration.init(args);
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-	
+
 	TypesResolver t = new TypesResolver();
 
 	String entity = "Barack_Obama";

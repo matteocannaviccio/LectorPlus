@@ -23,7 +23,7 @@ public class FSMNationality {
      * 
      * @return
      */
-    public String detectNationalityFromSentence(String sentence){
+    public String detectNationality(String sentence){
 	String nationality = null;
 	for (String token : sentence.split(" ")){
 	    if(this.nationalities.containsKey(token)){
