@@ -58,7 +58,7 @@ public class Full {
      * @param args
      */
     public static void main(String[] args){
-	for (String lang : new String[]{"en","es","it","fr","de"}){
+	for (String lang : new String[]{"de"}){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
 	    Configuration.printDetails();

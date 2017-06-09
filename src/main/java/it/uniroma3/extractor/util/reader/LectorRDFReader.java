@@ -67,8 +67,8 @@ public class LectorRDFReader{
 	try {
 	    FileInputStream fis = new FileInputStream(path);
 	    byte[] ignoreBytes = new byte[2];
-	    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-	    is = new CBZip2InputStream((fis));
+	    fis.read(ignoreBytes); // "B", "Z" initial bytes of a BZip2 file
+	    is = new CBZip2InputStream(fis);
 	} catch (IOException e) {
 	}
 	return is;
