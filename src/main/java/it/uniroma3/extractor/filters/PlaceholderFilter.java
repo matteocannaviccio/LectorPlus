@@ -1,42 +1,12 @@
-package it.uniroma3.extractor.triples;
+package it.uniroma3.extractor.filters;
+
+import it.uniroma3.extractor.bean.WikiLanguage;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
 public abstract class PlaceholderFilter {
 
-    public enum PlaceholderLang {ENG, GER}
-
-    public static PlaceholderFilter getPlaceholderFilter(PlaceholderLang l) {
-
-        String className = "PlaceholderFilter";
-
-        switch (l) {
-            case ENG:
-                className += "English";
-                break;
-            case GER:
-                className += "German";
-                break;
-            default:
-                className += "English";
-        }
-
-        PlaceholderFilter filter = null;
-
-        try {
-            filter = (PlaceholderFilter) Class.forName(className).newInstance();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
-
-
-        return filter;
-    }
 
     protected Map<String, List<Pattern>> placeholder2patterns;
 
@@ -54,10 +24,7 @@ public abstract class PlaceholderFilter {
     //ordine di applicazione, il primo in lista e' il primo applicato
     protected final String[] order;
 
-    /**
-     *
-     */
-    protected PlaceholderFilter() {
+    public PlaceholderFilter() {
 
         placeholder2patterns = new HashMap<>();
 
@@ -77,8 +44,6 @@ public abstract class PlaceholderFilter {
     }
 
 
-
-
     /**
      * Applies the regexps following the order expressed for the outside type (@see
      * and for the inside regexps
@@ -86,7 +51,7 @@ public abstract class PlaceholderFilter {
      * @param phrase
      * @return
      */
-    protected String replace(String phrase) {
+    public String replace(String phrase) {
 
         phrase = preProcess(phrase);
 
@@ -120,21 +85,38 @@ public abstract class PlaceholderFilter {
 
     }
 
-    public abstract String preProcess(String phrase);
-    public abstract String postProcess(String phrase);
+    protected abstract String preProcess(String phrase);
+    protected abstract String postProcess(String phrase);
 
     protected abstract String[] setPatternApplicationOrder();
 
-    public abstract List<Pattern> fillPositions();
-    public abstract List<Pattern> fillLengths();
-    public abstract List<Pattern> fillDates();
-    public abstract List<Pattern> fillDays();
-    public abstract List<Pattern> fillMonths();
-    public abstract List<Pattern> fillYears();
-    public abstract List<Pattern> fillEras();
-    public abstract List<Pattern> fillOrdinals();
-    public abstract List<Pattern> fillNationalities();
+    protected abstract List<Pattern> fillPositions();
+    protected abstract List<Pattern> fillLengths();
+    protected abstract List<Pattern> fillDates();
+    protected abstract List<Pattern> fillDays();
+    protected abstract List<Pattern> fillMonths();
+    protected abstract List<Pattern> fillYears();
+    protected abstract List<Pattern> fillEras();
+    protected abstract List<Pattern> fillOrdinals();
+    protected abstract List<Pattern> fillNationalities();
 
 
+    public static PlaceholderFilter getPlaceholderFilter(WikiLanguage.Lang lang) {
 
+        switch (lang){
+            case en:
+                return new PlaceholderFilterEnglish();
+            case es:
+                return new PlaceholderFilterSpanish();
+            case fr:
+                return new PlaceholderFilterFrench();
+            case ge:
+                return new PlaceholderFilterGerman();
+            case it:
+                return new PlaceholderFilterItalian();
+            default:
+                return new PlaceholderFilterEnglish();
+        }
+
+    }
 }

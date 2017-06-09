@@ -1,19 +1,23 @@
-package it.uniroma3.extractor.triples;
+package it.uniroma3.extractor.filters;
 
 import com.sun.istack.internal.NotNull;
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.util.reader.TSVReader;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author matteo
  */
-public class PlaceholderFilterGerman extends PlaceholderFilter {
+public class PlaceholderFilterEnglish extends PlaceholderFilter {
 
-    public PlaceholderFilterGerman() {
+    public PlaceholderFilterEnglish() {
 
         super();
 
@@ -34,6 +38,12 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
     }
 
 
+    /**
+     * Eliminate parethesis.
+     *
+     * @param phrase
+     * @return
+     */
     public String preProcess(String phrase) {
         phrase = Lector.getTextParser().removeParenthesis(phrase);
         phrase = phrase.toLowerCase();
@@ -84,37 +94,37 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
     public List<Pattern> fillPositions() {
         return Arrays.asList(
             Pattern.compile("\\b("
-                + "süd(en)?(-)?westen|"
-                + "süd(en)?(-)?osten|"
-                + "nord(en)?(-)?osten|"
-                + "nord(en)?(-)?westen|"
-                + "süd(en)?(-)?zentral|"
-                + "nord(en)?(-)?zentral|"
-                + "westen(-)?zentral|"
-                + "süd(en)?(-)?zentral|"
-                + "zentral(-)?nord(en)?|"
-                + "zentral(-)?süd(en)?|"
-                + "zentral(-)?osten?|"
-                + "zentral(-)?westen"
+                + "south(ern)?(-)?west(ern)?|"
+                + "south(ern)?(-)?east(ern)?|"
+                + "north(ern)?(-)?east(ern)?|"
+                + "north(ern)?(-)?west(ern)?|"
+                + "south(ern)?(-)?central|"
+                + "north(ern)?(-)?central|"
+                + "west(ern)?(-)?central|"
+                + "south(ern)?(-)?central|"
+                + "central(-)?north(ern)?|"
+                + "central(-)?south(ern)?|"
+                + "central(-)?east(ern)?|"
+                + "central(-)?west(ern)?"
                 + ")\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\b("
-                + "norden|"
-                + "süden|"
-                + "westen|"
-                + "osten"
+                + "northern|"
+                + "southern|"
+                + "western|"
+                + "eastern"
                 + ")\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\b("
-                + "nord|"
-                + "süd|"
-                + "westen|"
-                + "osten)\\b", Pattern.CASE_INSENSITIVE)
+                + "north|"
+                + "south|"
+                + "west|"
+                + "east)\\b", Pattern.CASE_INSENSITIVE)
         );
     }
 
     @Override
     public List<Pattern> fillLengths() {
         return Arrays.asList(
-            Pattern.compile("#YEAR#\\s?(km|kilometre(s)?|mi|ft|yd|m)(s?)\\b"),
+            Pattern.compile("#YEAR#\\s?(km|kilometer(s)?|mi|ft|yd|m)(s?)\\b"),
             Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilometer(s)?|mi|ft|yd|m)(s?)\\b")
         );
     }
@@ -138,8 +148,8 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
     @Override
     public List<Pattern> fillMonths() {
         return Arrays.asList(
-            Pattern.compile("\\b(januar|februar|märz|april|mai|juni|juli|august|"
-                + "september|oktober|november|dezember)\\b", Pattern.CASE_INSENSITIVE)
+            Pattern.compile("\\b(january|february|march|april|may|june|july|august|"
+                + "september|october|november|december)\\b", Pattern.CASE_INSENSITIVE)
         );
     }
 
@@ -163,31 +173,28 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
             Pattern.compile("\\b\\d*2nd\\b"),
             Pattern.compile("\\b\\d*3rd\\b"),
             Pattern.compile("\\b(\\d)*\\dth\\b"),
-            Pattern.compile("\\b(erste|zweite|dritte|vierte|fünfte)\\b")
+            Pattern.compile("\\b(first|second|third|fourth|fifth)\\b")
         );
     }
 
     @Override
     public List<Pattern> fillNationalities() {
 
-        //TODO inserire solo i pattern che fanno match con le nazionalita in questa lingua
+        Set<String> nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
 
-        /*
-        if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)) {
-            for (String nat : nationalities) {
-                nat = nat.replaceAll("_", " ");
-                Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);
-                phrase = NAT.matcher(phrase).replaceAll("#NAT#");
-            }
+        List<Pattern> natPat = new ArrayList<>();
+        for (String nat : nationalities) {
+            nat = nat.replaceAll("_", " ");
+            Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);
+            natPat.add(NAT);
         }
 
-        */
-        return null;
+        return natPat;
     }
 
     public static void main(String[] args) {
 /*
-        PlaceholderFilter p = new PlaceholderFilterGerman();
+        PlaceholderFilter p = new PlaceholderFilterEnglish();
 
         String test1 = "The 1992 WAFU Club Championship was the 16th football club tournament season that took place for the runners-up or third place of each West African country's domestic league, the West African Club Championship. It was won by Mali's Stade Malien after defeating Guinea's Hafia FC in two legs.[1] A total of about 33 goals were scored, half than last season as three clubs fully forfeited the match and two, Liberté FC Niamey and Jeanne d'Arc of Dakar withdrew after the first leg. ASEC Nouadhbihou (now part of FC Nouadhibou) withdrew in a second match with Lobi Bank, one club Dawu Youngsters of Ghana were disqualified. Neither club from the Gambia nor Guinea-Bissau participated.";
 
