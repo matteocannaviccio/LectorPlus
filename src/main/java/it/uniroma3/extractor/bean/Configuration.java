@@ -312,10 +312,6 @@ public class Configuration {
 	return getIndexesFolder() + "/" + keyValue.get("dbtaxIndexName");
     } 
 
-    public static String getAirpediaIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("airpediaIndexName");
-    } 
-
     public static String getRedirectIndex(){
 	return getIndexesFolder() + "/" + keyValue.get("redirectIndexName");
     } 
@@ -332,9 +328,6 @@ public class Configuration {
     /***********************    SOURCE TYPES     ***************************/
     /***********************************************************************/
 
-    public static String getSourceAirpediaInstanceTypes(){
-	return getTypesFolder() + "/" + keyValue.get("airpediaInstanceType");
-    } 
 
     public static String getSourceMainInstanceTypes(){
 	return getTypesFolder() + "/" + keyValue.get("mainInstanceType");

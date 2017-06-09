@@ -9,6 +9,8 @@ import java.util.zip.GZIPInputStream;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RIOT;
+import org.apache.jena.riot.lang.RiotParsers;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
 /**
@@ -103,7 +105,7 @@ public class LectorRDFReader{
      * @return
      */
     public Iterator<Triple> readNTFile(){
-	return RDFDataMgr.createIteratorTriples(is, Lang.NTRIPLES, null);
+	return RDFDataMgr.createIteratorTriples(is, Lang.N3, null);
     }
 
 

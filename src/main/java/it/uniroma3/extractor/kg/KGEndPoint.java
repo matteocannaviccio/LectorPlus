@@ -93,9 +93,6 @@ public class KGEndPoint {
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexOriginal()).forEach(System.out::println);
 
-	System.out.println("\nTypes in Airpedia: ");
-	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexAirpedia()).forEach(System.out::println);
-	
 	System.out.println("\nTypes in DBTax: ");
 	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexDBTax()).forEach(System.out::println);
 	

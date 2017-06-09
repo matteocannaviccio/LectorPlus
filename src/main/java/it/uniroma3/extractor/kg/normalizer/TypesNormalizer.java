@@ -27,35 +27,25 @@ public class TypesNormalizer{
     public static List<Pair<String, String>> normalizeTypesDataset(String sourceBzip2File) {
 	String subject;
 	String object;
-	Iterator<Triple> iter = null;
-	LectorRDFReader reader = null;
-	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
-	if (!sourceBzip2File.contains("airpedia")){
-	    try{
-		reader = new LectorRDFReader(sourceBzip2File, Encoding.bzip2);
-		iter = reader.readTTLFile();
-	    }catch(Exception e){
-	    }
-	}else{
-	    try{
-		reader = new LectorRDFReader(sourceBzip2File, Encoding.gz);
-		iter = reader.readNTFile();
-	    }catch(Exception e){
-		// possible illegal escape sequence, particularly into airpedia!
-	    }
-	}
-	
-	while(iter.hasNext()){
-	    try{
-		Triple t = iter.next();
-		subject = t.getSubject().getURI();
-		object = t.getObject().getURI();
-		if (isDBPediaResource(subject) && !isIntermediateNode(subject) && isInDBPediaOntology(object)){
-		    normalizedKeyValue.add(Pair.make(getResourceName(subject), getPredicateName(object)));
-		}
-	    }catch(Exception e){}
-	}
 
+	List<Pair<String, String>> normalizedKeyValue = new LinkedList<Pair<String, String>>();
+	LectorRDFReader reader = new LectorRDFReader(sourceBzip2File, Encoding.bzip2);
+	Iterator<Triple> iter = reader.readNTFile();
+
+	while(iter.hasNext()){
+	    Triple t = iter.next();
+	    if (t.isConcrete()){
+		try{
+		    subject = t.getSubject().getURI();
+		    object = t.getObject().getURI();
+		    if (isDBPediaResource(subject) && !isIntermediateNode(subject) && isInDBPediaOntology(object)){
+			normalizedKeyValue.add(Pair.make(getResourceName(subject), getPredicateName(object)));
+		    }
+		}catch(Exception e){
+		    System.exit(1);
+		}
+	    }
+	}
 	reader.closeReader();
 	return normalizedKeyValue;
     }

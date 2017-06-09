@@ -24,7 +24,6 @@ import it.uniroma3.extractor.util.Pair;
 public class TypesResolver {
 
     private static KeyValueIndex indexOriginal;
-    private static KeyValueIndex indexAirpedia;
     private static KeyValueIndex indexSDTyped;
     private static KeyValueIndex indexLHD;
     private static KeyValueIndex indexDBTax;
@@ -42,14 +41,12 @@ public class TypesResolver {
 	switch(Lector.getWikiLang().getLang()){
 	case en:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
-	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaInstanceTypes());
 	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
 	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
 	    indexDBTax = getIndexOrCreate(Configuration.getDBTaxTypesIndex(), Configuration.getSourceDBTaxInstanceTypes());
 	    
 	default:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
-	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaInstanceTypes());
 	}
     }
 
@@ -82,13 +79,6 @@ public class TypesResolver {
      */
     public KeyValueIndex getIndexOriginal() {
 	return indexOriginal;
-    }
-
-    /**
-     * @return the indexAirpedia
-     */
-    public KeyValueIndex getIndexAirpedia() {
-	return indexAirpedia;
     }
 
     /**
@@ -175,9 +165,6 @@ public class TypesResolver {
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexSDTyped));
 	}
-	if (type.equals("[none]"))
-	    type = selectDeepest(getTypes(wikid, indexAirpedia));
-
 	if (Lector.getWikiLang().getLang().equals("en")){
 	    if (type.equals("[none]"))
 		type = selectDeepest(getTypes(wikid, indexLHD));
@@ -201,9 +188,6 @@ public class TypesResolver {
 
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypes(entity, t.getIndexOriginal()).forEach(System.out::println);
-
-	System.out.println("\nTypes in Airpedia: ");
-	t.getTypes(entity, t.getIndexAirpedia()).forEach(System.out::println);
 
 	System.out.println("\nTypes in DBTax: ");
 	t.getTypes(entity, t.getIndexDBTax()).forEach(System.out::println);
