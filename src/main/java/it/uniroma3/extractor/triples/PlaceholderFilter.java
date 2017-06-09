@@ -52,16 +52,7 @@ public abstract class PlaceholderFilter {
     protected final static String NATIONALITIES = "#NAT#";
 
     //ordine di applicazione, il primo in lista e' il primo applicato
-    protected final String[] order = new String[]{
-        YEAR,
-        MONTH,
-        DAY,
-        DATE,
-        POSITION,
-        NATIONALITIES,
-        LENGHT,
-        ORDINAL
-    };
+    protected final String[] order;
 
     /**
      *
@@ -70,15 +61,23 @@ public abstract class PlaceholderFilter {
 
         placeholder2patterns = new HashMap<>();
 
-        fetch();
+        placeholder2patterns.put(POSITION, fillPositions());
+        placeholder2patterns.put(LENGHT, fillLengths());
+        placeholder2patterns.put(DATE, fillDates());
+        placeholder2patterns.put(DAY, fillDays());
+        placeholder2patterns.put(MONTH, fillMonths());
+        placeholder2patterns.put(YEAR, fillYears());
+        placeholder2patterns.put(ERA, fillEras());
+        placeholder2patterns.put(ORDINAL, fillOrdinals());
+        placeholder2patterns.put(NATIONALITIES, fillNationalities());
+        
+        this.order = setPatternApplicationOrder();
 
 
     }
 
-    /**
-     * Links patterns in each lang to placeholders
-     */
-    protected abstract void fetch();
+
+
 
     /**
      * Applies the regexps following the order expressed for the outside type (@see
@@ -88,6 +87,8 @@ public abstract class PlaceholderFilter {
      * @return
      */
     protected String replace(String phrase) {
+
+        phrase = preProcess(phrase);
 
         //il replace segue l'ordine impostato nella variabile 'order'
         for (int k = 0; k < order.length; k++) {
@@ -113,18 +114,27 @@ public abstract class PlaceholderFilter {
 
         }
 
+        phrase = postProcess(phrase);
+
         return phrase;
 
     }
 
+    public abstract String preProcess(String phrase);
+    public abstract String postProcess(String phrase);
 
-    /**
-     * Eliminate parethesis.
-     *
-     * @param sentence
-     * @return
-     */
-    public abstract String preprocess(String phrase);
+    protected abstract String[] setPatternApplicationOrder();
+
+    public abstract List<Pattern> fillPositions();
+    public abstract List<Pattern> fillLengths();
+    public abstract List<Pattern> fillDates();
+    public abstract List<Pattern> fillDays();
+    public abstract List<Pattern> fillMonths();
+    public abstract List<Pattern> fillYears();
+    public abstract List<Pattern> fillEras();
+    public abstract List<Pattern> fillOrdinals();
+    public abstract List<Pattern> fillNationalities();
+
 
 
 }

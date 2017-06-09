@@ -1,11 +1,10 @@
 package it.uniroma3.extractor.triples;
 
+import com.sun.istack.internal.NotNull;
 import it.uniroma3.extractor.bean.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,121 +13,36 @@ import java.util.regex.Pattern;
  */
 public class PlaceholderFilterGerman extends PlaceholderFilter {
 
-    private static Set<String> nationalities;
-
-    private final List<Pattern> positions = Arrays.asList(
-        Pattern.compile("\\b("
-            + "süd(en)?(-)?westen|"
-            + "süd(en)?(-)?osten|"
-            + "nord(en)?(-)?osten|"
-            + "nord(en)?(-)?westen|"
-            + "süd(en)?(-)?zentral|"
-            + "nord(en)?(-)?zentral|"
-            + "westen(-)?zentral|"
-            + "süd(en)?(-)?zentral|"
-            + "zentral(-)?nord(en)?|"
-            + "zentral(-)?süd(en)?|"
-            + "zentral(-)?osten?|"
-            + "zentral(-)?westen"
-            + ")\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\b("
-            + "norden|"
-            + "süden|"
-            + "westen|"
-            + "osten"
-            + ")\\b", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("\\b("
-            + "nord|"
-            + "süd|"
-            + "westen|"
-            + "osten)\\b", Pattern.CASE_INSENSITIVE)
-    ); //Arrays.asList mantiene l'ordine dall'alto verso il basso
-    private final List<Pattern> lenghts = Arrays.asList(
-        Pattern.compile("#YEAR#\\s?(km|kilometre(s)?|mi|ft|yd|m)(s?)\\b"),
-        Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilometer(s)?|mi|ft|yd|m)(s?)\\b")
-        );
-    private final List<Pattern> ordinals = Arrays.asList(
-        Pattern.compile("\\b\\d*1st\\b"),
-        Pattern.compile("\\b\\d*2nd\\b"),
-        Pattern.compile("\\b\\d*3rd\\b"),
-        Pattern.compile("\\b(\\d)*\\dth\\b"),
-        Pattern.compile("\\b(erste|zweite|dritte|vierte|fünfte)\\b")
-    );
-    private final List<Pattern> months = Arrays.asList(
-        Pattern.compile("\\b(januar|februar|märz|april|mai|juni|juli|august|"
-            + "september|oktober|november|dezember)\\b", Pattern.CASE_INSENSITIVE)
-    );
-    private final List<Pattern> date = Arrays.asList(
-        Pattern.compile("#YEAR#(\\s|,\\s)#DAY#"),
-        Pattern.compile("#DAY#(\\s|,\\s)#YEAR#")
-    );
-    private final List<Pattern> day = Arrays.asList(
-        Pattern.compile("([0-3]?[0-9]–)?[0-3]?[0-9]\\s#MONTH#"),
-        Pattern.compile("#MONTH#\\s([0-3]?[0-9]–)?[0-3]?[0-9]")
-    );
-    private final List<Pattern> year = Arrays.asList(Pattern.compile("\\b((1|2)\\d\\d\\d)\\b"));
-    private final List<Pattern> era = Arrays.asList(
-        Pattern.compile("\\b#YEAR#s\\b"),
-        Pattern.compile("\\b#[0-9]0s\\b")
-    );
-
-    /**
-     *
-     */
     public PlaceholderFilterGerman() {
 
         super();
 
     }
 
-
-    protected void fetch(){
-
-        //placeholder2patterns.put(POSITION, new ArrayList<>());
-
-
-        placeholder2patterns.put(POSITION, positions);
-        placeholder2patterns.put(LENGHT, lenghts);
-        placeholder2patterns.put(DATE, date);
-        placeholder2patterns.put(DAY, day);
-        placeholder2patterns.put(MONTH, months);
-        placeholder2patterns.put(YEAR, year);
-        placeholder2patterns.put(ERA, era);
-        placeholder2patterns.put(ORDINAL, ordinals);
-
+    @Override
+    protected String[] setPatternApplicationOrder() {
+        return new String[]{
+            YEAR,
+            MONTH,
+            DAY,
+            DATE,
+            POSITION,
+            NATIONALITIES,
+            LENGHT,
+            ORDINAL
+        };
     }
 
 
-    /**
-     * @param phrase
-     * @return
-     */
-    private String replaceNationalities(String phrase) {
-        if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)) {
-            for (String nat : nationalities) {
-                nat = nat.replaceAll("_", " ");
-                Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);
-                phrase = NAT.matcher(phrase).replaceAll("#NAT#");
-            }
-        }
-        return phrase;
-    }
-
-    /**
-     * Eliminate parethesis.
-     *
-     * @param phrase
-     * @return
-     */
-    public String preprocess(String phrase) {
+    public String preProcess(String phrase) {
         phrase = Lector.getTextParser().removeParenthesis(phrase);
         phrase = phrase.toLowerCase();
 
+        return phrase;
+    }
 
-        phrase = replace(phrase);
-
-        phrase = replaceNationalities(phrase);
-
+    @Override
+    public String postProcess(String phrase) {
 
         phrase = phrase.replaceAll("''", "");
         phrase = phrase.replaceAll("\"", "");
@@ -154,7 +68,7 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
         }
 
 	/*
-	 * Some nationalities are cutted, e.g. [Canad]ian or [French]ese
+     * Some nationalities are cutted, e.g. [Canad]ian or [French]ese
 	 */
         String[] initialNatCutted = new String[]{"n ", "ese ", "ian "};
         for (String inc : initialNatCutted) {
@@ -163,5 +77,123 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
         }
 
         return phrase = phrase.trim();
+    }
+
+    @NotNull
+    @Override
+    public List<Pattern> fillPositions() {
+        return Arrays.asList(
+            Pattern.compile("\\b("
+                + "süd(en)?(-)?westen|"
+                + "süd(en)?(-)?osten|"
+                + "nord(en)?(-)?osten|"
+                + "nord(en)?(-)?westen|"
+                + "süd(en)?(-)?zentral|"
+                + "nord(en)?(-)?zentral|"
+                + "westen(-)?zentral|"
+                + "süd(en)?(-)?zentral|"
+                + "zentral(-)?nord(en)?|"
+                + "zentral(-)?süd(en)?|"
+                + "zentral(-)?osten?|"
+                + "zentral(-)?westen"
+                + ")\\b", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("\\b("
+                + "norden|"
+                + "süden|"
+                + "westen|"
+                + "osten"
+                + ")\\b", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("\\b("
+                + "nord|"
+                + "süd|"
+                + "westen|"
+                + "osten)\\b", Pattern.CASE_INSENSITIVE)
+        );
+    }
+
+    @Override
+    public List<Pattern> fillLengths() {
+        return Arrays.asList(
+            Pattern.compile("#YEAR#\\s?(km|kilometre(s)?|mi|ft|yd|m)(s?)\\b"),
+            Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilometer(s)?|mi|ft|yd|m)(s?)\\b")
+        );
+    }
+
+    @Override
+    public List<Pattern> fillDates() {
+        return Arrays.asList(
+            Pattern.compile("#YEAR#(\\s|,\\s)#DAY#"),
+            Pattern.compile("#DAY#(\\s|,\\s)#YEAR#")
+        );
+    }
+
+    @Override
+    public List<Pattern> fillDays() {
+        return Arrays.asList(
+            Pattern.compile("([0-3]?[0-9]–)?[0-3]?[0-9]\\s#MONTH#"),
+            Pattern.compile("#MONTH#\\s([0-3]?[0-9]–)?[0-3]?[0-9]")
+        );
+    }
+
+    @Override
+    public List<Pattern> fillMonths() {
+        return Arrays.asList(
+            Pattern.compile("\\b(januar|februar|märz|april|mai|juni|juli|august|"
+                + "september|oktober|november|dezember)\\b", Pattern.CASE_INSENSITIVE)
+        );
+    }
+
+    @Override
+    public List<Pattern> fillYears() {
+        return Arrays.asList(Pattern.compile("\\b((1|2)\\d\\d\\d)\\b"));
+    }
+
+    @Override
+    public List<Pattern> fillEras() {
+        return Arrays.asList(
+            Pattern.compile("\\b#YEAR#s\\b"),
+            Pattern.compile("\\b#[0-9]0s\\b")
+        );
+    }
+
+    @Override
+    public List<Pattern> fillOrdinals() {
+        return Arrays.asList(
+            Pattern.compile("\\b\\d*1st\\b"),
+            Pattern.compile("\\b\\d*2nd\\b"),
+            Pattern.compile("\\b\\d*3rd\\b"),
+            Pattern.compile("\\b(\\d)*\\dth\\b"),
+            Pattern.compile("\\b(erste|zweite|dritte|vierte|fünfte)\\b")
+        );
+    }
+
+    @Override
+    public List<Pattern> fillNationalities() {
+
+        //TODO inserire solo i pattern che fanno match con le nazionalita in questa lingua
+
+        /*
+        if (Lector.getLang().equals(Lang.en) || Lector.getLang().equals(Lang.es)) {
+            for (String nat : nationalities) {
+                nat = nat.replaceAll("_", " ");
+                Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);
+                phrase = NAT.matcher(phrase).replaceAll("#NAT#");
+            }
+        }
+
+        */
+        return null;
+    }
+
+    public static void main(String[] args) {
+/*
+        PlaceholderFilter p = new PlaceholderFilterGerman();
+
+        String test1 = "The 1992 WAFU Club Championship was the 16th football club tournament season that took place for the runners-up or third place of each West African country's domestic league, the West African Club Championship. It was won by Mali's Stade Malien after defeating Guinea's Hafia FC in two legs.[1] A total of about 33 goals were scored, half than last season as three clubs fully forfeited the match and two, Liberté FC Niamey and Jeanne d'Arc of Dakar withdrew after the first leg. ASEC Nouadhbihou (now part of FC Nouadhibou) withdrew in a second match with Lobi Bank, one club Dawu Youngsters of Ghana were disqualified. Neither club from the Gambia nor Guinea-Bissau participated.";
+
+
+        System.out.println(p.replace(test1));
+
+*/
     }
 }
