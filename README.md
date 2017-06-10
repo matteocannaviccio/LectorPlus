@@ -1,91 +1,56 @@
 # LectorPlus
+**Lector** is an extraction tool originating from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version. 
 
-**Lector** is an extraction tool that is able to extract facts from English Wikipedia article text, learning the ways that are commonly used to express properties between named entities in the text. **LectorPlus** is an extension in which we adapted the tool to extract facts for the Spanish, the Italian, the French and the German version of Wikipedia.
+**LectorPlus** is an extension in which we adapted the tool to extract facts for the Spanish, the Italian, the French and the German version of Wikipedia.
 
-Lector takes as input a Wikipedia (XML) dump and a DBPedia dump (in one of the language above), and outputs a .ttl file containing the list of triples that have been extracted. 
+More information is available about the project at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
 
-More information is available at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
 
 ## Getting Started
 
-In order to run LectorPlus and extract facts for a given Wikipedia (XML) dump, we provide a script to download all the necessary files and create the necessary environment. 
+### Environment
+To execute LectorPlus on your machine you should install:
+	* [Maven](https://maven.apache.org/) - Dependency Management
+	* Java 1.8
+	* command line tool:  wget, git
+	
+### Build and Run
+The tool takes as input a Wikipedia (XML) dump and a DBPedia dump (in one of the language above), and outputs a NTriples file with the triples that have been extracted. In order to simplify the download of the dumps and the picking up of necessary files we provide a script which creates the necessary folders. 
 
-### Prerequisites
-
-What things you need to install the software and how to install them
-
+Run once our install script:
 ```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
-
-```
-Give the example
+sh install.sh
 ```
 
-And repeat
+It will create the root folder **/data** that contains everything to run LectorPlus.
 
-```
-until finished
-```
+### Data folder
+The **/data** folder contains a list of sub-folders that include all the necessary files. 
 
-End with an example of getting some data out of the system or using it for a little demo
+It includes:
+	* **languages**: it contains the properties used by the parser
+	* **lists** (en es it de fr): files used by the parser to filter out undesired named entities 
+	* **models** (en): it contains OpenNLP models that are used from the English parser.  
+	* **sources** (en es it de fr): Wikipedia redirects and DBPedia types mappings
+	* **input**
+		* wikipedia (en es it de fr): it contains the XML dump of Wikipedia
+		* dbpedia (en es it de fr): it contains the Mappingbased Objects dump of DBPedia
+	
+## Details and contacts
+More details can be found in the paper:
 
-## Running the tests
+>  "Accurate Fact Harvesting from Natural Language Text in Wikipedia with Lector."   
+>  by Matteo Cannaviccio, Denilson Barbosa and Paolo Merialdo.   
 
-Explain how to run the automated tests for this system
+The paper was presented at the "19th International Workshop on the Web and Databases (WebDB 2016)" 
+(http://webdb2016.technion.ac.il/program.html).
 
-### Break down into end to end tests
+If you have any questions, please feel free to contact the authors.
 
-Explain what these tests test and why
+	* Matteo Cannaviccio (cannaviccio@uniroma3.it)
+	* Denilson Barbosa (denilson@ualberta.ca)
+	* Paolo Merialdo (merialdo@uniroma3.it)
 
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
