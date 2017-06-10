@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.triples.filters.PlaceholderFilter;
 import it.uniroma3.extractor.util.Pair;
 
@@ -164,6 +165,9 @@ public class Triplifier {
 
 		//String phrase_placeholders = placeholderFilter.replace(phrase);
 		String phrase_placeholders = phrase;
+		if (Lector.getWikiLang().getLang().equals(Lang.en) || Lector.getWikiLang().getLang().equals(Lang.de))
+		    phrase_placeholders = placeholderFilter.replace(phrase);
+
 		if (!phrase.equals("")){
 		    WikiTriple t = new WikiTriple(article.getWikid(), sentence, pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);

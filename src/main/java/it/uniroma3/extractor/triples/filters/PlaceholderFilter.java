@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.triples.filters;
+ package it.uniroma3.extractor.triples.filters;
 
 import it.uniroma3.extractor.bean.WikiLanguage;
 
