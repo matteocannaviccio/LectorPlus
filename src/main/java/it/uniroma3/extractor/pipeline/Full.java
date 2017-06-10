@@ -46,7 +46,7 @@ public class Full {
 
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    FactsExtractor extractor = new FactsExtractor();
-	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
+	    extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 3, -1, PhraseType.TYPED_PHRASES);
 	    extractor.runExtraction();
 	}
 
@@ -58,7 +58,9 @@ public class Full {
      * @param args
      */
     public static void main(String[] args){
-	for (String lang : new String[]{"de"}){
+	//String[] languages = new String[]{"en", "es", "it", "fr", "de"};
+	String[] languages = new String[]{"es"};
+	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
 	    Configuration.printDetails();
