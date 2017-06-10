@@ -10,9 +10,9 @@ More information is available about the project at the Lector homepage: http://w
 
 ### Environment
 To execute LectorPlus on your machine you should install:
-	* [Maven](https://maven.apache.org/) - Dependency Management
-	* Java 1.8
-	* command line tool:  wget, git
+- [Maven](https://maven.apache.org/)
+- Java 1.8
+- command line tool:  wget, git
 	
 ### Build and Run
 The tool takes as input a Wikipedia (XML) dump and a DBPedia dump (in one of the language above), and outputs a NTriples file with the triples that have been extracted. In order to simplify the download of the dumps and the picking up of necessary files we provide a script which creates the necessary folders. 
@@ -28,13 +28,23 @@ It will create the root folder **/data** that contains everything to run LectorP
 The **/data** folder contains a list of sub-folders that include all the necessary files. 
 
 It includes:
-	* **languages**: it contains the properties used by the parser
-	* **lists** (en es it de fr): files used by the parser to filter out undesired named entities 
-	* **models** (en): it contains OpenNLP models that are used from the English parser.  
-	* **sources** (en es it de fr): Wikipedia redirects and DBPedia types mappings
-	* **input**
-		* wikipedia (en es it de fr): it contains the XML dump of Wikipedia
-		* dbpedia (en es it de fr): it contains the Mappingbased Objects dump of DBPedia
+
+	|-- **languages**: it contains the properties used by the parser
+	|-- **lists** (en es it de fr): used by the parser to filter out undesired NE
+	|		|-- currencies.tsv
+	|		|-- nationalities.tsv
+	|		|-- professions.tsv
+	|-- **models** (en): OpenNLP models that are used from the English parser.
+	|		|-- en-lemmatizer.dict
+	|		|-- en-pos-maxent.bin
+	|		|-- en-token.bin
+	|-- **sources** (en es it de fr): other important files used in the process
+	|		|-- [types](http://wiki.dbpedia.org/services-resources/documentation/datasets#InstanceTypes)
+	|		|-- redirect.tsv
+	|-- **input** (en es it de fr):
+	|		|-- wikipedia: it contains the XML dump of Wikipedia
+	|		|-- dbpedia: it contains the [Mappingbased Objects](http://wiki.dbpedia.org/services-resources/documentation/datasets#MappingbasedObjects) dump of DBPedia
+	
 	
 ## Details and contacts
 More details can be found in the paper:
