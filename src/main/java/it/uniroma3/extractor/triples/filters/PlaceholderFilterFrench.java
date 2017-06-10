@@ -1,69 +1,198 @@
 package it.uniroma3.extractor.triples.filters;
 
+import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.util.reader.TSVReader;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by khorda on 09/06/17.
+ * @author matteo
  */
 public class PlaceholderFilterFrench extends PlaceholderFilter {
-    @Override
-    public String preProcess(String phrase) {
-        return null;
-    }
 
-    @Override
-    public String postProcess(String phrase) {
-        return null;
+    public PlaceholderFilterFrench() {
+
+        super();
+
     }
 
     @Override
     protected String[] setPatternApplicationOrder() {
-        return new String[0];
+        return new String[]{
+            YEAR,
+            MONTH,
+            DAY,
+            DATE,
+            POSITION,
+            NATIONALITIES,
+            LENGHT,
+            ORDINAL
+        };
+    }
+
+
+    /**
+     * Eliminate parethesis.
+     *
+     * @param phrase
+     * @return
+     */
+    public String preProcess(String phrase) {
+        phrase = Lector.getTextParser().removeParenthesis(phrase);
+        phrase = phrase.toLowerCase();
+
+        return phrase;
+    }
+
+    @Override
+    public String postProcess(String phrase) {
+
+        phrase = phrase.replaceAll("''", "");
+        phrase = phrase.replaceAll("\"", "");
+
+	/* remove possible special characters at the beginning or at the end.
+     * for example, we want to remove phrases that begin with ", ', -
+	 * but not with 's. For this reason we check the space after the character.
+	 */
+        if (phrase.startsWith("' ") || phrase.startsWith("\" ") || phrase.startsWith("- ") || phrase.startsWith(": "))
+            phrase = phrase.substring(1).trim();
+        if (phrase.endsWith(" '") || phrase.endsWith(" \"") || phrase.endsWith(" -") || phrase.endsWith(" :"))
+            phrase = phrase.substring(0, phrase.length() - 1).trim();
+
+        Pattern pattern = Pattern.compile("([A-Za-z0-9,'´#\\.\\- ]+)");
+        Matcher matcher = pattern.matcher(phrase);
+        if (!matcher.matches())
+            phrase = "";
+        else {
+            pattern = Pattern.compile("([,'´#\\.\\- ]+)");
+            matcher = pattern.matcher(phrase);
+            if (matcher.matches())
+                phrase = "";
+        }
+
+	/*
+     * Some nationalities are cutted, e.g. [Canad]ian or [French]ese
+	 */
+        String[] initialNatCutted = new String[]{"n ", "ese ", "ian "};
+        for (String inc : initialNatCutted) {
+            if (phrase.startsWith(inc))
+                phrase = phrase.substring(inc.length());
+        }
+
+        return phrase.trim();
     }
 
     @Override
     public List<Pattern> fillPositions() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("\\b("
+                + "sud(-)?ouest|"
+                + "sud(-)?est|"
+                + "nord(-)?est|"
+                + "nord(-)?ouest|"
+                + "sud(-)?central|"
+                + "nord(-)?central|"
+                + "ouest(-)?central|"
+                + "sud(-)?central|"
+                + "central(-)?nord|"
+                + "central(-)?sud|"
+                + "central(-)?est|"
+                + "central(-)?ouest"
+                + ")\\b", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("\\b("
+                + "nord|"
+                + "sud|"
+                + "ouest|"
+                + "est)\\b", Pattern.CASE_INSENSITIVE)
+        );
     }
 
     @Override
     public List<Pattern> fillLengths() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("#YEAR#\\s?(km|kilomètre)\\b"),
+            Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilomètre)\\b")
+        );
     }
 
     @Override
     public List<Pattern> fillDates() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("#YEAR#(\\s|,\\s)#DAY#"),
+            Pattern.compile("#DAY#(\\s|,\\s)#YEAR#")
+        );
     }
 
     @Override
     public List<Pattern> fillDays() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("([0-3]?[0-9]–)?[0-3]?[0-9]\\s#MONTH#"),
+            Pattern.compile("#MONTH#\\s([0-3]?[0-9]–)?[0-3]?[0-9]")
+        );
     }
 
     @Override
     public List<Pattern> fillMonths() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("\\b(janvier|février|mars|avril|mai|juin|juillet|août|"
+                + "septembre|octobre|novembre|décembre)\\b", Pattern.CASE_INSENSITIVE)
+        );
     }
 
     @Override
     public List<Pattern> fillYears() {
-        return null;
+        return Arrays.asList(Pattern.compile("\\b((1|2)\\d\\d\\d)\\b"));
     }
 
     @Override
     public List<Pattern> fillEras() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("\\b#YEAR#s\\b"),
+            Pattern.compile("\\b#[0-9]0s\\b")
+        );
     }
 
     @Override
     public List<Pattern> fillOrdinals() {
-        return null;
+        return Arrays.asList(
+            Pattern.compile("\\b\\d*1st\\b"),
+            Pattern.compile("\\b\\d*2nd\\b"),
+            Pattern.compile("\\b\\d*3rd\\b"),
+            Pattern.compile("\\b(\\d)*\\dth\\b"),
+            Pattern.compile("\\b(premier|première|deuxième|second|seconde|troisième|quatrième|cinquième)\\b")
+        );
     }
 
     @Override
     public List<Pattern> fillNationalities() {
-        return null;
+
+        Set<String> nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
+
+        List<Pattern> natPat = new ArrayList<>();
+        for (String nat : nationalities) {
+            nat = nat.replaceAll("_", " ");
+            Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);
+            natPat.add(NAT);
+        }
+
+        return natPat;
+    }
+
+    public static void main(String[] args) {
+/*
+        PlaceholderFilter p = new PlaceholderFilterEnglish();
+
+        String test1 = "The 1992 WAFU Club Championship was the 16th football club tournament season that took place for the runners-up or third place of each ouest African country's domestic league, the ouest African Club Championship. It was won by Mali's Stade Malien after defeating Guinea's Hafia FC in two legs.[1] A total of about 33 goals were scored, half than last season as three clubs fully forfeited the match and two, Liberté FC Niamey and Jeanne d'Arc of Dakar withdrew after the first leg. ASEC Nouadhbihou (now part of FC Nouadhibou) withdrew in a second match with Lobi Bank, one club Dawu Youngsters of Ghana were disqualified. Neither club from the Gambia nor Guinea-Bissau participated.";
+
+
+        System.out.println(p.replace(test1));
+
+*/
     }
 }

@@ -87,10 +87,9 @@ public class PlaceholderFilterEnglish extends PlaceholderFilter {
                 phrase = phrase.substring(inc.length());
         }
 
-        return phrase = phrase.trim();
+        return phrase.trim();
     }
 
-    @NotNull
     @Override
     public List<Pattern> fillPositions() {
         return Arrays.asList(
@@ -181,6 +180,8 @@ public class PlaceholderFilterEnglish extends PlaceholderFilter {
     @Override
     public List<Pattern> fillNationalities() {
 
+        return new ArrayList<Pattern>();
+        /*
         Set<String> nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
 
         List<Pattern> natPat = new ArrayList<>();
@@ -191,17 +192,19 @@ public class PlaceholderFilterEnglish extends PlaceholderFilter {
         }
 
         return natPat;
+
+        */
     }
 
     public static void main(String[] args) {
-/*
-        PlaceholderFilter p = new PlaceholderFilterEnglish();
+
+        PlaceholderFilterEnglish p = new PlaceholderFilterEnglish();
 
         String test1 = "The 1992 WAFU Club Championship was the 16th football club tournament season that took place for the runners-up or third place of each West African country's domestic league, the West African Club Championship. It was won by Mali's Stade Malien after defeating Guinea's Hafia FC in two legs.[1] A total of about 33 goals were scored, half than last season as three clubs fully forfeited the match and two, Liberté FC Niamey and Jeanne d'Arc of Dakar withdrew after the first leg. ASEC Nouadhbihou (now part of FC Nouadhibou) withdrew in a second match with Lobi Bank, one club Dawu Youngsters of Ghana were disqualified. Neither club from the Gambia nor Guinea-Bissau participated.";
 
 
         System.out.println(p.replace(test1));
 
-*/
+
     }
 }

@@ -119,7 +119,7 @@ public class PlaceholderFilterGerman extends PlaceholderFilter {
     public List<Pattern> fillLengths() {
         return Arrays.asList(
             Pattern.compile("#YEAR#\\s?(km|kilometre)(s?)\\b"),
-            Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilometer\\b")
+            Pattern.compile("\\d+(\\s\\d+)*\\s?(km|kilometer)\\b")
         );
     }
 
