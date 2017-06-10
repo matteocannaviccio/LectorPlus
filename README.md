@@ -28,23 +28,22 @@ It will create the root folder **/data** that contains everything to run LectorP
 The **/data** folder contains a list of sub-folders that include all the necessary files. 
 
 It includes:
-```
-|-- languages: it contains the properties used by the parser
-|-- lists (en es it de fr): used by the parser to filter out undesired NE
-|		|-- currencies.tsv
-|		|-- nationalities.tsv
-|		|-- professions.tsv
-|-- models (en): OpenNLP models that are used from the English parser.
-|		|-- en-lemmatizer.dict
-|		|-- en-pos-maxent.bin
-|		|-- en-token.bin
-|-- sources (en es it de fr): other important files used in the process
-|		|-- type
-|		|-- redirect.tsv
-|-- input (en es it de fr):
-|		|-- wikipedia: it contains the XML dump of Wikipedia
-|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
-```
+
+	|-- languages: it contains the properties used by the parser
+	|-- lists (en es it de fr): used by the parser to filter out undesired NE
+	|		|-- currencies.tsv	
+	|		|-- nationalities.tsv
+	|		|-- professions.tsv
+	|-- models (en): OpenNLP models that are used from the English parser.
+	|		|-- en-lemmatizer.dict
+	|		|-- en-pos-maxent.bin
+	|		|-- en-token.bin
+	|-- sources (en es it de fr): other important files used in the process
+	|		|-- type
+	|		|-- redirect.tsv
+	|-- input (en es it de fr):
+	|		|-- wikipedia: it contains the XML dump of Wikipedia
+	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
 
 ## Details and contacts
 More details can be found in the paper:
@@ -57,9 +56,9 @@ The paper was presented at the "19th International Workshop on the Web and Datab
 
 If you have any questions, please feel free to contact the authors.
 
-	* Matteo Cannaviccio (cannaviccio@uniroma3.it)
-	* Denilson Barbosa (denilson@ualberta.ca)
-	* Paolo Merialdo (merialdo@uniroma3.it)
+- Matteo Cannaviccio (cannaviccio@uniroma3.it)
+- Denilson Barbosa (denilson@ualberta.ca)
+- Paolo Merialdo (merialdo@uniroma3.it)
 
 
 ## License

@@ -58,8 +58,8 @@ public class Full {
      * @param args
      */
     public static void main(String[] args){
-	//String[] languages = new String[]{"en", "es", "it", "fr", "de"};
-	String[] languages = new String[]{"es"};
+	String[] languages = new String[]{"en", "es", "it", "fr", "de"};
+	//String[] languages = new String[]{"es"};
 	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);

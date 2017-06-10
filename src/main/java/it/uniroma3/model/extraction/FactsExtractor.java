@@ -62,12 +62,12 @@ public class FactsExtractor {
 	if (relation!=null){
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
-		if (Lector.getKg().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
+		if (!Lector.getKg().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
 		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getInvertedSubject(), relation, t.getInvertedObject());
 		    writer_facts.statement(t.getInvertedSubject(), relation, t.getInvertedObject(), false);
 		}
 	    }else{
-		if (Lector.getKg().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
+		if (!Lector.getKg().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
 		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getWikiSubject(), relation, t.getWikiObject());
 		    writer_facts.statement(t.getWikiSubject(), relation, t.getWikiObject(), false);
 		}
