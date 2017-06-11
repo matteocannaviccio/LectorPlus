@@ -50,7 +50,8 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|-- lists (en es it de fr): used by the parser to filter out undesired NE
 	|		|-- currencies.tsv
 	|		|-- nationalities.tsv
-	|		|-- professions.tsv											|				
+	|		|-- professions.tsv
+	|
 	|-- models (en): OpenNLP models that are used from the English parser.
 	|		|-- en-lemmatizer.dict
 	|		|-- en-pos-maxent.bin
