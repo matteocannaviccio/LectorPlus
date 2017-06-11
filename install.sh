@@ -218,3 +218,5 @@ done
 # install LectorPlus
 echo "Install dependencies ..."
 mvn clean install
+
+echo "\n\n LectorPlus successfully installed."
