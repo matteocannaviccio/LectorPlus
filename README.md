@@ -25,13 +25,13 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs a NTriples file with the triples that have been extracted. 
 
-- In order to run LectorPlus on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which contains the URLs of the input Wikipedia dump.
+- In order to run the tool on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which points to the specific URLs of the input Wikipedia dump.
 
-- In order to simplify the download of the dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. Run once our install script:
-```
-sh install.sh
-```
-	It will take some time, at the end it will create the root folder `/data` described below.
+- Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. Run once our install script:
+	```
+	sh install.sh
+	```
+	It will take some time (many files to downlaod) but at the end it will create the root folder `/data` described below.
 
 #### Structure of the folder `/data`
 The folder `/data` contains a list of sub-folders and includes all the necessary files:
@@ -58,7 +58,7 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 
 ### Build and run
 
-After succesfully created the `/data` folder you are ready to build a executable version of LectorPlus, using:
+After created the folder `/data` you are ready to build a executable version of LectorPlus, using:
 ```
 maven clean install
 ```
@@ -68,6 +68,7 @@ and running it using the following command:
 ```
 sh run.sh
 ```
+It will execute the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
 
 ## Details and contacts
 More details can be found in the paper:
@@ -83,7 +84,3 @@ If you have any questions, please feel free to contact the authors.
 - Matteo Cannaviccio (cannaviccio@uniroma3.it)
 - Denilson Barbosa (denilson@ualberta.ca)
 - Paolo Merialdo (merialdo@uniroma3.it)
-
-
-## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
