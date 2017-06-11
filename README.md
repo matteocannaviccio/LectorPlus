@@ -62,6 +62,12 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|		|-- wikipedia: it contains the XML dump of Wikipedia
 	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
 
+Other folders are created at run-time:
+
+	|-- index: it will contains the Lucene index of DBPedia MappingBased objects, redirects and types
+	|
+	|-- lector: it will contains a csv file with the phrases used by LectorPlus, for each language
+	
 ### Build and run
 
 After created the folder `/data` you are ready to build a executable version of LectorPlus, using:
