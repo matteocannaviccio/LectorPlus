@@ -170,6 +170,14 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
+    
+    public static String getOutputFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("outputFolder") + "/" + getLanguageCode();
+	File folder = new File(folderPath); 
+	if(!folder.exists())
+	    folder.mkdirs();
+	return folder.getAbsolutePath();
+    }
 
     private static String getIndexesFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder") + "/" + getLanguageCode();
@@ -285,11 +293,11 @@ public class Configuration {
     }
 
     public static String getOutputFactsFile(){
-	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
     }
     
     public static String getProvenanceFile() {
-	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
 
     /***********************************************************************/

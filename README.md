@@ -45,18 +45,18 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|-- lists (en es it de fr): used by the parser to filter out undesired NE
 	|		|-- currencies.tsv
 	|		|-- nationalities.tsv
-	|		|-- professions.tsv																							|
-	|																																	|
+	|		|-- professions.tsv																
+	|
 	|-- models (en): OpenNLP models that are used from the English parser.
-	|		|-- en-lemmatizer.dict																						|
-	|		|-- en-pos-maxent.bin																						|
-	|		|-- en-token.bin																								|
-	|					|
+	|		|-- en-lemmatizer.dict
+	|		|-- en-pos-maxent.bin
+	|		|-- en-token.bin
+	|
 	|-- sources (en es it de fr): other important files used in the process
-	|		|-- type																												|
-	|		|-- redirect.tsv																								|
-	|																																	|
-	|-- input (en es it de fr):																						|
+	|		|-- type
+	|		|-- redirect.tsv
+	|
+	|-- input (en es it de fr):									
 	|		|-- wikipedia: it contains the XML dump of Wikipedia
 	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
 
@@ -70,9 +70,11 @@ maven clean install
 and running it using the following command:
 
 ```
-sh run.sh
+sh run.sh <output_folder>
 ```
-It will execute the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
+It takes the path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
+The output folder will contain all the compressed NTriples files produced by the tool.
+
 
 ## Details and contacts
 More details can be found in the paper:
