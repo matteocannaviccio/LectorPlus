@@ -53,6 +53,8 @@ public class Lector {
     private static DBModel dbmodel;
 
     /**
+     * Here we initialize all the components of the tool.
+     * Lector is a global class that initializes and keep a reference to all the components.
      * 
      * @param config
      */
@@ -69,8 +71,7 @@ public class Lector {
     }
 
     /**
-     * 
-     * @param parsedLang
+     * Initializes Article Parser.
      */
     public static void initAP(){
 	wikiParser = new WikiParser();
@@ -82,7 +83,7 @@ public class Lector {
     }
 
     /**
-     * 
+     * Initializes Entity Detection.
      */
     public static void initED(){
 	entitiesFinder = new ReplFinder();
@@ -110,14 +111,14 @@ public class Lector {
     }
 
     /**
-     * 
+     * Initializes Triple Extractor.
      */
     public static void initTE(){
 	triplifier = new Triplifier();
     }
 
     /**
-     * 
+     * Initialize the KG.
      */
     public static void initDBpedia(){
 	kg = new KGEndPoint();
@@ -125,21 +126,24 @@ public class Lector {
 
 
     /**
-     * @return the redirectResolver
+     * 
+     * @return
      */
     public static MarkupParser getMarkupParser() {
 	return markupParser;
     }
 
     /**
-     * @return the typesResolver
+     * 
+     * @return
      */
     public static StanfordNLP getNLPExpert() {
 	return stanfordExpert.get();
     }
 
     /**
-     * @return the articleTyper
+     * 
+     * @return
      */
     public static ArticleTyper getArticleTyper() {
 	return articleTyper;

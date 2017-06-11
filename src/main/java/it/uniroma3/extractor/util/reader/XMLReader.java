@@ -22,8 +22,8 @@ public class XMLReader{
      * Creates an input stream for reading Wikipedia articles from a bz2-compressed dump file.
      * @param file
      */
-    public XMLReader(String file, boolean isBzip2) {
-	if(isBzip2)
+    public XMLReader(String file) {
+	if(file.endsWith("bz2"))
 	    this.br = getReaderBZip2(file);
 	else
 	    this.br = getReaderXML(file);

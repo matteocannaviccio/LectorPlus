@@ -53,7 +53,7 @@ public class ArticleParser {
     public ArticleParser(String inputFile, boolean bzip2, String outputFile){
 	System.out.println("\n**** ARTICLE PARSER ****");
 	this.stats = new Statistics();
-	this.inputReader = new XMLReader(inputFile, bzip2);
+	this.inputReader = new XMLReader(inputFile);
 
 	if (outputFile != null){
 	    try {

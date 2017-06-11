@@ -25,10 +25,10 @@ import it.uniroma3.model.DB;
  * @author matteo
  *
  */
-public class ModelLS extends Model{
+public class ModelLSTextExt extends Model{
 
     /*
-     * A ModelScore model is essentially a mapping between phrases and relations.
+     * A model is essentially a mapping between phrases and relations.
      * This mapping is obtained using scoring function applied to each phrase.
      */
     private Map<String, String> model = new HashMap<String, String>();
@@ -45,8 +45,6 @@ public class ModelLS extends Model{
      */
     // parameters
     private double generality_cutoff = 0.1;
-    private double alpha = 1.0;
-    private double beta = 0.0; 
     private int topk;
 
     /**
@@ -54,7 +52,7 @@ public class ModelLS extends Model{
      * 
      * @param db
      */
-    public ModelLS(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
+    public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
 	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
 	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
@@ -70,15 +68,14 @@ public class ModelLS extends Model{
      * 
      * @param db
      */
-    public ModelLS(DB db, String labeled, int minFreq, int topk, double alpha, double beta, PhraseType modelType) {
+    public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, double cutoff, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
 	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
 	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
 	System.out.println("---------------------------------------------------------------\n");
 	
-	this.alpha = alpha;
-	this.beta = beta;
 	this.topk = topk;
+	this.generality_cutoff = cutoff;
 	this.model = createModel();
     }
 
@@ -156,10 +153,8 @@ public class ModelLS extends Model{
 		double probLabUnlab = pR/(pL+pU);
 		double probSeedLab = pSeedR/pSeedL;
 		double probSeedLabUnlab = pSeedR/(pSeedL+pSeedU);
-		double scoreLectorV1 = probLab * Math.log(pR+1);
-		double combinedProb = alpha * probLabUnlab + beta * probSeedLabUnlab;
-		double scoreLectorV2 = combinedProb * Math.log(pR + 1);
-
+		double scoreLectorTextExt = probLab * Math.log(pR+1);
+	
 		// add details ...
 		Double[] details = new Double[]{
 			pR, 
@@ -172,9 +167,7 @@ public class ModelLS extends Model{
 			probLabUnlab, 
 			probSeedLab, 
 			probSeedLabUnlab, 
-			scoreLectorV1, 
-			combinedProb, 
-			scoreLectorV2};
+			scoreLectorTextExt};
 
 		if(!relations2phrase_details.containsKey(relation))
 		    relations2phrase_details.put(relation, new HashMap<String, Double[]>());
@@ -208,7 +201,7 @@ public class ModelLS extends Model{
 	model.clear();
 
 	for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
-	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 12, topk).entrySet()){
+	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 10, topk).entrySet()){
 		model.put(phrase.getKey(), relation.getKey());
 	    }
 	}
@@ -229,38 +222,20 @@ public class ModelLS extends Model{
 		    "relation", 
 		    "phrase", 
 		    "c(pR)", 
-		    "c(pL)", 
-		    "c(pU)", 
-		    "c(pSeedR)",
-		    "c(pSeedL)",
-		    "c(pSeedU)",
 		    "P(p|r)", 
-		    "P(p|r,u)", 
-		    "P(pSeed|r)", 
 		    "P(pSeed|r,u)", 
-		    "score lector v1", 
-		    "combinedProb", 
-	    "score lector v2"});
+		    "score lector TextExt"});
 
 	    // content
 	    for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
-		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 12, -1).entrySet()){
+		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 10, -1).entrySet()){
 		    String[] values = new String[15];
 		    values[0] = relation.getKey();
 		    values[1] = phrase.getKey();
 		    values[2] = String.valueOf(phrase.getValue()[0]); 	//c(PR)
-		    values[3] = String.valueOf(phrase.getValue()[1]); 	//c(uP)
-		    values[4] = String.valueOf(phrase.getValue()[2]); 	//c(lP)
-		    values[5] = String.valueOf(phrase.getValue()[3]); 	//c(pSeedR)
-		    values[6] = String.valueOf(phrase.getValue()[4]); 	//c(pSeedL)
-		    values[7] = String.valueOf(phrase.getValue()[5]); 	//c(pSeedU)
-		    values[8] = String.valueOf(phrase.getValue()[6]); 	//P(p|r)
-		    values[9] = String.valueOf(phrase.getValue()[7]); 	//P(p|r,u)
-		    values[10] = String.valueOf(phrase.getValue()[8]); 	//P(pSeed|r)
-		    values[11] = String.valueOf(phrase.getValue()[9]); 	//P(pSeed|r,u)
-		    values[12] = String.valueOf(phrase.getValue()[10]); //score lector v1
-		    values[13] = String.valueOf(phrase.getValue()[11]); //possible new prob
-		    values[14] = String.valueOf(phrase.getValue()[12]); //possible new score
+		    values[3] = String.valueOf(phrase.getValue()[6]); 	//P(p|r)
+		    values[4] = String.valueOf(phrase.getValue()[9]); 	//P(pSeed|r,u)
+		    values[5] = String.valueOf(phrase.getValue()[10]);  //score lector v1
 		    writer.writeNext(values);
 		}
 	    }
@@ -283,61 +258,6 @@ public class ModelLS extends Model{
 	}
 	return Pair.make(relation, 1.0);
     }
-
-    /**
-     * 
-     * @param relationA
-     * @return
-     */
-    /*
-    private Set<String> getPhrasesFromRelation(String relationA){
-	Set<String> phrases = new HashSet<String>();
-	for (Map.Entry<String, String> entry : this.model.entrySet()){
-	    if(entry.getValue().equals(relationA)){
-		phrases.add(entry.getKey());
-	    }
-	}
-	return phrases;
-    }
-    */
-
-    /**
-     * 
-     * @param relationA
-     * @param relationB
-     * @return
-     */
-    /*
-    private double measureSimilarity(String relationA, String relationB){
-	double sim = 0.0;
-	Set<String> phrasesA = getPhrasesFromRelation(relationA);
-	Set<String> phrasesB = getPhrasesFromRelation(relationB);
-
-	for(String p : phrasesA){
-	    if (!phrasesB.contains(p))
-		continue;
-	    sim += 1.0;
-	}
-	return sim;
-    }
-    *
-
-    /**
-     * 
-     * @param relation
-     * @return
-     */
-    /*
-    private Map<String, Double> findSimilarRelations(String relation){
-	Map<String, Double> similarRelations = new HashMap<String, Double>();
-	for (String otherRel : new HashSet<String>(this.model.values())){
-	    Double kl = measureSimilarity(relation, otherRel);
-	    if (kl != null)
-		similarRelations.put(otherRel, kl);
-	}
-	return Ranking.getRanking(similarRelations);
-    }
-    */
 
     /**
      * 

@@ -1,10 +1,10 @@
-package it.uniroma3.extractor.pipeline;
+package it.uniroma3.main;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
+import it.uniroma3.extractor.pipeline.Statistics;
 import it.uniroma3.extractor.util.reader.XMLReader;
 import it.uniroma3.model.extraction.FactsExtractor;
 import it.uniroma3.model.extraction.FactsExtractor.ModelType;
@@ -19,24 +19,24 @@ public class CompletePipeline {
      * 
      * @param configFile
      */
-    public CompletePipeline(String inputFile, boolean bzip2){
-	System.out.println("\n**** COMPLETE PIPELINE IN ONCE ****");
+    public CompletePipeline(String inputFile){
+	System.out.println("\n**** COMPLETE PIPELINE ****");
 	this.stats = new Statistics();
-	this.inputReader = new XMLReader(inputFile, bzip2);
+	this.inputReader = new XMLReader(inputFile);
     }
 
     /**
      * 
-     * @param lines
-     * @return
+     * @param totArticle
+     * @param chunckSize
      */
-    public void pipelinedProcess(){
+    public void runPipeline(int totArticle, int chunckSize){
 	List<String> lines;
 	int cont = 0;
 
-	while (!(lines = inputReader.nextChunk(Configuration.getChunkSize())).isEmpty()
-		&& cont < Configuration.getNumArticlesToProcess()) {
-	    System.out.print("Parsing: " + lines.size() + " articles.\t");
+	while (!(lines = inputReader.nextChunk(chunckSize)).isEmpty()
+		&& cont < totArticle) {	    
+	    System.out.print("Running next: " + lines.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    cont += lines.size();
 
@@ -55,11 +55,14 @@ public class CompletePipeline {
 	    System.out.println("Reading next batch.");
 	    lines.clear();
 	}
-
 	System.out.println("************\nProcessed articles:\n" + stats.printStats());
-	
 	inputReader.closeBuffer();
-
+    }
+    
+    /**
+     * 
+     */
+    public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
 	extractor.setModelForEvaluation(ModelType.LectorScore, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
 	extractor.runExtraction();
