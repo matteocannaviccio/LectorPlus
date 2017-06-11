@@ -33,30 +33,28 @@ sh install.sh
 ```
 	It will take some time, at the end it will create the root folder `/data` described below.
 
-#### Description of `/data` folder
-The `/data` folder contains a list of sub-folders that include all the necessary files:
+#### Structure of the folder `/data`
+The folder `/data` contains a list of sub-folders and includes all the necessary files:
 
-	 __________________________________________________________________________
-	|-- languages: it contains the properties used by the parser							|
-	|																																	|
-	|-- lists (en es it de fr): used by the parser to filter out undesired NE		|
-	|		|-- currencies.tsv																								|
-	|		|-- nationalities.tsv																						|
+	|-- languages: it contains the properties used by the parser
+	|
+	|-- lists (en es it de fr): used by the parser to filter out undesired NE
+	|		|-- currencies.tsv
+	|		|-- nationalities.tsv
 	|		|-- professions.tsv																							|
 	|																																	|
-	|-- models (en): OpenNLP models that are used from the English parser.			|
+	|-- models (en): OpenNLP models that are used from the English parser.
 	|		|-- en-lemmatizer.dict																						|
 	|		|-- en-pos-maxent.bin																						|
 	|		|-- en-token.bin																								|
-	|																																	|
-	|-- sources (en es it de fr): other important files used in the process		|
+	|					|
+	|-- sources (en es it de fr): other important files used in the process
 	|		|-- type																												|
 	|		|-- redirect.tsv																								|
 	|																																	|
 	|-- input (en es it de fr):																						|
-	|		|-- wikipedia: it contains the XML dump of Wikipedia									|
-	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia			|
-	 ___________________________________________________________________________ 
+	|		|-- wikipedia: it contains the XML dump of Wikipedia
+	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
 
 ### Build and run
 
