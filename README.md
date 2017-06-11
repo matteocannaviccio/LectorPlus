@@ -1,15 +1,14 @@
 # LectorPlus
 **Lector** is an extraction tool originating from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version. 
 
-**LectorPlus** is an extension in which we adapted the tool to extract facts for the Spanish, the Italian, the French and the German version of Wikipedia.
+**LectorPlus** is an extension in which the tool has been applied to different languages. It is now able to extract facts for Spanish, Italian, French and German version of Wikipedia.
 
 More information is available about the project at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
 
 
 ## Getting Started
 
-### Environment
-To execute LectorPlus on your machine you should install:
+To execute LectorPlus on your machine you should have installed:
 - JDK 1.8
 - [Apache Maven](https://maven.apache.org/)
 - command line tool:  **wget** and **git**
