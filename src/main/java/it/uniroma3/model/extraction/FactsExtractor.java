@@ -42,7 +42,36 @@ public class FactsExtractor {
 	Lector.getDbfacts(true);
 	this.writer_facts = new NTriplesWriterWrapper(Configuration.getOutputFactsFile());
 	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
+    }
 
+    /**
+     * 
+     * @param type
+     * @param labeled_table
+     * @param minFreq
+     * @param topK
+     * @param typePhrase
+     * @return
+     */
+    public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, PhraseType typePhrase){
+	switch(type){
+
+	case BM25:
+	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    break;
+
+	case NB:
+	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq, ModelNBType.CLASSIC);
+	    break;
+
+	case LectorScore:
+	    model = new ModelLS(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    break;
+
+	case TextExtChallenge:
+	    model = new ModelLSTextExt(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.1, PhraseType.TYPED_PHRASES);
+	    break;
+	}
     }
 
     /**
@@ -80,13 +109,12 @@ public class FactsExtractor {
 	}
     }
 
-
     /**
      * 
-     * @param model
+     * @return
      */
-    public void runExtraction(){
-	int contProcessed = 0;
+    private int runExtractionFacts(){
+	int facts_extracted = 0;
 	String allUnlabeledTriplesQuery = "SELECT * FROM unlabeled_triples";
 	try (Statement stmt = Lector.getDbmodel(false).getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
@@ -107,53 +135,114 @@ public class FactsExtractor {
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
 			if (processRecord(t)){
-			    contProcessed+=1;
-			    if (contProcessed % 1000 == 0 && contProcessed > 0)
-				System.out.println("Extracted " + contProcessed + " novel facts.");
+			    facts_extracted+=1;
+			    if (facts_extracted % 5000 == 0 && facts_extracted > 0)
+				System.out.println("Extracted " + facts_extracted + " novel facts.");
 			}
 		    }
 		}
 	    }
 
-	    // close the output stream
-	    writer_facts.done();
-	    writer_provenance.done();
-
 	}catch(SQLException e){
 	    e.printStackTrace();
-	} catch (IOException e) {
-	    e.printStackTrace();
+	}
+
+	return facts_extracted;
+    }
+
+
+    /**
+     * 
+     * @param wikid
+     * @param sentence
+     * @param subject_type
+     * @param object
+     * @return
+     */
+    private boolean processNationalityRecord(String wikid, String sentence, String subject_type, String object){
+	// assign a relation
+	String relation = stupidNationalityRelationChooser(subject_type);
+
+	// if there is ...
+	if (relation != null){
+	    if (!Lector.getKg().getRelations(wikid, object).equals(relation)){
+		writer_provenance.provenance(wikid, sentence, wikid, relation, object);
+		writer_facts.statement(wikid, relation, object, false);
+	    }
+	    //Lector.getDbfacts(false).insertNovelFact(t, relation);
+	    return true;
+	}else{
+	    return false;
 	}
     }
 
     /**
      * 
-     * @param type
-     * @param labeled_table
-     * @param minFreq
-     * @param topK
-     * @param typePhrase
+     */
+    private int runExtractionNationalities(int facts_extracted) {
+	String allUnlabeledTriplesQuery = "SELECT * FROM nationality_collection";
+	try (Statement stmt = Lector.getDbmodel(false).getConnection().createStatement()){	
+	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
+		while(rs.next()){
+		    String wikid = rs.getString(1);
+		    String sentence = rs.getString(2);
+		    String subject_type = rs.getString(3);
+		    String object = rs.getString(4);
+
+		    if (processNationalityRecord(wikid, sentence, subject_type, object)){
+			facts_extracted+=1;
+			if (facts_extracted % 5000 == 0 && facts_extracted > 0)
+			    System.out.println("Extracted " + facts_extracted + " novel facts.");
+		    }
+		}
+	    }
+
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+
+	return facts_extracted;
+
+    }
+
+    /**
+     * Chose between "nationality" and "country" and assign a relation for the 
+     * nationality evidence in the first sentence of the article.
+     * 
+     * 
+     * @param subject_type
      * @return
      */
-    public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, PhraseType typePhrase){
-	switch(type){
+    private String stupidNationalityRelationChooser(String subject_type){
+	String relation = null;
+	if (!subject_type.equals("none")){
+	    if (Lector.getKg().getTypesResolver().isChild(subject_type, "Person")){
+		relation = "nationality";
+	    }else{
+		relation = "country";
+	    }
+	}
+	return relation;
+    }
 
-	case BM25:
-	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
-	    break;
 
-	case NB:
-	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq, ModelNBType.CLASSIC);
-	    break;
 
-	case LectorScore:
-	    model = new ModelLS(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
-	    break;
+    /**
+     * 
+     */
+    public void run(){
 
-	case TextExtChallenge:
-	    model = new ModelLSTextExt(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.1, PhraseType.TYPED_PHRASES);
-	    break;
+	int facts_extracted = runExtractionFacts();
+	facts_extracted = runExtractionNationalities(facts_extracted);
+
+	// close the output stream
+	try {
+	    writer_facts.done();
+	    writer_provenance.done();
+	} catch (IOException e) {
+	    e.printStackTrace();
 	}
     }
+
 
 }

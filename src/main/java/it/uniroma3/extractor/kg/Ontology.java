@@ -73,6 +73,9 @@ public class Ontology {
      */
     public TGPattern getTGPattern(String node){
 	
+	if (node.startsWith("[") && node.endsWith("]"))
+	    node = node.substring(1, node.length()-1);
+	
 	if (node.equals("[none]")){
 	    return TGPattern.make(null, 0);
 	}

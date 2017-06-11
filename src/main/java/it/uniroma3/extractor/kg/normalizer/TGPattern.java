@@ -60,7 +60,7 @@ public class TGPattern {
 	}
 	return level;
     }
-    
+
     /**
      * 
      */
@@ -76,7 +76,7 @@ public class TGPattern {
 	}
 	return new TGPattern(normalizedPath, this.getInstances());
     }
-    
+
     /**
      * 
      */
@@ -84,17 +84,17 @@ public class TGPattern {
 	List<List<Node>> mainPath = new LinkedList<List<Node>>();
 	// make sure it is normalized
 	TGPattern normalizedTGPattern = this.normalize();
-	
+
 	for(List<Node> level : normalizedTGPattern.path){
-	  if (level.get(0).getWeight() > treshold){
-	      List<Node> mainLevel = new LinkedList<Node>();
-	      mainLevel.add(Node.make(level.get(0).getName(), level.get(0).getWeight()));
-	      mainPath.add(mainLevel);
-	  }
+	    if (level.get(0).getWeight() > treshold){
+		List<Node> mainLevel = new LinkedList<Node>();
+		mainLevel.add(Node.make(level.get(0).getName(), level.get(0).getWeight()));
+		mainPath.add(mainLevel);
+	    }
 	}
 	return new TGPattern(mainPath, this.getInstances());
     }
-    
+
 
     /**
      * 
@@ -102,7 +102,7 @@ public class TGPattern {
     public TGPattern combine(TGPattern ext){
 	int maxLevel = Math.max(this.path.size(), ext.path.size());
 	List<List<Node>> combinedPath = new LinkedList<List<Node>>();
-	
+
 	for(int numLevel = 0; numLevel < maxLevel; numLevel++){	
 	    List<Node> combinedLevel = new LinkedList<Node>();
 	    List<Node> internalLevel = this.getLevel(numLevel);
@@ -128,12 +128,28 @@ public class TGPattern {
     }
 
     /**
+     * 
+     * @param dbpedia_type
+     * @return
+     */
+    public boolean contains(String dbpedia_type) {
+	for (List<Node> nodes : this.path){
+	    for (Node n : nodes){
+		if (n.getName().equals(dbpedia_type))
+		    return true;
+	    }
+	}
+	return false;
+    }
+
+
+    /**
      * @return the instances
      */
     public int getInstances() {
-        return instances;
+	return instances;
     }
-    
+
     /**
      * 
      * @return
@@ -141,5 +157,4 @@ public class TGPattern {
     public int getDepth(){
 	return this.path.size();
     }
-
 }

@@ -26,6 +26,7 @@ public class FSMNationality {
     public String detectNationality(String sentence){
 	String nationality = null;
 	for (String token : sentence.split(" ")){
+	    token = token.toLowerCase();
 	    if(this.nationalities.containsKey(token)){
 		nationality = nationalities.get(token);
 	    }

@@ -174,7 +174,7 @@ public abstract class PlaceholderFilter {
      */
     public List<Pattern> fillNumbers() {
 	return Arrays.asList(
-		Pattern.compile("\\b\\d+\\b")
+		Pattern.compile("\\b\\d+\\.?\\d+\\.?\\d+\\b")
 		);
     }
 
@@ -213,9 +213,12 @@ public abstract class PlaceholderFilter {
 	*/
 	
 	// remove noisy phrases
-	if (phrase.contains("|") || phrase.contains(";") || phrase.contains("(") || phrase.contains(")"))
+	if (phrase.contains("|") || 
+		phrase.contains(";") || 
+		phrase.contains("(") ||
+		phrase.contains(":") || 
+		phrase.contains(")"))
 	    phrase = "";
-	
 	
 
 	/*

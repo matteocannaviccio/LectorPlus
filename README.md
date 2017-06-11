@@ -25,22 +25,16 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs a NTriples file with the triples that have been extracted. 
 
-#### Set the input Wikipedia Dump
-In order to run LectorPlus on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which contains the URLs of the input Wikipedia dump.
+- In order to run LectorPlus on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which contains the URLs of the input Wikipedia dump.
 
-#### Create data folder
-In order to simplify the download of the dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus.
-
-Run once our install script:
+- In order to simplify the download of the dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. Run once our install script:
 ```
 sh install.sh
 ```
+	It will take some time, at the end it will create the root folder `/data` described below.
 
-It will take some time, at the end it will create the root folder `/data` described below.
-
-#### `/data` folder
-The `/data` folder contains a list of sub-folders that include all the necessary files. 
-It includes:
+#### Description of `/data` folder
+The `/data` folder contains a list of sub-folders that include all the necessary files:
 
 	|-- languages: it contains the properties used by the parser
 	|-- lists (en es it de fr): used by the parser to filter out undesired NE

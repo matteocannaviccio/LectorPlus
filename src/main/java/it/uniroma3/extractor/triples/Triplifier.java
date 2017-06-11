@@ -65,7 +65,6 @@ public class Triplifier {
 		}
 	    }
 	}
-
 	extractNationality(article);
     }
 
