@@ -23,34 +23,40 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 ### Setting up the environment
 
-The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs an NTriples file (one for each language) with the triples that have been extracted. 
+The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs a NTriples file with the triples that have been extracted. 
 
 - In order to run LectorPlus on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which contains the URLs of the input Wikipedia dump.
 
 - In order to simplify the download of the dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. Run once our install script:
-	```
-	sh install.sh
-	```
+```
+sh install.sh
+```
 	It will take some time, at the end it will create the root folder `/data` described below.
 
-#### Structure of `/data` folder
+#### Description of `/data` folder
 The `/data` folder contains a list of sub-folders that include all the necessary files:
 
-	|-- languages: it contains the properties used by the parser
-	|-- lists (en es it de fr): used by the parser to filter out undesired NE
-	|		|-- currencies.tsv	
-	|		|-- nationalities.tsv
-	|		|-- professions.tsv
-	|-- models (en): OpenNLP models that are used from the English parser.
-	|		|-- en-lemmatizer.dict
-	|		|-- en-pos-maxent.bin
-	|		|-- en-token.bin
-	|-- sources (en es it de fr): other important files used in the process
-	|		|-- type
-	|		|-- redirect.tsv
-	|-- input (en es it de fr):
-	|		|-- wikipedia: it contains the XML dump of Wikipedia
-	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
+	 __________________________________________________________________________
+	|-- languages: it contains the properties used by the parser							|
+	|																																	|
+	|-- lists (en es it de fr): used by the parser to filter out undesired NE		|
+	|		|-- currencies.tsv																								|
+	|		|-- nationalities.tsv																						|
+	|		|-- professions.tsv																							|
+	|																																	|
+	|-- models (en): OpenNLP models that are used from the English parser.			|
+	|		|-- en-lemmatizer.dict																						|
+	|		|-- en-pos-maxent.bin																						|
+	|		|-- en-token.bin																								|
+	|																																	|
+	|-- sources (en es it de fr): other important files used in the process		|
+	|		|-- type																												|
+	|		|-- redirect.tsv																								|
+	|																																	|
+	|-- input (en es it de fr):																						|
+	|		|-- wikipedia: it contains the XML dump of Wikipedia									|
+	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia			|
+	 ___________________________________________________________________________ 
 
 ### Build and run
 
