@@ -33,7 +33,7 @@ The tool takes as input a Wikipedia (XML) (in one of the language above) and out
 	```
 	It will take some time, at the end it will create the root folder `/data` described below.
 
-#### Description of `/data` folder
+#### Structure of `/data` folder
 The `/data` folder contains a list of sub-folders that include all the necessary files:
 
 	|-- languages: it contains the properties used by the parser
