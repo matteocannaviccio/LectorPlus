@@ -215,7 +215,7 @@ public class FactsExtractor {
      */
     private String stupidNationalityRelationChooser(String subject_type){
 	String relation = null;
-	if (!subject_type.equals("none")){
+	if (!subject_type.equals("[none]")){
 	    if (Lector.getKg().getTypesResolver().isChild(subject_type, "Person")){
 		relation = "nationality";
 	    }else{

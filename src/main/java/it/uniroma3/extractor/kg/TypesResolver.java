@@ -183,7 +183,6 @@ public class TypesResolver {
      * @return
      */
     public boolean isChild(String subject_type, String dbpedia_type) {
-	System.out.println(ontology.getTGPattern(subject_type));
 	return ontology.getTGPattern(subject_type).contains(dbpedia_type);
     }
 
