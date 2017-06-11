@@ -10,8 +10,8 @@ More information is available about the project at the Lector homepage: http://w
 
 ### Environment
 To execute LectorPlus on your machine you should install:
+- JDK 1.8
 - [Apache Maven](https://maven.apache.org/)
-- Java 1.8
 - command line tool:  **wget** and **git**
 
 ### Clone the project
@@ -25,7 +25,11 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs a NTriples file with the triples that have been extracted. 
 
-- In order to run the tool on a specific version of Wikipedia (XML) dump please edit the file `dumps.properties` which points to the specific URLs of the input Wikipedia dump.
+- In order to run the tool on a specific version of Wikipedia (XML) dump please edit the file:
+	 ```
+	 dumps.properties
+	 ```
+	it lists the specific URLs of the input Wikipedia dump.
 
 - Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. Run once our install script:
 	```
