@@ -1,5 +1,4 @@
 #!/bin/bash
-
 export LANGUAGES=(en de es it fr)
 
 # read the wikipedia dump path each language
@@ -38,9 +37,9 @@ LANGUAGE=${LANGUAGES[i]}
 	mkdir data/lists/${LANGUAGE}
 	mkdir data/models/${LANGUAGE}
 
-	echo "-------------------------  "
-	echo "Setting language:  ${LANGUAGE} "
-	echo "-------------------------  "
+	echo "--------------------------------  "
+	echo "Configuration for language:  ${LANGUAGE} "
+	echo "--------------------------------  "
 
 	###############    Download lang properties  ###############
 	echo "2) Download language properties"
@@ -79,52 +78,52 @@ LANGUAGE=${LANGUAGES[i]}
     fi
 
 	###############     Download DBPedia    ###############
-	echo "3b) Download DBPedia dump in ${LANGUAGE}"
+	echo "3b) Download DBPedia dump"
 	dbpedia="http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/mappingbased_objects_${LANGUAGE}.ttl.bz2"
 	wget -q -O data/input/dbpedia/${LANGUAGE}/mappingbased_objects.ttl.bz2 ${dbpedia}
 
 
 	###############      Download types     ###############
-	echo "3c) Download types mappings in ${LANGUAGE}"
+	echo "3c) Download types mappings"
 
 	if [ ${LANGUAGE} = "en" ]; then
-		echo " -> downlaod TYPES_INSTANCE mapping ..."
+		echo "     -> type_instance.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
 		
-		echo " -> downlaod DB_TAX mapping ..."
+		echo "     -> type_instance_dbtax.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_dbtax_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_dbtax_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_dbtax.ttl.bz2
 		
-		echo " -> downlaod LHD_TYPES mapping ..."
+		echo "     -> type_instance_lhd.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_lhd_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_lhd_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2
 		
-		echo " -> downlaod SD_TYPES mapping ..."
+		echo "     -> type_instance_sdtypes.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_sdtyped.ttl.bz2
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
-		echo " -> downlaod TYPES_INSTANCE mapping ..."
+		echo "     -> type_instance.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
 
-		echo " -> downlaod SD_TYPES mapping ..."
+		echo "     -> type_instance_sdtypes.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_sdtyped.ttl.bz2
 	
-		echo " -> downlaod LHD_TYPES mapping ..."
+		echo "     -> type_instance_lhd.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_lhd_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_lhd_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2
 	fi
 	if [ ${LANGUAGE} != "de" ] && [ ${LANGUAGE} != "en" ]; then
-		echo " -> downlaod TYPES_INSTANCE mapping ..."
+		echo "     -> type_instance.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
 	fi
 
 	###############    Download redirect     ###############
-	echo "3d) Download redirects file in ${LANGUAGE}"
+	echo "3d) Download redirects file"
 	if [ ${LANGUAGE} = "en" ]; then
 		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/j28zvxwyc6z626z/redirects.tsv?dl=0"
 	fi
@@ -142,63 +141,63 @@ LANGUAGE=${LANGUAGES[i]}
     fi
 
 	###############          Download lists      ###############
-	echo "3e) Download source lists for ${LANGUAGE}"
+	echo "3e) Download source lists:"
 	
 	if [ ${LANGUAGE} = "en" ]; then
-		echo " -> downlaod currencies ..."
+		echo "     -> currencies.tsv"
 		wget -q -O data/lists/${LANGUAGE}/currencies.tsv "https://www.dropbox.com/s/agdx57liefhxoig/currencies.tsv?dl=0"
 
-		echo " -> downlaod nationalities ..."
+		echo "     -> nationalities.tsv"
 		wget -q -O data/lists/${LANGUAGE}/nationalities.tsv "https://www.dropbox.com/s/xoz08shuuet2h3s/nationalities.tsv?dl=0"
 
-		echo " -> downlaod professions ..."
+		echo "     -> professions.tsv"
 		wget -q -O data/lists/${LANGUAGE}/professions.tsv "https://www.dropbox.com/s/4ul4z9rra71tqj4/professions.tsv?dl=0"
 
-		echo " -> downlaod stopwords ..."
+		echo "     -> stopwords.tsv"
 		wget -q -O data/lists/${LANGUAGE}/stopwords.tsv "https://www.dropbox.com/s/03ferhbc1tp15c7/stopwords.tsv?dl=0"
 	fi
 
 	if [ ${LANGUAGE} = "es" ]; then
-		echo " -> downlaod currencies ..."
+		echo "     -> currencies.tsv"
 		wget -q -O data/lists/${LANGUAGE}/currencies.tsv "https://www.dropbox.com/s/ph9xngzhmobsvtc/currencies.tsv?dl=0"
 
-		echo " -> downlaod nationalities ..."
+		echo "     -> nationalities.tsv"
 		wget -q -O data/lists/${LANGUAGE}/nationalities.tsv "https://www.dropbox.com/s/pu7b67fk2llirpd/nationalities.tsv?dl=0"
 
-		echo " -> downlaod professions ..."
+		echo "     -> professions.tsv"
 		wget -q -O data/lists/${LANGUAGE}/professions.tsv "https://www.dropbox.com/s/ddffrwopa2q4afr/professions.tsv?dl=0"
 	fi
 
 	if [ ${LANGUAGE} = "it" ]; then
-		echo " -> downlaod currencies ..."
+		echo "     -> currencies.tsv"
 		wget -q -O data/lists/${LANGUAGE}/currencies.tsv "https://www.dropbox.com/s/awzydkuubc0pctc/currencies.tsv?dl=0"
 
-		echo " -> downlaod nationalities ..."
+		echo "     -> nationalities.tsv"
 		wget -q -O data/lists/${LANGUAGE}/nationalities.tsv "https://www.dropbox.com/s/5bi5kkevpfga0g7/nationalities.tsv?dl=0"
 
-		echo " -> downlaod professions ..."
+		echo "     -> professions.tsv"
 		wget -q -O data/lists/${LANGUAGE}/professions.tsv "https://www.dropbox.com/s/xsan6dr0nxippd0/professions.tsv?dl=0"
 	fi
 
 	if [ ${LANGUAGE} = "fr" ]; then
-		echo " -> downlaod currencies ..."
+		echo "     -> currencies.tsv"
 		wget -q -O data/lists/${LANGUAGE}/currencies.tsv "https://www.dropbox.com/s/cfsqyotj34e4bhq/currencies.tsv?dl=0"
 
-		echo " -> downlaod nationalities ..."
+		echo "     -> nationalities.tsv"
 		wget -q -O data/lists/${LANGUAGE}/nationalities.tsv "https://www.dropbox.com/s/brdk81sox778nt6/nationalities.tsv?dl=0"
 
-		echo " -> downlaod professions ..."
+		echo "     -> professions.tsv"
 		wget -q -O data/lists/${LANGUAGE}/professions.tsv "https://www.dropbox.com/s/ibocfyhrlo607e1/professions.tsv?dl=0"
 	fi
 
 	if [ ${LANGUAGE} = "de" ]; then
-		echo " -> downlaod currencies ..."
+		echo "     -> currencies.tsv"
 		wget -q -O data/lists/${LANGUAGE}/currencies.tsv "https://www.dropbox.com/s/4k550pqii8ox69j/currencies.tsv?dl=0"
 
-		echo " -> downlaod nationalities ..."
+		echo "     -> nationalities.tsv"
 		wget -q -O data/lists/${LANGUAGE}/nationalities.tsv "https://www.dropbox.com/s/1qf74es81b3c245/nationalities.tsv?dl=0"
 
-		echo " -> downlaod professions ..."
+		echo "     -> professions.tsv"
 		wget -q -O data/lists/${LANGUAGE}/professions.tsv "https://www.dropbox.com/s/sob8376r0mab3aa/professions.tsv?dl=0"
 	fi
 
@@ -219,10 +218,3 @@ done
 # install LectorPlus
 echo "Install dependencies ..."
 mvn clean install
-
-###############    and Run it!  ############
-echo "-----------------------------------------------"
-echo "Executing LectorPlus or ${LANGUAGE} language..."
-echo "-----------------------------------------------"
-java -Xmx20g -jar target/lectorplus-1.0-SNAPSHOT-jar-with-dependencies.jar config.properties inMemory=FALSE totArticle=20000000 chunckSize=5000 dataFile=data
-
