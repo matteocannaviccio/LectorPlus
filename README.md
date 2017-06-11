@@ -8,6 +8,12 @@ More information is available about the project at the Lector homepage: http://w
 
 ## Getting Started
 
+### Clone the project
+
+```
+git clone https://github.com/miccia4/LectorPlus.git
+```
+
 ### Environment
 To execute LectorPlus on your machine you should install:
 - [Maven](https://maven.apache.org/)
