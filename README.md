@@ -41,13 +41,16 @@ The tool takes as input a Wikipedia (XML) (in one of the language above) and out
 #### Structure of the folder `/data`
 The folder `/data` contains a list of sub-folders and includes all the necessary files:
 
+	|-- input (en es it de fr):									
+	|		|-- wikipedia: it contains the XML dump of Wikipedia
+	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
+	|
 	|-- languages: it contains the properties used by the parser
 	|
 	|-- lists (en es it de fr): used by the parser to filter out undesired NE
 	|		|-- currencies.tsv
 	|		|-- nationalities.tsv
-	|		|-- professions.tsv																
-	|
+	|		|-- professions.tsv											|				
 	|-- models (en): OpenNLP models that are used from the English parser.
 	|		|-- en-lemmatizer.dict
 	|		|-- en-pos-maxent.bin
@@ -56,10 +59,6 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|-- sources (en es it de fr): other important files used in the process
 	|		|-- type
 	|		|-- redirect.tsv
-	|
-	|-- input (en es it de fr):									
-	|		|-- wikipedia: it contains the XML dump of Wikipedia
-	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
 
 Other folders are created at run-time:
 
