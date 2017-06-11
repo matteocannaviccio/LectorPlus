@@ -32,6 +32,7 @@ The tool takes as input a Wikipedia (XML) (in one of the language above) and out
 	it lists the specific URLs of the input Wikipedia dump. We filled it with the complete dumps of Feb. 2017 but other versions can be easily used (from https://dumps.wikimedia.org/).
 
 - Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. 
+	
 	Run once our install script:
 	```
 	sh install.sh
