@@ -1,9 +1,12 @@
 # LectorPlus
-**Lector** is an extraction tool originating from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version. 
+**Lector** is an extraction tool originated from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions (i.e. phrases) that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version. 
 
-**LectorPlus** is an extension in which the tool has been applied to different languages. It is now able to extract facts for Spanish, Italian, French and German version of Wikipedia.
+**LectorPlus** is an extension in which the tool has been applied to different languages, other than English. It is able to extract facts for Spanish, Italian, French and German version of Wikipedia and focuses primarily on DBPedia as a reference Knowledge Graph.
 
 More information is available about the project at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
+
+## Approach
+Each execution of the tool performs a first pass over the whole dump harvesting the phrases that are commonly used to describe instances of DBPedia properties in the text (e.g. `[Book] written by [Writer]` describes an instance of the property `writer`). Then, in a second pass, the tool uses the harvested phrases to extracts new instances of such properties involving named entities that were not related before.
 
 
 ## Getting Started
@@ -22,15 +25,15 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 ### Setting up the environment
 
-The tool takes as input a Wikipedia (XML) (in one of the language above) and outputs a NTriples file with the triples that have been extracted. 
+The tool takes as input a Wikipedia XML dump (in one of the language above) and outputs several NTriples files with the triples that have been extracted. 
 
-- In order to run the tool on a specific version of Wikipedia (XML) dump please edit the file:
+- In order to run the tool on specific versions of Wikipedia please edit the file:
 	 ```
 	 dumps.properties
 	 ```
-	it lists the specific URLs of the input Wikipedia dump. We filled it with the complete dumps of Feb. 2017 but other versions can be easily used (from https://dumps.wikimedia.org/).
+	it lists the specific URLs of the input Wikipedia dumps. We alrready filled it with the complete dumps of Feb. 2017 in all the languages above but other versions can be easily used (from https://dumps.wikimedia.org/).
 
-- Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the file system used by LectorPlus. 
+- Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the environment used by LectorPlus. 
 	
 	Run once our install script:
 	```
@@ -39,15 +42,15 @@ The tool takes as input a Wikipedia (XML) (in one of the language above) and out
 	It will take some time (many files to downlaod) but at the end it will create the root folder `/data` described below.
 
 #### Structure of the folder `/data`
-The folder `/data` contains a list of sub-folders and includes all the necessary files:
+The folder `/data` contains a list of sub-folders and includes all the necessary files. The languages inside parenthesis means that the content of the folder is repeated for all of them.
 
 	|-- input (en es it de fr):									
-	|		|-- wikipedia: it contains the XML dump of Wikipedia
-	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia
+	|		|-- wikipedia: it contains the initial dump of Wikipedia
+	|		|-- dbpedia: it contains the Mappingbased Objects dump of DBPedia (used as a reference)
 	|
-	|-- languages: it contains the properties used by the parser
+	|-- languages (en es it de fr): it contains the properties of each language used by the parser
 	|
-	|-- lists (en es it de fr): used by the parser to filter out undesired NE
+	|-- lists (en es it de fr): used by the parser to filter out undesired named entities
 	|		|-- currencies.tsv
 	|		|-- nationalities.tsv
 	|		|-- professions.tsv
@@ -58,8 +61,8 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|		|-- en-token.bin
 	|
 	|-- sources (en es it de fr): other important files used in the process
-	|		|-- type
-	|		|-- redirect.tsv
+	|		|-- type: it contains the instance types, or other dictionaries (when present)
+	|		|-- redirect.tsv: it contains tsv files used to solve redirect names during the parsing
 
 Other folders are created at run-time:
 
