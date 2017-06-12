@@ -30,6 +30,7 @@ public class FactsExtractor {
     public enum ModelType {BM25, LectorScore, NB, TextExtChallenge};
 
     private NTriplesWriterWrapper writer_facts;
+    private NTriplesWriterWrapper writer_ontological_facts;
     private ResultsWriterWrapper writer_provenance;
 
     /**
@@ -41,6 +42,7 @@ public class FactsExtractor {
 	System.out.println("\n**** NEW FACTS EXTRACTION ****");
 	Lector.getDbfacts(true);
 	this.writer_facts = new NTriplesWriterWrapper(Configuration.getOutputFactsFile());
+	this.writer_ontological_facts = new NTriplesWriterWrapper(Configuration.getOutputOntologicalFactsFile());
 	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
     }
 
@@ -159,7 +161,7 @@ public class FactsExtractor {
      * @param object
      * @return
      */
-    private boolean processNationalityRecord(String wikid, String sentence, String subject_type, String object){
+    private boolean processOntologicalRecord(String wikid, String sentence, String subject_type, String object){
 	// assign a relation
 	String relation = stupidNationalityRelationChooser(subject_type);
 
@@ -167,7 +169,7 @@ public class FactsExtractor {
 	if (relation != null){
 	    if (!Lector.getKg().getRelations(wikid, object).equals(relation)){
 		writer_provenance.provenance(wikid, sentence, wikid, relation, object);
-		writer_facts.statement(wikid, relation, object, false);
+		writer_ontological_facts.statement(wikid, relation, object, false);
 	    }
 	    //Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
@@ -179,7 +181,7 @@ public class FactsExtractor {
     /**
      * 
      */
-    private int runExtractionNationalities(int facts_extracted) {
+    private int runExtractionOntological(int facts_extracted) {
 	String allUnlabeledTriplesQuery = "SELECT * FROM nationality_collection";
 	try (Statement stmt = Lector.getDbmodel(false).getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
@@ -189,7 +191,7 @@ public class FactsExtractor {
 		    String subject_type = rs.getString(3);
 		    String object = rs.getString(4);
 
-		    if (processNationalityRecord(wikid, sentence, subject_type, object)){
+		    if (processOntologicalRecord(wikid, sentence, subject_type, object)){
 			facts_extracted+=1;
 			if (facts_extracted % 5000 == 0 && facts_extracted > 0)
 			    System.out.println("Extracted " + facts_extracted + " novel facts.");
@@ -233,11 +235,12 @@ public class FactsExtractor {
     public void run(){
 
 	int facts_extracted = runExtractionFacts();
-	facts_extracted = runExtractionNationalities(facts_extracted);
+	facts_extracted = runExtractionOntological(facts_extracted);
 
 	// close the output stream
 	try {
 	    writer_facts.done();
+	    writer_ontological_facts.done();
 	    writer_provenance.done();
 	} catch (IOException e) {
 	    e.printStackTrace();

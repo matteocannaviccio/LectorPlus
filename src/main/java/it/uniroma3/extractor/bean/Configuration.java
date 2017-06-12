@@ -296,6 +296,10 @@ public class Configuration {
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
     }
     
+    public static String getOutputOntologicalFactsFile(){
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputOntologicalFile");
+    }
+    
     public static String getProvenanceFile() {
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
