@@ -1,8 +1,6 @@
 package it.uniroma3.extractor.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Base64;
@@ -47,15 +45,6 @@ public class KeyValueIndex {
 	this.indexSearcher = createSearcher(kvIndexPath);
     }
 
-    /**
-     * This is the constructor if we need to create the index a file.
-     * @param kvPairsFilePath
-     * @param kvIndexPath
-     */
-    public KeyValueIndex(String kvPairsFilePath, String kvIndexPath){
-	this.createIndexFromFile(kvPairsFilePath, kvIndexPath);
-	this.indexSearcher = createSearcher(kvIndexPath);
-    }
 
     /**
      * This is the constructor if we already have the index.
@@ -150,59 +139,6 @@ public class KeyValueIndex {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
-    }
-
-    /**
-     * 
-     * 
-     * 
-     * @param pathToPhrases
-     */
-    private void createIndexFromFile(String kvPairsFilePath, String kvIndexPath) {
-	File kvPairsFile = new File(kvPairsFilePath);
-	IndexWriter writer = createWriter(kvIndexPath);
-	int count_bad = 0;
-	int count_ok = 0;
-	try {
-	    BufferedReader input = new BufferedReader(new FileReader(kvPairsFile));
-	    String line = input.readLine();
-	    while (line != null){
-		/*
-		 * we read the key-value file and index the encoded strings
-		 */
-		String[] field = line.split("\t");
-
-		// skip bad-formatted lines
-		if (field.length != 2){
-		    count_bad ++;
-		    line = input.readLine();
-		    continue;
-		}else{
-		    count_ok ++;
-		}
-
-		String key = encodeBase64(field[0]);
-		String value = encodeBase64(field[1]);
-
-		/*
-		 * indexing key-value pairs using the name of the fields
-		 */
-		Document doc = new Document();
-		doc.add(new StringField("key", key, Store.YES));
-		doc.add(new StringField("value", value, Store.YES));
-		writer.addDocument(doc);
-
-		line = input.readLine();
-	    }
-
-	    input.close();
-	    writer.close();
-
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-
 	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
     }
 

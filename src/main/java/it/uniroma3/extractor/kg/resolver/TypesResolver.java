@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg;
+package it.uniroma3.extractor.kg.resolver;
 
 import java.io.File;
 import java.util.Arrays;
@@ -12,8 +12,9 @@ import java.util.stream.Collectors;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.kg.normalizer.TGPattern;
-import it.uniroma3.extractor.kg.normalizer.TypesNormalizer;
+import it.uniroma3.extractor.kg.normalizer.Normalizer;
+import it.uniroma3.extractor.kg.ontology.OntPath;
+import it.uniroma3.extractor.kg.ontology.Ontology;
 import it.uniroma3.extractor.util.KeyValueIndex;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -23,7 +24,18 @@ import it.uniroma3.extractor.util.Pair;
  */
 public class TypesResolver {
 
+    /*
+     * for the other languages we keep the english types dictionary
+     * as a reserve in case we can not find a type in the right
+     * language dictionary.
+     * TODO: we should add the inter-languages mapping here (...)
+     */
+    private static KeyValueIndex indexOriginal_ref;
+    private static KeyValueIndex indexAirpedia_ref;
+
     private static KeyValueIndex indexOriginal;
+    private static KeyValueIndex indexAirpedia;
+
     private static KeyValueIndex indexSDTyped;
     private static KeyValueIndex indexLHD;
     private static KeyValueIndex indexDBTax;
@@ -34,27 +46,54 @@ public class TypesResolver {
      * 
      */
     public TypesResolver(){
-	// we need the ontology to find subTypes
+	// we need the ontology to find subTypes and solve situations regarind parent-child types
 	ontology = new Ontology();
 
-	// we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
+	/*
+	 * we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
+	 * the "ref" index are always the english ones.
+	 */
 	switch(Lector.getWikiLang().getLang()){
 	case en:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaTypes());
 	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
 	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
 	    indexDBTax = getIndexOrCreate(Configuration.getDBTaxTypesIndex(), Configuration.getSourceDBTaxInstanceTypes());
-	    
+	    indexOriginal_ref = indexOriginal;
+	    indexAirpedia_ref = indexAirpedia;
+
 	case de:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaTypes());
 	    indexSDTyped = getIndexOrCreate(Configuration.getSDTypesIndex(), Configuration.getSourceSDTypedInstanceTypes());
 	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
-	    
+	    indexOriginal_ref = getIndex(Configuration.getTypesIndex_Ref());
+	    indexAirpedia_ref = getIndex(Configuration.getAirpediaIndex_Ref());
+
 	default:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
+	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaTypes());
+	    indexOriginal_ref = getIndex(Configuration.getTypesIndex_Ref());
+	    indexAirpedia_ref = getIndex(Configuration.getAirpediaIndex_Ref());
 	}
     }
 
+    /**
+     * Returns a KeyValueIndex given the path. If the exists does not exist returns null.
+     * 
+     * @param indexPath
+     * @return
+     */
+    private KeyValueIndex getIndex(String indexPath){
+	KeyValueIndex index = null;
+	if (new File(indexPath).exists())
+	    index = new KeyValueIndex(indexPath);
+	else
+	    System.out.println("Index requested does not exist.");
+	return index; 
+    }
+    
     /**
      * Returns a KeyValueIndex given the path. If the exists does not exist it create it and then return.
      * 
@@ -68,7 +107,7 @@ public class TypesResolver {
 	    System.out.print("Creating " + new File(indexPath).getName() + " index ...");
 	    long start_time = System.currentTimeMillis();
 
-	    List<Pair<String, String>> keyvalues = TypesNormalizer.normalizeTypesDataset(sourcePath);
+	    List<Pair<String, String>> keyvalues = Normalizer.normalizeInstanceTypesDataset(sourcePath);
 	    index = new KeyValueIndex(keyvalues, indexPath);
 
 	    long end_time = System.currentTimeMillis();
@@ -79,11 +118,19 @@ public class TypesResolver {
 	return index;
     }
 
+
     /**
      * @return the indexOriginal
      */
     public KeyValueIndex getIndexOriginal() {
 	return indexOriginal;
+    }
+
+    /**
+     * @return the indexAirpedia
+     */
+    public KeyValueIndex getIndexAirpedia() {
+	return indexAirpedia;
     }
 
     /**
@@ -121,15 +168,16 @@ public class TypesResolver {
     }
 
     /**
+     * Returns all the OntPaths that we can find for the entity in the given index.
      * 
      * @param entity
      * @param specificIndex
      * @return
      */
-    public List<TGPattern> getTGpattern(String entity, KeyValueIndex specificIndex) {
-	List<TGPattern> patt = new LinkedList<TGPattern>();
-	for (String t : getTypes(entity, specificIndex)){
-	    TGPattern tgp = ontology.getTGPattern(t);
+    public List<OntPath> getOntPath(String entity, KeyValueIndex index) {
+	List<OntPath> patt = new LinkedList<OntPath>();
+	for (String t : getTypes(entity, index)){
+	    OntPath tgp = ontology.getOntPath(t);
 	    if (tgp != null)
 		patt.add(tgp);
 	}
@@ -142,8 +190,8 @@ public class TypesResolver {
      * @param dbpediaEntity
      * @return
      */
-    public TGPattern getTGpattern(String dbpediaEntity) {
-	return ontology.getTGPattern(assignTypes(dbpediaEntity));
+    public OntPath getOntPath(String dbpediaEntity) {
+	return ontology.getOntPath(assignTypes(dbpediaEntity));
     }
 
     /**
@@ -167,23 +215,39 @@ public class TypesResolver {
      */
     public String assignTypes(String wikid){
 	String type = selectDeepest(getTypes(wikid, indexOriginal));
-	if (Lector.getWikiLang().getLang().equals("en") || Lector.getWikiLang().getLang().equals("de")){
-	    if (type.equals("[none]"))
-		type = selectDeepest(getTypes(wikid, indexSDTyped));
-	    if (type.equals("[none]"))
-		type = selectDeepest(getTypes(wikid, indexLHD));
-	}
+
+	if (type.equals("[none]"))
+	    type = selectDeepest(getTypes(wikid, indexAirpedia));
+
+	if (type.equals("[none]"))
+	    if (Lector.getWikiLang().getLang().equals("en") || Lector.getWikiLang().getLang().equals("de")){
+		if (type.equals("[none]"))
+		    type = selectDeepest(getTypes(wikid, indexSDTyped));
+		if (type.equals("[none]"))
+		    type = selectDeepest(getTypes(wikid, indexLHD));
+	    }
+
+	// if there is not a type, try with the reference dictionary (english)
+	if (type.equals("[none]") && indexOriginal_ref != null)
+	    type = selectDeepest(getTypes(wikid, indexOriginal_ref));
+
+	if (type.equals("[none]") && indexAirpedia_ref != null)
+	    type = selectDeepest(getTypes(wikid, indexAirpedia_ref));
+
 	return type;
     }
-    
+
+
+
     /**
+     * Returns true if the first argument is a parent type of the second.
      * 
-     * @param subject_type
-     * @param dbpedia_type
+     * @param possibleParent
+     * @param possibleChild
      * @return
      */
-    public boolean isChild(String subject_type, String dbpedia_type) {
-	return ontology.getTGPattern(subject_type).contains(dbpedia_type);
+    public boolean isChildOf(String possibleParent, String possibleChild){
+	return ontology.isChildOf(possibleParent, possibleChild);
     }
 
     /**
@@ -192,17 +256,24 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
+	Configuration.setParameter("language", "it");
+	Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");
+
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
 	TypesResolver t = new TypesResolver();
 
-	String entity = "Barack_Obama";
+	String entity = "Thomas_Hyde";
 	System.out.println("USED --> " + t.assignTypes(entity));
 
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypes(entity, t.getIndexOriginal()).forEach(System.out::println);
 
+	System.out.println("\nTypes in Airpedia: ");
+	t.getTypes(entity, t.getIndexAirpedia()).forEach(System.out::println);
+
+	/*
 	System.out.println("\nTypes in DBTax: ");
 	t.getTypes(entity, t.getIndexDBTax()).forEach(System.out::println);
 
@@ -211,6 +282,7 @@ public class TypesResolver {
 
 	System.out.println("\nTypes in SDTyped: ");
 	t.getTypes(entity, t.getIndexSDTyped()).forEach(System.out::println);
+	 */
     }
 
 }

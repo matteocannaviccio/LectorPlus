@@ -7,13 +7,16 @@ import java.util.Set;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.extractor.bean.WikiLanguage.Lang;
+import it.uniroma3.extractor.kg.resolver.RedirectResolver;
+import it.uniroma3.extractor.kg.resolver.RelationsResolver;
+import it.uniroma3.extractor.kg.resolver.TypesResolver;
 /**
  * 
  * @author matteo
  *
  */
-public class KGEndPoint {
-    
+public class DBPedia {
     private RedirectResolver redirectResolver;
     private TypesResolver typesResolver;
     private RelationsResolver relationResolver;
@@ -21,7 +24,7 @@ public class KGEndPoint {
     /**
      * 
      */
-    public KGEndPoint(){
+    public DBPedia(){
 	this.redirectResolver = new RedirectResolver();
 	this.typesResolver = new TypesResolver();
 	this.relationResolver = new RelationsResolver();
@@ -78,6 +81,84 @@ public class KGEndPoint {
     
     /**
      * 
+     * @param uri
+     * @return
+     */
+    public String getResourceName(String uri){
+	return uri.replace(getResourceURI(), "");
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return
+     */
+    public String getPredicateName(String uri){
+	return uri.replace(getOntologyURI(), "");
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return
+     */
+    public boolean isDBPediaResource(String uri){
+	return uri.contains(getResourceURI());
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getResourceURI(){
+	String namespace = null;
+	if(Lector.getWikiLang().getLang().equals(Lang.en))
+	    namespace = "http://dbpedia.org/resource/";
+	else{
+	    namespace = "http://" + Lector.getWikiLang().getLang() +".dbpedia.org/resource/";
+	}
+	return namespace;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getOntologyURI(){
+	return "http://dbpedia.org/ontology/";
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return
+     */
+    public static boolean isIntermediateNode(String uri){
+	return uri.contains("__");
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return
+     */
+    public boolean isInDBPediaOntology(String uri){
+	return uri.contains(getOntologyURI());
+    }
+    
+    /**
+     * Returns true if the first argument is a parent type of the second.
+     * 
+     * @param possibleParent
+     * @param possibleChild
+     * @return
+     */
+    public boolean isChildOf(String possibleParent, String possibleChild){
+	return typesResolver.isChildOf(possibleParent, possibleChild);
+    }
+    
+    /**
+     * 
      * @param args
      */
     
@@ -86,21 +167,21 @@ public class KGEndPoint {
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
-	KGEndPoint t = new KGEndPoint();
+	DBPedia t = new DBPedia();
 
 	String entity = "Sergei_Zubov";
 
 	System.out.println("\nTypes in orginal mapping: ");
-	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexOriginal()).forEach(System.out::println);
+	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexOriginal()).forEach(System.out::println);
 
 	System.out.println("\nTypes in DBTax: ");
-	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexDBTax()).forEach(System.out::println);
+	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexDBTax()).forEach(System.out::println);
 	
 	System.out.println("\nTypes in LHD: ");
-	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexLHD()).forEach(System.out::println);
+	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexLHD()).forEach(System.out::println);
 	
 	System.out.println("\nTypes in SDTyped: ");
-	t.getTypesResolver().getTGpattern(entity, t.getTypesResolver().getIndexSDTyped()).forEach(System.out::println);
+	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexSDTyped()).forEach(System.out::println);
     }
         
 

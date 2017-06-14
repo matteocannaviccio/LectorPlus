@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
-import it.uniroma3.extractor.util.reader.TSVReader;
+import it.uniroma3.extractor.util.io.TSVReader;
 /**
  * 
  * @author matteo

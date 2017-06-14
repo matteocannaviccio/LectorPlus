@@ -8,7 +8,7 @@ import it.uniroma3.extractor.entitydetection.FSMNationality;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.entitydetection.ReplAttacher;
 import it.uniroma3.extractor.entitydetection.ReplFinder;
-import it.uniroma3.extractor.kg.KGEndPoint;
+import it.uniroma3.extractor.kg.DBPedia;
 import it.uniroma3.extractor.parser.ArticleTyper;
 import it.uniroma3.extractor.parser.BlockParser;
 import it.uniroma3.extractor.parser.MarkupParser;
@@ -46,7 +46,7 @@ public class Lector {
     private static ReplAttacher entitiesTagger;
 
     /* Needed in Triple Extraction */
-    private static KGEndPoint kg;
+    private static DBPedia dbpedia;
     private static Triplifier triplifier;
     /* Keep the (open) connections here */
     private static DBFacts dbfacts;
@@ -121,7 +121,7 @@ public class Lector {
      * Initialize the KG.
      */
     public static void initDBpedia(){
-	kg = new KGEndPoint();
+	dbpedia = new DBPedia();
     }
 
 
@@ -206,8 +206,8 @@ public class Lector {
     /**
      * @return the kg
      */
-    public static KGEndPoint getKg() {
-	return kg;
+    public static DBPedia getDBPedia() {
+	return dbpedia;
     }
 
     /**

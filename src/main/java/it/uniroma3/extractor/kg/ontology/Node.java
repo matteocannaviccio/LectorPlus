@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.normalizer;
+package it.uniroma3.extractor.kg.ontology;
 
 /**
  * 

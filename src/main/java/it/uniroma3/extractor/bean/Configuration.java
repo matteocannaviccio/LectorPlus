@@ -26,7 +26,7 @@ import org.apache.log4j.varia.NullAppender;
 public class Configuration {
 
     public static Map<String, String> keyValue = new TreeMap<String, String>();
-    
+
     /**
      * Print all the (interesting) details of the config file.
      */
@@ -44,7 +44,7 @@ public class Configuration {
 	System.out.printf("%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
 	System.out.println("--------------");
     }
-    
+
     /**
      * 
      * @param key
@@ -170,7 +170,7 @@ public class Configuration {
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
+
     public static String getOutputFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("outputFolder") + "/" + getLanguageCode();
 	File folder = new File(folderPath); 
@@ -179,29 +179,30 @@ public class Configuration {
 	return folder.getAbsolutePath();
     }
 
-    private static String getIndexesFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder") + "/" + getLanguageCode();
+    private static String getIndexesFolder(String langCode){
+	String folderPath = getDataFolder() + "/" + keyValue.get("indexesFolder") + "/" + langCode;
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
 
-    private static String getTypesFolder(){
-	String folderPath = getSourceFolder() + "/" + keyValue.get("typesFolder");
+    private static String getSourceFolder(String langCode){
+	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + langCode;
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
-    
-    private static String getSourceFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + getLanguageCode();
+
+    private static String getTypesFolder(String langCode){
+	String folderPath = getSourceFolder(langCode) + "/" + keyValue.get("typesFolder");
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
 	return folder.getAbsolutePath();
     }
+
 
     private static String getOntologyFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + keyValue.get("ontologyFolder");
@@ -295,11 +296,11 @@ public class Configuration {
     public static String getOutputFactsFile(){
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
     }
-    
+
     public static String getOutputOntologicalFactsFile(){
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputOntologicalFile");
     }
-    
+
     public static String getProvenanceFile() {
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
@@ -309,31 +310,44 @@ public class Configuration {
     /***********************************************************************/
 
     public static String getTypesIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("typesIndexName");
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("typesIndexName");
     } 
 
     public static String getSDTypesIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("sdtypedIndexName");
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("sdtypedIndexName");
+    } 
+
+    public static String getAirpediaIndex(){
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("airpediaIndexName");
     } 
 
     public static String getLHDTypesIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("lhdIndexName");
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("lhdIndexName");
     } 
 
     public static String getDBTaxTypesIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("dbtaxIndexName");
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("dbtaxIndexName");
     } 
 
     public static String getRedirectIndex(){
-	return getIndexesFolder() + "/" + keyValue.get("redirectIndexName");
+	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("redirectIndexName");
     } 
+
+    public static String getTypesIndex_Ref() {
+	return getIndexesFolder("en") + "/" + keyValue.get("typesIndexName");
+    }
+
+    public static String getAirpediaIndex_Ref() {
+	return getIndexesFolder("en") + "/" + keyValue.get("airpediaIndexName");
+    }
+
 
     /***********************************************************************/
     /***********************    NORMALIZED TYPES     ***********************/
     /***********************************************************************/
 
     public static String getRedirectFile(){
-	return  getSourceFolder() + "/" + keyValue.get("redirectFile");
+	return  getSourceFolder(getLanguageCode()) + "/" + keyValue.get("redirectFile");
     }
 
     /***********************************************************************/
@@ -342,20 +356,34 @@ public class Configuration {
 
 
     public static String getSourceMainInstanceTypes(){
-	return getTypesFolder() + "/" + keyValue.get("mainInstanceType");
+	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("mainInstanceType");
     }
 
+    public static String getSourceAirpediaTypes(){
+	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("airpediaInstanceType");
+    } 
+
     public static String getSourceDBTaxInstanceTypes(){
-	return getTypesFolder() + "/" + keyValue.get("dbtaxInstanceType");
+	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("dbtaxInstanceType");
     } 
 
     public static String getSourceLHDInstanceTypes(){
-	return getTypesFolder() + "/" + keyValue.get("lhdInstanceType");
+	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("lhdInstanceType");
     } 
 
     public static String getSourceSDTypedInstanceTypes(){
-	return getTypesFolder() + "/" + keyValue.get("sdtypedInstanceType");
+	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("sdtypedInstanceType");
     } 
+    
+    public static String getSourceMainInstanceTypes_Ref(){
+	return getTypesFolder("en") + "/" + keyValue.get("mainInstanceType");
+    }
+
+    public static String getSourceAirpediaTypes_Ref(){
+	return getTypesFolder("en") + "/" + keyValue.get("airpediaInstanceType");
+    } 
+    
+    
 
     public static String getDBPediaOntologyFile(){
 	return getOntologyFolder() + "/" + keyValue.get("ontology");
@@ -427,6 +455,14 @@ public class Configuration {
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
 
+    public static int getMinF(){
+	return Integer.parseInt(keyValue.get("minF"));
+    }
+
+    public static int getTopK(){
+	return Integer.parseInt(keyValue.get("topK"));
+    }
+
     public static boolean getOnlyTextWikilinks(){
 	return keyValue.get("onlyTextWikilinks").equalsIgnoreCase("true");	    
     }
@@ -454,7 +490,6 @@ public class Configuration {
     public static boolean inMemoryProcess(){
 	return keyValue.get("inMemory").equalsIgnoreCase("true");
     }
-
     /***********************************************************************/
 
 }
