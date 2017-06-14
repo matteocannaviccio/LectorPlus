@@ -47,7 +47,7 @@ LANGUAGE=${LANGUAGES[i]}
 		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/y3yqakdcwhizkx2/en.properties?dl=0"
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
-		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/c0chppcpc3qbqoz/es.properties?dl=0"
+		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/ijviti49l6udmcu/es.properties?dl=0"
 	fi
 	if [ ${LANGUAGE} = "it" ]; then
 		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/q02dxaf5hzq7tmd/it.properties?dl=0"

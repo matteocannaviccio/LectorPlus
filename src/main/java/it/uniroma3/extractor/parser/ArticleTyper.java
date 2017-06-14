@@ -96,6 +96,12 @@ public class ArticleTyper {
 	    if (article.getWikid().startsWith(portalHook + ":")){
 		return ArticleType.PORTAL;
 	    }
+	
+	/* Filter to capture WIKIPEDIA portal articles */
+	for (String portalHook : Lector.getWikiLang().getProjectIdentifiers())
+	    if (article.getWikid().startsWith(portalHook + ":")){
+		return ArticleType.PROJECT;
+	    }
 
 	/* Filter to capture FILE articles */
 	for (String fileHook : Lector.getWikiLang().getFileIdentifiers())
