@@ -137,7 +137,7 @@ LANGUAGE=${LANGUAGES[i]}
 	###############    Download redirect     ###############
 	echo "3d) Download redirects file"
 	if [ ${LANGUAGE} = "en" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/lwgc19srzlrtaqp/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/upou8x1mutrypm4/redirects.tsv.bz2?dl=0"
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
 		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/u8agpsnwtg3yhlp/redirects.tsv.bz2?dl=0"
