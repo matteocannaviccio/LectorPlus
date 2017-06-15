@@ -28,7 +28,7 @@ public class Main {
      * @param args
      */
     public static void main(String[] args){
-	String[] languages = new String[]{"es", "it", "de", "fr", "en"};
+	String[] languages = new String[]{"en","es", "it", "de", "fr"};
 	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);

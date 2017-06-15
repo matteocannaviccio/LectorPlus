@@ -137,19 +137,19 @@ LANGUAGE=${LANGUAGES[i]}
 	###############    Download redirect     ###############
 	echo "3d) Download redirects file"
 	if [ ${LANGUAGE} = "en" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/upou8x1mutrypm4/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/upou8x1mutrypm4/redirects.tsv.bz2?dl=0"
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/u8agpsnwtg3yhlp/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/u8agpsnwtg3yhlp/redirects.tsv.bz2?dl=0"
 	fi 
  	if [ ${LANGUAGE} = "it" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/4ea7z5g2h9s31rd/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/4ea7z5g2h9s31rd/redirects.tsv.bz2?dl=0"
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/o2jso5r917jspld/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/o2jso5r917jspld/redirects.tsv.bz2?dl=0"
 	fi
     if [ ${LANGUAGE} = "fr" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/hj9psr9i5maeu43/redirects.tsv.bz2?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/hj9psr9i5maeu43/redirects.tsv.bz2?dl=0"
     fi
 
 	###############          Download lists      ###############
