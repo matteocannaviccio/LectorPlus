@@ -12,3 +12,8 @@ export.jardesc
 .gitignore
 .idea
 lectorplus.iml
+config.properties
+dump.properties
+install.sh
+run.sh
+data/

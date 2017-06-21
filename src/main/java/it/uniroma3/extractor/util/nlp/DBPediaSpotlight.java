@@ -59,10 +59,12 @@ public class DBPediaSpotlight {
         System.out.print("\n-> Loading DBPedia Spotlight ... ");
         Process p = null;
 
+
         try {
             ProcessBuilder pb = new ProcessBuilder(
                 "java",
                 "-Xmx16g",
+                "-Dfile.encoding=utf-8",
                 "-jar",
                 Configuration.getSpotlightJar(),
                 Configuration.getSpotlightModel(),
@@ -71,7 +73,7 @@ public class DBPediaSpotlight {
             File dirErr = new File(Configuration.getSpotlightLocalERR());
             pb.redirectError(dirErr);
             p = pb.start();
-            p.waitFor(120, TimeUnit.SECONDS);
+            p.waitFor(80, TimeUnit.SECONDS);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -117,7 +119,7 @@ public class DBPediaSpotlight {
 
             responseBody = getMethod.getResponseBodyAsStream();
 
-            getMethod.releaseConnection();
+            //getMethod.releaseConnection();
 
 
         } catch (IOException e) {
@@ -137,6 +139,10 @@ public class DBPediaSpotlight {
             System.out.println(responseBody);
             System.out.println("****");
         }
+        finally {
+
+        }
+
         return response;
     }
 

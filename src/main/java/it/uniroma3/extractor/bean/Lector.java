@@ -16,6 +16,7 @@ import it.uniroma3.extractor.parser.TextParser;
 import it.uniroma3.extractor.parser.WikiParser;
 import it.uniroma3.extractor.parser.XMLParser;
 import it.uniroma3.extractor.triples.Triplifier;
+import it.uniroma3.extractor.util.nlp.DBPediaSpotlight;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
@@ -51,6 +52,9 @@ public class Lector {
     /* Keep the (open) connections here */
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
+
+    //DBpedia Spotlight
+    private static DBPediaSpotlight dbPediaSpotlight;
 
     /**
      * Here we initialize all the components of the tool.
@@ -108,6 +112,7 @@ public class Lector {
 		return new FSMNationality();
 	    }
 	};
+	dbPediaSpotlight = new DBPediaSpotlight(0.5,0);
     }
 
     /**
@@ -239,6 +244,8 @@ public class Lector {
 	return wikiLang;
     }
 
+    public static DBPediaSpotlight getDbPediaSpotlight() { return dbPediaSpotlight; }
+
 
     /**
      * 
@@ -302,4 +309,7 @@ public class Lector {
     }
 
 
+    public static DBPediaSpotlight getSpotlight() {
+        return dbPediaSpotlight;
+    }
 }

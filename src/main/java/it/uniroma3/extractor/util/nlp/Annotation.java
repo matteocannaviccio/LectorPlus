@@ -77,14 +77,14 @@ public class Annotation {
      * 
      */
     public void setWikid() {
-	this.wikid = uri.replaceAll("http://dbpedia.org/resource/", "");
+	this.wikid = uri.replaceAll("http://([a-z][a-z]\\.)?dbpedia.org/resource/", "");
     }
 
     /**
      * 
      */
     public String toString(String type){
-	return "<" + type + "-AUG<" + this.wikid + ">>";
+	return "<" + type + "-DBPS<" + this.wikid + ">>";
 
     }
 

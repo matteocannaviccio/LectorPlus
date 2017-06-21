@@ -16,6 +16,7 @@ public class Complete {
      * @param inputPath
      */
     protected static void singleStepProcess(WikiLanguage lang){
+	    Lector.init(lang, Configuration.getPipelineSteps());
 	if (Configuration.getPipelineSteps().contains("AP")){
 	    ArticleParser ap = new ArticleParser(Configuration.getOriginalArticlesFile(), Configuration.getParsedArticlesFile());
 	    ap.pipelinedProcess();
@@ -45,11 +46,12 @@ public class Complete {
      * @param args
      */
     public static void main(String[] args){
-	String[] languages = new String[]{"en", "es", "it", "fr", "de"};
+	String[] languages = new String[]{"it"};
 	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
-	    Configuration.printDetails();
+		Configuration.setParameter("dataFile", "/Users/khorda/Documents/Universita/supporto-MATTEO/dbpediachallenge-lector/data");
+		Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    singleStepProcess(wikiLang);
 	}

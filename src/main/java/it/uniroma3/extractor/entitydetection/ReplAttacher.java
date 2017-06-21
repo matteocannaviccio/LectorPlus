@@ -218,9 +218,9 @@ public class ReplAttacher {
 		/*
 		 * Apply a Named Entity Recognition to find instances of the remaining entities
 		 */
-		//article.getSentences().put(block.getKey(), Lector.getSpotlight().annotateText(block.getValue(), article.getWikid()));
+		article.getSentences().put(block.getKey(), Lector.getSpotlight().annotateText(block.getValue(), article.getWikid()));
 		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
-		article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
+		//article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
 
 
 	    }
