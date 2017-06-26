@@ -50,7 +50,8 @@ public class CompletePipeline {
 	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
 
 	    Lector.getTriplifier().updateBlock();
-
+	    Lector.dischargePerThreadDBPS();
+	    
 	    long end_time = System.currentTimeMillis();
 	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");
 	    System.out.println("Reading next batch.");
@@ -65,7 +66,12 @@ public class CompletePipeline {
      */
     public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
+<<<<<<< HEAD
 	extractor.setModelForEvaluation(ModelType.TextExtChallenge, 
+=======
+	extractor.setModelForEvaluation(
+		ModelType.TextExtChallenge, 
+>>>>>>> c23b47b55d31d51c449198b315f736c581c07ca3
 		"labeled_triples", 
 		Configuration.getMinF(), 
 		Configuration.getTopK(), 

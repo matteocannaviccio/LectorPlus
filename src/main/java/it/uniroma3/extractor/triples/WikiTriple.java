@@ -150,7 +150,7 @@ public class WikiTriple {
      */
     private boolean isWikiEntity(String entity) {
 	boolean isJoinable = false;
-	Pattern joinableEntity = Pattern.compile("^<(PE|SE)-(AUG|ORG|SEED|TITLE|SUBTITLE|PRON|ALIAS)<[^>]*?>>$");
+	Pattern joinableEntity = Pattern.compile("^<(PE|SE)-(AUG|ORG|SEED|TITLE|SUBTITLE|PRON|ALIAS|DBPS)<[^>]*?>>$");
 	Matcher m = joinableEntity.matcher(entity);
 	if(m.matches()){
 	    isJoinable = true;

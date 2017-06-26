@@ -113,7 +113,7 @@ public class ModelBM25 extends Model{
 
 		double lengthRatio = (double)relations_counts.get(relation)/avgRelationsLength;
 		double nDifRel = phrases2relationsCount.get(phrase).size();
-		double idf = Math.log((double)relations_counts.size() / nDifRel);
+		double idf = Math.log(relations_counts.size() / nDifRel);
 		double factor = ((k+1) * pR) / k * ((1-b) + b * (lengthRatio));
 		double scoreBM25 = idf * factor;
 

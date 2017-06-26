@@ -1,7 +1,12 @@
 package it.uniroma3.extractor.bean;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.entitydetection.FSMNationality;
@@ -16,6 +21,7 @@ import it.uniroma3.extractor.parser.TextParser;
 import it.uniroma3.extractor.parser.WikiParser;
 import it.uniroma3.extractor.parser.XMLParser;
 import it.uniroma3.extractor.triples.Triplifier;
+import it.uniroma3.extractor.util.nlp.DBPediaSpotlight;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
@@ -51,6 +57,11 @@ public class Lector {
     /* Keep the (open) connections here */
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
+
+    //DBpedia Spotlight
+    private static Queue<DBPediaSpotlight> poolDBSP = new ConcurrentLinkedQueue<DBPediaSpotlight>();
+    private static Map<Thread, DBPediaSpotlight> poolThreadLocalResources = new ConcurrentHashMap<Thread, DBPediaSpotlight>();
+    private static AtomicInteger initialPort = new AtomicInteger(2222);
 
     /**
      * Here we initialize all the components of the tool.
@@ -108,6 +119,28 @@ public class Lector {
 		return new FSMNationality();
 	    }
 	};
+
+    }
+
+    /**
+     * 
+     * @return
+     */
+    private static DBPediaSpotlight getDBSP(){
+	if (!poolDBSP.isEmpty() && !poolThreadLocalResources.containsKey(Thread.currentThread())){
+	    DBPediaSpotlight dbps = poolDBSP.poll();
+	    poolThreadLocalResources.put(Thread.currentThread(), dbps);
+	    return dbps;
+	}else{
+	    if (poolThreadLocalResources.containsKey(Thread.currentThread())){
+		System.out.println("take " + poolThreadLocalResources.get(Thread.currentThread()).getPort());
+		return poolThreadLocalResources.get(Thread.currentThread());
+	    }else{
+		DBPediaSpotlight dbps = new DBPediaSpotlight(0.5, 0, initialPort.getAndIncrement());
+		poolThreadLocalResources.put(Thread.currentThread(), dbps);
+		return dbps;
+	    }
+	}
     }
 
     /**
@@ -272,6 +305,19 @@ public class Lector {
     /**
      * 
      */
+    public static void dischargePerThreadDBPS(){
+	System.out.print("\nFilling pool DBSP ... ");
+	for (Map.Entry<Thread, DBPediaSpotlight> dbsp : poolThreadLocalResources.entrySet()){
+	    poolDBSP.add(dbsp.getValue());
+	}
+	System.out.println(" inserted " + poolDBSP.size() + " dbsp.");
+	System.out.println("size map: " + poolThreadLocalResources.size());
+	poolThreadLocalResources.clear();
+    }
+
+    /**
+     * 
+     */
     public static void closeAllConnections(){
 	if (dbfacts != null){
 	    dbfacts.closeConnection();
@@ -281,6 +327,11 @@ public class Lector {
 	    dbmodel.closeConnection();
 	    dbmodel = null;
 	}
+	// kill all the remaining processes
+	for (DBPediaSpotlight dbsp : poolDBSP){
+	    dbsp.killProcess();
+	}
+	initialPort = new AtomicInteger(2222);
     }
 
     /**
@@ -299,6 +350,10 @@ public class Lector {
 	if (wikiLang.equals(Lang.fr))
 	    return Locale.FRANCE;
 	return null;
+    }
+
+    public static DBPediaSpotlight getDbPediaSpotlight() {
+	return getDBSP();
     }
 
 

@@ -1,3 +1,4 @@
+
 package it.uniroma3.model.model;
 
 import java.io.FileWriter;
@@ -248,6 +249,7 @@ public class ModelLSTextExt extends Model{
     /**
      * 
      */
+    @Override
     public Pair<String, Double> predictRelation(WikiTriple t) {
 	String relation = null;
 	String phrase = t.getPhrasePlaceholders();

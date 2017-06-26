@@ -1,15 +1,13 @@
 package it.uniroma3.model.model;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
+
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.QueryDB;
 /**
