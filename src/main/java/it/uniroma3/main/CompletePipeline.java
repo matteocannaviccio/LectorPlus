@@ -66,12 +66,8 @@ public class CompletePipeline {
      */
     public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
-<<<<<<< HEAD
 	extractor.setModelForEvaluation(
 		ModelType.TextExtChallenge, 
-=======
-	extractor.setModelForEvaluation(ModelType.TextExtChallenge, 
->>>>>>> master
 		"labeled_triples", 
 		Configuration.getMinF(), 
 		Configuration.getTopK(), 

@@ -30,11 +30,7 @@ public class Main {
      * @param args
      */
     public static void main(String[] args){
-<<<<<<< HEAD
-	String[] languages = new String[]{"it", "en", "es", "de", "fr"};
-=======
 	String[] languages = new String[]{"en","es", "it", "de", "fr"};
->>>>>>> master
 	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
