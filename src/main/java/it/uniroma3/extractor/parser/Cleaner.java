@@ -336,7 +336,7 @@ public class Cleaner {
      * @return
      */
     public String replaceListsWithEmptyContent(String block){
-	Pattern LIST_CONTENT = Pattern.compile("(?m)^(;|#|\\*|:)+((?!\\n).+)++");
+	Pattern LIST_CONTENT = Pattern.compile("(?m)^(;|#|\\*|:|\\|)+((?!\\n).+)++");
 	Matcher m = LIST_CONTENT.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");

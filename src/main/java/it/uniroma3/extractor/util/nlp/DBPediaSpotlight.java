@@ -69,11 +69,11 @@ public class DBPediaSpotlight {
      */
     private JsonObject getAnnotatedText(String text) {
 	JsonObject response = null;    // Read the response body.
-
+	GetMethod getMethod = null;
 	// we do not want to process long sentences.
 	if (text.length() < 600){
 	    try {
-		GetMethod getMethod = new GetMethod(
+		 getMethod = new GetMethod(
 			Configuration.getSpotlightLocalURL() +
 			"/annotate/?" +
 			"confidence=" + this.confidence +
@@ -93,6 +93,8 @@ public class DBPediaSpotlight {
 
 	    } catch (IOException e) {
 		e.printStackTrace();
+	    } finally{
+		getMethod.releaseConnection();
 	    }
 	}
 	return response;

@@ -2,18 +2,10 @@ package it.uniroma3.extractor.util.nlp;
 
 import java.text.BreakIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.regex.Pattern;
 public class StupidNLP {
-    
-    /**
-     * 
-     */
-    private static final Set<String> ABBREVIATIONS = new HashSet<String>(Arrays.asList(new String[]{
-	        "Dr.", "Prof.", "Mr.", "Mrs.", "Ms.", "Jr.","Ph.D.", "Sr.", "feat.", "Inc."}));
 
     /**
      * 
@@ -48,11 +40,9 @@ public class StupidNLP {
     private static boolean hasAbbreviation(String sentence) {
 	if (sentence == null || sentence.isEmpty())
 	    return false;
-	for (String w : ABBREVIATIONS) {
-	    if (sentence.contains(w)) {
-		return true;
-	    }
-	}
+	if (Pattern.matches("\\sDr.\\s||\\sProf.\\s||\\sMr.\\s||\\sMrs.\\s||\\sMs.\\s||"
+		+ "\\sJr.\\s||\\sPh.D.\\s||\\sSr.\\s||\\sfeat.\\s||\\sInc.\\s", sentence))
+	    return true;
 	return false;
     }
 
