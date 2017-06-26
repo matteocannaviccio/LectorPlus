@@ -1,7 +1,8 @@
-package it.uniroma3.extractor.kg;
+package it.uniroma3.extractor.kg.resolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
-import it.uniroma3.extractor.kg.normalizer.DBPediaNormalizer;
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.normalizer.InverseDBPediaRelations;
+import it.uniroma3.extractor.kg.normalizer.Normalizer;
 import it.uniroma3.extractor.util.KeyValueIndex;
 import it.uniroma3.extractor.util.Pair;
 /**
@@ -29,16 +31,31 @@ public class RelationsResolver {
      */
     public RelationsResolver(){
 	inverse = InverseDBPediaRelations.inverse();
-	if (!new File(Configuration.getDBPediaIndex()).exists()){
-	    System.out.print("\t-> Writing DBPedia index ... ");
+	this.indexKG = getIndexOrCreate(Configuration.getDBPediaIndex(), Configuration.getDBPediaDumpFile());
+    }
+
+    /**
+     * Returns a KeyValueIndex given the path. If the exists does not exist it create it and then return.
+     * 
+     * @param indexPath
+     * @param sourcePath
+     * @return
+     */
+    private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
+	KeyValueIndex index = null;
+	if (!new File(indexPath).exists()){
+	    System.out.print("Creating DBPedia index ...");
 	    long start_time = System.currentTimeMillis();
-	    List<Pair<String, String>> dbpedia_dump = DBPediaNormalizer.normalizeMappingBasedDBPediaDump(Configuration.getDBPediaDumpFile());
-	    this.indexKG = new KeyValueIndex(dbpedia_dump, Configuration.getDBPediaIndex());
+
+	    List<Pair<String, String>> dbpedia_dump = Normalizer.normalizeMappingBasedDBPediaDump(Configuration.getDBPediaDumpFile());
+	    index = new KeyValueIndex(dbpedia_dump, indexPath);
+
 	    long end_time = System.currentTimeMillis();
 	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
 	}
 	else // we already have the index
-	    this.indexKG = new KeyValueIndex(Configuration.getDBPediaIndex());
+	    index = new KeyValueIndex(indexPath);
+	return index;
     }
 
     /**
@@ -66,7 +83,7 @@ public class RelationsResolver {
      * @param relation
      * @return
      */
-    public void getInstances(String relation){
+    void getInstances(String relation){
 	for (String instance : indexKG.retrieveKeys(relation))
 	    System.out.println(instance);
     }
@@ -76,7 +93,7 @@ public class RelationsResolver {
      * @param subject
      * @param object
      */
-    public void findRelations(String subject, String object){
+    void findRelations(String subject, String object){
 	System.out.println("Relations in DBPedia between <" + subject + "> and <" + object + ">:");
 	for (String relation : getRelations(subject, object))
 	    System.out.println("\t" + relation);
@@ -90,16 +107,19 @@ public class RelationsResolver {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	Lector.initAP();
-	
+	Configuration.setParameter("language", "es");
+	Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");	
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
+
 	RelationsResolver res = new RelationsResolver();
 
-	//String subject = "Barbara_Pierce_Bush";
-	//String object = "George_W._Bush";
-	//res.findRelations(object, subject);
+	String subject = "Barbara_Pierce_Bush";
+	String object = "George_W._Bush";
+	res.findRelations(object, subject);
 
-	String relation = "nationality";
-	res.getInstances(relation);
+	//String relation = "nationality";
+	//res.getInstances(relation);
 
     }
 

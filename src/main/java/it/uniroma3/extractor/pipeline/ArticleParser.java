@@ -14,7 +14,7 @@ import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
-import it.uniroma3.extractor.util.reader.XMLReader;
+import it.uniroma3.extractor.util.io.XMLReader;
 
 /**
  * This is the main entry point of the parser.

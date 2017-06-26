@@ -1,20 +1,15 @@
-package it.uniroma3.extractor.kg;
+package it.uniroma3.extractor.kg.ontology;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.hp.hpl.jena.graph.Triple;
-
 import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.kg.normalizer.Node;
-import it.uniroma3.extractor.kg.normalizer.TGPattern;
-import it.uniroma3.extractor.util.reader.LectorRDFReader;
-import it.uniroma3.extractor.util.reader.LectorRDFReader.Encoding;
+import it.uniroma3.extractor.util.io.ntriples.NTriplesReader;
+import it.uniroma3.extractor.util.io.ntriples.NTriplesReader.Encoding;
 
 /**
  * 
@@ -43,26 +38,14 @@ public class Ontology {
      * @param pathOntology
      */
     private void initOntology(String pathOntology){
-	LectorRDFReader reader = new LectorRDFReader(pathOntology, Encoding.tsv);
-	Iterator<Triple> iter = reader.readNTFile();
-	String ontologyNameSpace = "http://dbpedia.org/ontology/";
-	String schemaNameSpace = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
-
-	while(iter.hasNext()){
-	    Triple t = iter.next();
-	    String subject = t.getSubject().toString();
-	    String object = t.getObject().toString();
-	    String relation = t.getPredicate().toString();
-
-	    if (relation.equals(schemaNameSpace) && subject.contains(ontologyNameSpace) && object.contains(ontologyNameSpace)){
-		subject = subject.replaceAll(ontologyNameSpace, "");
-		object = object.replaceAll(ontologyNameSpace, "");
-
-		this.subClassOF.put(subject, object);
-		if (!this.intermediateNodes.contains(subject))
-		    this.leavesNodes.add(subject);
-		this.intermediateNodes.add(object);
-	    }
+	List<String> pairs = NTriplesReader.readTriples(pathOntology, Encoding.tsv); 
+	for(String pair : pairs){
+	    String subject = pair.split("\t")[0];
+	    String object = pair.split("\t")[1];
+	    this.subClassOF.put(subject, object);
+	    if (!this.intermediateNodes.contains(subject))
+		this.leavesNodes.add(subject);
+	    this.intermediateNodes.add(object);
 	}
     }
 
@@ -71,27 +54,26 @@ public class Ontology {
      * @param subject
      * @param object
      */
-    public TGPattern getTGPattern(String node){
-	
+    public OntPath getOntPath(String node){
+
 	if (node.startsWith("[") && node.endsWith("]"))
 	    node = node.substring(1, node.length()-1);
-	
+
 	if (node.equals("[none]")){
-	    return TGPattern.make(null, 0);
+	    return OntPath.make(null, 0);
 	}
 	List<List<Node>> levels = new LinkedList<List<Node>>();
 	List<Node> levelLeaf = new LinkedList<Node>();
 	levelLeaf.add(Node.make(node));
 	levels.add(levelLeaf);
-	
+
 	/* RULE TO MAKE INTER. NODES --> LEAF
 	if (this.intermediateNodes.contains(node)){
 	    List<Node> levelFirst = new LinkedList<Node>();
 	    levelFirst.add(Node.make(node + "Leaf"));
 	    levels.add(levelFirst);
 	}
-	*/
-
+	 */
 	String currentNode = node;
 	while (currentNode != null){
 	    List<Node> currentLevel = new LinkedList<Node>();
@@ -104,16 +86,28 @@ public class Ontology {
 		levels.add(0, currentLevel);
 	    }
 	}
-	return TGPattern.make(levels, 1);
+	return OntPath.make(levels, 1);
     }
     
+    /**
+     * Returns true if the first argument is a parent type of the second.
+     * 
+     * @param possibleParent
+     * @param possibleChild
+     * @return
+     */
+    public boolean isChildOf(String possibleParent, String possibleChild){
+	OntPath pathChild = getOntPath(possibleChild);
+	return pathChild.contains(possibleParent);
+    }
+
     /**
      * 
      * @param node
      * @return
      */
     public int depthNode(String node){
-	return getTGPattern(node).getDepth();
+	return getOntPath(node).getDepth();
     }
 
 }

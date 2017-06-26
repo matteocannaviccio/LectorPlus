@@ -195,7 +195,7 @@ public class WikiTriple {
      * @return
      */
     public Set<String> getLabels() {
-	return Lector.getKg().getRelations(wikiSubject, wikiObject);
+	return Lector.getDBPedia().getRelations(wikiSubject, wikiObject);
     }
 
 
@@ -209,7 +209,7 @@ public class WikiTriple {
 	String type = "[none]";
 	// make sure it makes sense to qyery the type
 	if (isWikiEntity(entity) && !isMVLEntity(entity) && !isNEREntity(entity)){
-	    type = Lector.getKg().getType(getWikipediaName(entity));
+	    type = Lector.getDBPedia().getType(getWikipediaName(entity));
 	}
 	return type;
     }

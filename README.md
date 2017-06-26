@@ -39,7 +39,8 @@ The tool takes as input a Wikipedia XML dump (in one of the language above) and 
 	```
 	sh install.sh
 	```
-	It will take some time (many files to downlaod) but at the end it will create the root folder `/data` described below.
+	It will take some time<sup>*</sup> (many files to downlaod) but at the end it will create the root folder `/data` described below.
+	<sup>*</sup>: Note that the English Wikipedia dump only is around 12GB! 
 
 #### Structure of the folder `/data`
 The folder `/data` contains a list of sub-folders and includes all the necessary files. The languages inside parenthesis means that the content of the folder is repeated for all of them.

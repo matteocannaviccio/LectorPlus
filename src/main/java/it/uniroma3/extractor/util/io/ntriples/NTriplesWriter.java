@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.reader;
+package it.uniroma3.extractor.util.io.ntriples;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,58 +8,44 @@ import java.io.Writer;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
-
-import it.uniroma3.extractor.bean.Lector;
-
-public class ResultsWriterWrapper {
+/**
+ * 
+ * @author matteo
+ *
+ */
+public class NTriplesWriter {
     private Writer out;
-    private static String WIKIPEDIA_URL;
 
-    public ResultsWriterWrapper(String path){
-	setURILang();
-
+    /**
+     * Using a stream so we can control the encoding.
+     * 
+     * @param out
+     */
+    public NTriplesWriter(String path) {
 	try {
 	    this.out = new OutputStreamWriter(getOutputStreamBZip2(path), "utf-8");
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException(e);
 	}
     }
-
-    /**
-     * Use the right URIs depending on the language.
-     * 
-     */
-    private void setURILang(){
-	WIKIPEDIA_URL = "https://" + Lector.getWikiLang().getLang().name() +".wikipedia.org/wiki/";
-    }
     
     /**
-     * 
-     * @throws IOException
-     */
-    public void done() throws IOException {
-	out.flush();
-	out.close();
-    }
-    
-    /**
+     * Write an NTriple in the file (after convert it from the three fields string).
      * 
      * @param subject
-     * @param property
+     * @param predicate
      * @param object
-     * @param literal
      */
-    public void provenance(String wikid, String sentence, String subject, String predicate, String object) {
+    public void write(String subject, String predicate, String object){
 	try {
-	    out.write("# " + WIKIPEDIA_URL  + wikid + "\n");
-	    out.write(String.format("%-10s %-30s %-30s %s\n", "## ", subject, predicate, object));
-	    out.write("### \"" + sentence+ "\n\n");
+	    this.out.write(NTriplesConverter.convertString2NTriple(subject, predicate, object));
 	} catch (IOException e) {
-	    throw new RuntimeException(e);
+	    e.printStackTrace();
 	}
     }
     
     /**
+     * Open the stream.
      * 
      * @param path
      * @return
@@ -78,5 +64,14 @@ public class ResultsWriterWrapper {
 	return out;
     }
 
+    /**
+     * Close the stream.
+     * 
+     * @throws IOException
+     */
+    public void done() throws IOException {
+	out.flush();
+	out.close();
+    }
 
 }

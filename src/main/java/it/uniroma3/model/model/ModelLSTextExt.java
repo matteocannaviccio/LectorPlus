@@ -231,7 +231,7 @@ public class ModelLSTextExt extends Model{
 	    for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
 		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 10, -1).entrySet()){
 		    String[] values = new String[15];
-		    values[0] = relation.getKey();
+		    values[0] = Lector.getDBPedia().getOntologyURI() + relation.getKey();
 		    values[1] = phrase.getKey();
 		    values[2] = String.valueOf(phrase.getValue()[0]); 	//c(PR)
 		    values[3] = String.valueOf(phrase.getValue()[6]); 	//P(p|r)

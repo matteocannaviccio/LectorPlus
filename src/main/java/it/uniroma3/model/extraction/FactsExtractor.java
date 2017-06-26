@@ -10,8 +10,8 @@ import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.triples.WikiTriple.TType;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.reader.NTriplesWriterWrapper;
-import it.uniroma3.extractor.util.reader.ResultsWriterWrapper;
+import it.uniroma3.extractor.util.io.ResultsWriterWrapper;
+import it.uniroma3.extractor.util.io.ntriples.NTriplesWriter;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
@@ -29,8 +29,8 @@ public class FactsExtractor {
     private Model model;
     public enum ModelType {BM25, LectorScore, NB, TextExtChallenge};
 
-    private NTriplesWriterWrapper writer_facts;
-    private NTriplesWriterWrapper writer_ontological_facts;
+    private NTriplesWriter writer_facts;
+    private NTriplesWriter writer_ontological_facts;
     private ResultsWriterWrapper writer_provenance;
 
     /**
@@ -41,8 +41,8 @@ public class FactsExtractor {
     public FactsExtractor(){
 	System.out.println("\n**** NEW FACTS EXTRACTION ****");
 	Lector.getDbfacts(true);
-	this.writer_facts = new NTriplesWriterWrapper(Configuration.getOutputFactsFile());
-	this.writer_ontological_facts = new NTriplesWriterWrapper(Configuration.getOutputOntologicalFactsFile());
+	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile());
+	this.writer_ontological_facts = new NTriplesWriter(Configuration.getOutputOntologicalFactsFile());
 	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
     }
 
@@ -94,14 +94,14 @@ public class FactsExtractor {
 	if (relation!=null){
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
-		if (!Lector.getKg().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
+		if (!Lector.getDBPedia().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
 		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getInvertedSubject(), relation, t.getInvertedObject());
-		    writer_facts.statement(t.getInvertedSubject(), relation, t.getInvertedObject(), false);
+		    writer_facts.write(t.getInvertedSubject(), relation, t.getInvertedObject());
 		}
 	    }else{
-		if (!Lector.getKg().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
+		if (!Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
 		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getWikiSubject(), relation, t.getWikiObject());
-		    writer_facts.statement(t.getWikiSubject(), relation, t.getWikiObject(), false);
+		    writer_facts.write(t.getWikiSubject(), relation, t.getWikiObject());
 		}
 	    }
 	    Lector.getDbfacts(false).insertNovelFact(t, relation);
@@ -167,9 +167,9 @@ public class FactsExtractor {
 
 	// if there is ...
 	if (relation != null){
-	    if (!Lector.getKg().getRelations(wikid, object).equals(relation)){
+	    if (!Lector.getDBPedia().getRelations(wikid, object).equals(relation)){
 		writer_provenance.provenance(wikid, sentence, wikid, relation, object);
-		writer_ontological_facts.statement(wikid, relation, object, false);
+		writer_ontological_facts.write(wikid, relation, object);
 	    }
 	    //Lector.getDbfacts(false).insertNovelFact(t, relation);
 	    return true;
@@ -181,7 +181,8 @@ public class FactsExtractor {
     /**
      * 
      */
-    private int runExtractionOntological(int facts_extracted) {
+    private int runExtractionOntological() {
+	int facts_extracted = 0;
 	String allUnlabeledTriplesQuery = "SELECT * FROM nationality_collection";
 	try (Statement stmt = Lector.getDbmodel(false).getConnection().createStatement()){	
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
@@ -218,7 +219,7 @@ public class FactsExtractor {
     private String stupidNationalityRelationChooser(String subject_type){
 	String relation = null;
 	if (!subject_type.equals("[none]")){
-	    if (Lector.getKg().getTypesResolver().isChild(subject_type, "Person")){
+	    if (Lector.getDBPedia().isChildOf(subject_type, "Person")){
 		relation = "nationality";
 	    }else{
 		relation = "country";
@@ -233,9 +234,14 @@ public class FactsExtractor {
      * 
      */
     public void run(){
-
+	
+	System.out.print("Extracting normal facts ... ");
 	int facts_extracted = runExtractionFacts();
-	facts_extracted = runExtractionOntological(facts_extracted);
+	System.out.println(facts_extracted + " facts extracted." );
+	
+	System.out.print("Extracting ontological facts ... ");
+	int ont_facts_extracted = runExtractionOntological();
+	System.out.println(ont_facts_extracted + " facts extracted." );
 
 	// close the output stream
 	try {

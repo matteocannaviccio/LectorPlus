@@ -82,6 +82,14 @@ public class WikiLanguage {
     public List<String> getRedirectIdentifiers() {
 	return getValues("redirect");
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public List<String> getProjectIdentifiers() {
+	return getValues("poject");
+    }
 
     /**
      * 

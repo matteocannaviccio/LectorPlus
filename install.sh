@@ -47,7 +47,7 @@ LANGUAGE=${LANGUAGES[i]}
 		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/y3yqakdcwhizkx2/en.properties?dl=0"
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
-		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/c0chppcpc3qbqoz/es.properties?dl=0"
+		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/ijviti49l6udmcu/es.properties?dl=0"
 	fi
 	if [ ${LANGUAGE} = "it" ]; then
 		wget -q -O data/languages/${LANGUAGE}.properties "https://www.dropbox.com/s/q02dxaf5hzq7tmd/it.properties?dl=0"
@@ -91,6 +91,10 @@ LANGUAGE=${LANGUAGES[i]}
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
 		
+		echo "     -> airpedia.nt"
+		wget -q "http://www.airpedia.org/resource/airpedia-classes-${LANGUAGE}.nt.gz"
+		mv airpedia-classes-${LANGUAGE}.nt.gz data/sources/${LANGUAGE}/types/airpedia.nt.gz
+		
 		echo "     -> type_instance_dbtax.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_dbtax_dbo_${LANGUAGE}.ttl.bz2"
 		mv instance_types_dbtax_dbo_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types_dbtax.ttl.bz2
@@ -107,6 +111,10 @@ LANGUAGE=${LANGUAGES[i]}
 		echo "     -> type_instance.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
+		
+		echo "     -> airpedia.nt"
+		wget -q "http://www.airpedia.org/resource/airpedia-classes-${LANGUAGE}.nt.gz"
+		mv airpedia-classes-${LANGUAGE}.nt.gz data/sources/${LANGUAGE}/types/airpedia.nt.gz
 
 		echo "     -> type_instance_sdtypes.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2"
@@ -120,24 +128,28 @@ LANGUAGE=${LANGUAGES[i]}
 		echo "     -> type_instance.ttl"
 		wget -q  "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_${LANGUAGE}.ttl.bz2"
 		mv instance_types_${LANGUAGE}.ttl.bz2 data/sources/${LANGUAGE}/types/instance_types.ttl.bz2
+		
+		echo "     -> airpedia.nt"
+		wget -q "http://www.airpedia.org/resource/airpedia-classes-${LANGUAGE}.nt.gz"
+		mv airpedia-classes-${LANGUAGE}.nt.gz data/sources/${LANGUAGE}/types/airpedia.nt.gz
 	fi
 
 	###############    Download redirect     ###############
 	echo "3d) Download redirects file"
 	if [ ${LANGUAGE} = "en" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/j28zvxwyc6z626z/redirects.tsv?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/upou8x1mutrypm4/redirects.tsv.bz2?dl=0"
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/5ngnyvll81c55t7/redirects.tsv?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/u8agpsnwtg3yhlp/redirects.tsv.bz2?dl=0"
 	fi 
  	if [ ${LANGUAGE} = "it" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/o96maiiicsjt3eh/redirects.tsv?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/4ea7z5g2h9s31rd/redirects.tsv.bz2?dl=0"
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/udmavh70rjbdg1q/redirects.tsv?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/o2jso5r917jspld/redirects.tsv.bz2?dl=0"
 	fi
     if [ ${LANGUAGE} = "fr" ]; then
-		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv "https://www.dropbox.com/s/sta205sqcq6psvz/redirects.tsv?dl=0"
+		wget -q -O data/sources/${LANGUAGE}/redirect/redirects.tsv.bz2 "https://www.dropbox.com/s/hj9psr9i5maeu43/redirects.tsv.bz2?dl=0"
     fi
 
 	###############          Download lists      ###############
@@ -215,8 +227,6 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 done
 
-# install LectorPlus
-echo "Install dependencies ..."
-mvn clean install
-
-echo "\n\n LectorPlus successfully installed."
+echo ""
+echo "------------------"
+echo "LectorPlus successfully installed."

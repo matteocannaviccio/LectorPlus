@@ -6,7 +6,7 @@ import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 import it.uniroma3.extractor.pipeline.Statistics;
-import it.uniroma3.extractor.util.reader.XMLReader;
+import it.uniroma3.extractor.util.io.XMLReader;
 import it.uniroma3.model.extraction.FactsExtractor;
 import it.uniroma3.model.extraction.FactsExtractor.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
@@ -66,8 +66,12 @@ public class CompletePipeline {
      */
     public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
+<<<<<<< HEAD
 	extractor.setModelForEvaluation(
 		ModelType.TextExtChallenge, 
+=======
+	extractor.setModelForEvaluation(ModelType.TextExtChallenge, 
+>>>>>>> master
 		"labeled_triples", 
 		Configuration.getMinF(), 
 		Configuration.getTopK(), 

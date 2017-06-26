@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.util.reader.TSVReader;
+import it.uniroma3.extractor.util.io.TSVReader;
 
 /**
  * 
@@ -239,7 +239,7 @@ public class MarkupParser {
 	    // TODO: change it
 	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
 		if (Configuration.solveRedirect())
-		    wikid = Lector.getKg().getRedirect(wikid);
+		    wikid = Lector.getDBPedia().getRedirect(wikid);
 
 		/*
 		 * eliminate blacklisted entities

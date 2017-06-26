@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.kg.normalizer;
+package it.uniroma3.extractor.kg.ontology;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author matteo
  *
  */
-public class TGPattern {
+public class OntPath{
 
     private List<List<Node>> path;
     private int instances;
@@ -17,7 +17,7 @@ public class TGPattern {
     /**
      * 
      */
-    public TGPattern(List<List<Node>> path, int instances){
+    public OntPath(List<List<Node>> path, int instances){
 	this.path = path;
 	this.instances = instances;
     }
@@ -27,8 +27,8 @@ public class TGPattern {
      * @param levels
      * @return
      */
-    public static TGPattern make(List<List<Node>> levels, int instances) {
-	return new TGPattern(levels, instances);
+    public static OntPath make(List<List<Node>> levels, int instances) {
+	return new OntPath(levels, instances);
     }
 
     /**
@@ -64,7 +64,7 @@ public class TGPattern {
     /**
      * 
      */
-    public TGPattern normalize(){
+    public OntPath normalize(){
 	List<List<Node>> normalizedPath = new LinkedList<List<Node>>();
 	int card = getCardinality();
 	for(List<Node> level : this.path){
@@ -74,16 +74,16 @@ public class TGPattern {
 	    }
 	    normalizedPath.add(normLevel);
 	}
-	return new TGPattern(normalizedPath, this.getInstances());
+	return new OntPath(normalizedPath, this.getInstances());
     }
 
     /**
      * 
      */
-    public TGPattern getMainPath(double treshold){
+    public OntPath getMainPath(double treshold){
 	List<List<Node>> mainPath = new LinkedList<List<Node>>();
 	// make sure it is normalized
-	TGPattern normalizedTGPattern = this.normalize();
+	OntPath normalizedTGPattern = this.normalize();
 
 	for(List<Node> level : normalizedTGPattern.path){
 	    if (level.get(0).getWeight() > treshold){
@@ -92,14 +92,14 @@ public class TGPattern {
 		mainPath.add(mainLevel);
 	    }
 	}
-	return new TGPattern(mainPath, this.getInstances());
+	return new OntPath(mainPath, this.getInstances());
     }
 
 
     /**
      * 
      */
-    public TGPattern combine(TGPattern ext){
+    public OntPath combine(OntPath ext){
 	int maxLevel = Math.max(this.path.size(), ext.path.size());
 	List<List<Node>> combinedPath = new LinkedList<List<Node>>();
 
@@ -124,7 +124,7 @@ public class TGPattern {
 	    }
 	    combinedPath.add(combinedLevel);
 	}
-	return new TGPattern(combinedPath, this.getInstances() + ext.getInstances());
+	return new OntPath(combinedPath, this.getInstances() + ext.getInstances());
     }
 
     /**
