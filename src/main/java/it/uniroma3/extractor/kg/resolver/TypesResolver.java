@@ -256,8 +256,8 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Configuration.setParameter("language", "it");
-	Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.updateParameter("language", "it");
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));

@@ -1,0 +1,1 @@
+Error: Unable to access jarfile /Users/matteo/Work/Repository/java/lectorplus/null/spotlight/dbpedia-spotlight-latest.jar

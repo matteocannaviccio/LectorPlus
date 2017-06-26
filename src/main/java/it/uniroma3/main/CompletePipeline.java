@@ -50,7 +50,7 @@ public class CompletePipeline {
 	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
 
 	    Lector.getTriplifier().updateBlock();
-	    Lector.dischargePerThreadDBPS();
+	    //Lector.dischargePerThreadDBPS();
 	    
 	    long end_time = System.currentTimeMillis();
 	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");

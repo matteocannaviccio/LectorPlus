@@ -107,8 +107,8 @@ public class RelationsResolver {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	Configuration.setParameter("language", "es");
-	Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");	
+	Configuration.updateParameter("language", "es");
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");	
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 

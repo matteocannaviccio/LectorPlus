@@ -47,12 +47,9 @@ public class Complete {
      * @param args
      */
     public static void main(String[] args){
-	String[] languages = new String[]{"it"};
-	for (String lang : languages){
+	for (String lang : Configuration.getLanguages()){
 	    Configuration.init(args);
-	    Configuration.setParameter("language", lang);
-	  //Configuration.setParameter("dataFile", "/Users/khorda/Documents/Universita/supporto-MATTEO/dbpediachallenge-lector/data");
-	    Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");
+	    Configuration.updateParameter("language", lang);
 
 	    Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());

@@ -221,7 +221,7 @@ public class ReplAttacher {
 		 * Otherwise split the sentences only.
 		 */
 		if (Configuration.useDBpediaSpotlight())
-		    article.getSentences().put(block.getKey(), Lector.getDbPediaSpotlight().annotateText(block.getValue(), article.getWikid()));
+		    article.getSentences().put(block.getKey(), Lector.getDBSpot().annotateText(block.getValue(), article.getWikid()));
 		else
 		    article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
 		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));

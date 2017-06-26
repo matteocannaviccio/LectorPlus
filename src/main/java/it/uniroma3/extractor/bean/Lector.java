@@ -1,12 +1,10 @@
 package it.uniroma3.extractor.bean;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.entitydetection.FSMNationality;
@@ -51,6 +49,10 @@ public class Lector {
     private static ReplFinder entitiesFinder;
     private static ReplAttacher entitiesTagger;
 
+    /* ** DBpedia Spotlight ** */
+    private static ThreadLocal<DBPediaSpotlight> dbspot;
+    private static Process localServerSideProcess;
+
     /* Needed in Triple Extraction */
     private static DBPedia dbpedia;
     private static Triplifier triplifier;
@@ -58,10 +60,6 @@ public class Lector {
     private static DBFacts dbfacts;
     private static DBModel dbmodel;
 
-    //DBpedia Spotlight
-    private static Queue<DBPediaSpotlight> poolDBSP = new ConcurrentLinkedQueue<DBPediaSpotlight>();
-    private static Map<Thread, DBPediaSpotlight> poolThreadLocalResources = new ConcurrentHashMap<Thread, DBPediaSpotlight>();
-    private static AtomicInteger initialPort = new AtomicInteger(2222);
 
     /**
      * Here we initialize all the components of the tool.
@@ -99,47 +97,38 @@ public class Lector {
     public static void initED(){
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
+
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
 		return new StanfordNLP();
 	    }
 	};
+
 	openNLPExpert = new ThreadLocal<OpenNLP>() {
 	    @Override protected OpenNLP initialValue() {
 		return new OpenNLP();
 	    }
 	};
+
 	fsm = new ThreadLocal<FSMSeed>() {
 	    @Override protected FSMSeed initialValue() {
 		return new FSMSeed(openNLPExpert.get());
 	    }
 	};
+
 	fsm_nat = new ThreadLocal<FSMNationality>() {
 	    @Override protected FSMNationality initialValue() {
 		return new FSMNationality();
 	    }
 	};
 
-    }
-
-    /**
-     * 
-     * @return
-     */
-    private static DBPediaSpotlight getDBSP(){
-	if (!poolDBSP.isEmpty() && !poolThreadLocalResources.containsKey(Thread.currentThread())){
-	    DBPediaSpotlight dbps = poolDBSP.poll();
-	    poolThreadLocalResources.put(Thread.currentThread(), dbps);
-	    return dbps;
-	}else{
-	    if (poolThreadLocalResources.containsKey(Thread.currentThread())){
-		System.out.println("take " + poolThreadLocalResources.get(Thread.currentThread()).getPort());
-		return poolThreadLocalResources.get(Thread.currentThread());
-	    }else{
-		DBPediaSpotlight dbps = new DBPediaSpotlight(0.5, 0, initialPort.getAndIncrement());
-		poolThreadLocalResources.put(Thread.currentThread(), dbps);
-		return dbps;
-	    }
+	if(Configuration.useDBpediaSpotlight()){
+	    localServerSideProcess = runSpotlight();
+	    dbspot = new ThreadLocal<DBPediaSpotlight>() {
+		@Override protected DBPediaSpotlight initialValue() {
+		    return new DBPediaSpotlight(0.5, 0);
+		}
+	    };
 	}
     }
 
@@ -157,12 +146,21 @@ public class Lector {
 	dbpedia = new DBPedia();
     }
 
+    /**
+     * 
+     * @return
+     */
+    public static DBPediaSpotlight getDBSpot(){
+	return dbspot.get();
+    }
 
     /**
      * 
      * @return
      */
     public static MarkupParser getMarkupParser() {
+	if (markupParser == null)
+	    markupParser = new MarkupParser();
 	return markupParser;
     }
 
@@ -179,6 +177,8 @@ public class Lector {
      * @return
      */
     public static ArticleTyper getArticleTyper() {
+	if (articleTyper == null)
+	    articleTyper = new ArticleTyper();
 	return articleTyper;
     }
 
@@ -186,6 +186,8 @@ public class Lector {
      * @return the xmlParser
      */
     public static XMLParser getXmlParser() {
+	if (xmlParser == null)
+	    xmlParser = new XMLParser();
 	return xmlParser;
     }
 
@@ -303,20 +305,7 @@ public class Lector {
     }
 
     /**
-     * 
-     */
-    public static void dischargePerThreadDBPS(){
-	System.out.print("\nFilling pool DBSP ... ");
-	for (Map.Entry<Thread, DBPediaSpotlight> dbsp : poolThreadLocalResources.entrySet()){
-	    poolDBSP.add(dbsp.getValue());
-	}
-	System.out.println(" inserted " + poolDBSP.size() + " dbsp.");
-	System.out.println("size map: " + poolThreadLocalResources.size());
-	poolThreadLocalResources.clear();
-    }
-
-    /**
-     * 
+     * Close all the connections that are open.
      */
     public static void closeAllConnections(){
 	if (dbfacts != null){
@@ -327,11 +316,49 @@ public class Lector {
 	    dbmodel.closeConnection();
 	    dbmodel = null;
 	}
-	// kill all the remaining processes
-	for (DBPediaSpotlight dbsp : poolDBSP){
-	    dbsp.killProcess();
+
+	// kill DBPedia SPotlight process, if exists
+	closeDBPediaSpotlight();
+    }
+
+    /**
+     * Pull down the (local) server where DBPedia SPotlight is running on.
+     */
+    public static void closeDBPediaSpotlight() {
+	if(Configuration.useDBpediaSpotlight()){
+	    localServerSideProcess.destroy();
 	}
-	initialPort = new AtomicInteger(2222);
+    }
+
+    /**
+     * Returns the process where DBPedia Spotlight is running on.
+     * TODO: improve fixed-time waiting for the creation. 
+     */
+    private static Process runSpotlight() {
+	System.out.println("-> Loading DBPedia Spotlight on " + Configuration.getSpotlightLocalURL() +" ... ");
+	Process p = null;
+	ProcessBuilder pb = new ProcessBuilder(
+		"java",
+		"-Xmx16g",
+		"-Dfile.encoding=utf-8",
+		"-jar",
+		Configuration.getSpotlightJar(),
+		Configuration.getSpotlightModel(),
+		Configuration.getSpotlightLocalURL()
+		);
+	File dirErr = new File(Configuration.getSpotlightLocalERR(2222));
+	pb.redirectError(dirErr);
+	try {
+	    p = pb.start();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	try {
+	    p.waitFor(80, TimeUnit.SECONDS);
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	}
+	return p;
     }
 
     /**
@@ -351,10 +378,5 @@ public class Lector {
 	    return Locale.FRANCE;
 	return null;
     }
-
-    public static DBPediaSpotlight getDbPediaSpotlight() {
-	return getDBSP();
-    }
-
 
 }

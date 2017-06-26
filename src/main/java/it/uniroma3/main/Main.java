@@ -30,12 +30,9 @@ public class Main {
      * @param args
      */
     public static void main(String[] args){
-	String[] languages = new String[]{"en","es", "it", "de", "fr"};
-	for (String lang : languages){
-	    Configuration.init(args);
-	    Configuration.setParameter("language", lang);
-	    //Configuration.setParameter("dataFile", "/Users/khorda/Documents/Universita/supporto-MATTEO/dbpediachallenge-lector/data");
-	    Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.init(args);
+	for (String lang : Configuration.getLanguages()){
+	    Configuration.updateParameter("language", lang);
 	    Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    completeInMemoryProcess(wikiLang);

@@ -70,7 +70,6 @@ public class EntityDetection {
 	inputReader.closeBuffer();
 	outputWriter.close();
 	
-	Lector.getDbPediaSpotlight().killProcess();
-
+	Lector.closeDBPediaSpotlight();
     }
 }

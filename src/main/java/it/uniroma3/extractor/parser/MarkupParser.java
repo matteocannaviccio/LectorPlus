@@ -22,16 +22,19 @@ import it.uniroma3.extractor.util.io.TSVReader;
  */
 public class MarkupParser {
 
-    private Set<String> blacklist;
+    private Set<String> blacklist_wikilinks;	// this is a list of all the wikilinks that we do not want to highlight as entities
+    private Set<String> blacklist_names;	// this is a list of all the rendered names that we do not want to highlight as entities
 
     /**
      * 
      */
     public MarkupParser(){
-	this.blacklist = new HashSet<String>();
-	this.blacklist.addAll(TSVReader.getLines2Map(Configuration.getNationalitiesList()).values());
-	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
-	this.blacklist.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
+	this.blacklist_wikilinks = new HashSet<String>();
+	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
+	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
+	
+	this.blacklist_names = new HashSet<String>();
+	this.blacklist_names.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
     }
 
     /**
@@ -245,7 +248,7 @@ public class MarkupParser {
 		 * eliminate blacklisted entities
 		 * nationalities, currencies, professions 
 		 */
-		if (blacklist.contains(wikid) || blacklist.contains(rendered.replaceAll(" ", "_"))){
+		if (blacklist_wikilinks.contains(wikid) || blacklist_names.contains(rendered)){
 		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 
 		}else{

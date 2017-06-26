@@ -50,7 +50,7 @@ public class Configuration {
      * @param key
      * @param value
      */
-    public static void setParameter(String key, String value){
+    public static void updateParameter(String key, String value){
 	keyValue.put(key, value);
     }
 
@@ -147,6 +147,10 @@ public class Configuration {
 
     public static Set<String> getPipelineSteps(){
 	return new HashSet<String>(Arrays.asList(keyValue.get("pipeline").split(",")));
+    }
+    
+    public static Set<String> getLanguages(){
+	return new HashSet<String>(Arrays.asList(keyValue.get("languages").split(",")));
     }
     /***********************************************************************/
     /*************************    MAIN FOLDERS        **********************/
@@ -420,8 +424,8 @@ public class Configuration {
 	return getSpotlightFolder() + "/" + keyValue.get("pathDBSpotErr") + "_" + port + ".txt";
     }
 
-    public static String getSpotlightLocalURL(int port){
-	return keyValue.get("pathDBSpotLocalUrl").replaceAll("NNNN", String.valueOf(port));
+    public static String getSpotlightLocalURL(){
+	return keyValue.get("pathDBSpotLocalUrl");
     }
     /***********************************************************************/
     /***********************    RESOURCES LIST     ************************/
