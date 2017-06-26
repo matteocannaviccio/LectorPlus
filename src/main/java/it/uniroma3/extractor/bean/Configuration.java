@@ -494,18 +494,7 @@ public class Configuration {
     public static boolean inMemoryProcess(){
 	return keyValue.get("inMemory").equalsIgnoreCase("true");
     }
-<<<<<<< HEAD
-=======
-    
-    public static int getMinF(){
-	return Integer.parseInt(keyValue.get("minF"));	    
-    }
-    
-    public static int getTopK(){
-	return Integer.parseInt(keyValue.get("topK"));	    
-    }
-
->>>>>>> c23b47b55d31d51c449198b315f736c581c07ca3
+   
     /***********************************************************************/
 
 }
