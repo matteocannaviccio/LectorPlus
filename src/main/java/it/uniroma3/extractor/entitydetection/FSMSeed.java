@@ -11,7 +11,6 @@ import java.util.TreeSet;
 import org.apache.commons.collections.map.MultiValueMap;
 
 import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Token;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.reader.TSVReader;

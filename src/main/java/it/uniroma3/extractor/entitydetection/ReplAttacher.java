@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.util.Pair;
@@ -214,13 +215,16 @@ public class ReplAttacher {
 			break;
 		    }
 		}
-		
+
 		/*
-		 * Apply a Named Entity Recognition to find instances of the remaining entities
+		 * If we are using DBpedia Spotlight, detect all the missing entities and split the sentences with it.
+		 * Otherwise split the sentences only.
 		 */
-		article.getSentences().put(block.getKey(), Lector.getSpotlight().annotateText(block.getValue(), article.getWikid()));
+		if (Configuration.useDBpediaSpotlight())
+		    article.getSentences().put(block.getKey(), Lector.getDbPediaSpotlight().annotateText(block.getValue(), article.getWikid()));
+		else
+		    article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
 		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
-		//article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
 
 
 	    }

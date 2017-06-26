@@ -2,6 +2,7 @@ package it.uniroma3.main;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 import it.uniroma3.extractor.pipeline.Statistics;
@@ -49,7 +50,8 @@ public class CompletePipeline {
 	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
 
 	    Lector.getTriplifier().updateBlock();
-
+	    Lector.dischargePerThreadDBPS();
+	    
 	    long end_time = System.currentTimeMillis();
 	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");
 	    System.out.println("Reading next batch.");
@@ -64,7 +66,12 @@ public class CompletePipeline {
      */
     public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
-	extractor.setModelForEvaluation(ModelType.TextExtChallenge, "labeled_triples", 5, -1, PhraseType.TYPED_PHRASES);
+	extractor.setModelForEvaluation(
+		ModelType.TextExtChallenge, 
+		"labeled_triples", 
+		Configuration.getMinF(), 
+		Configuration.getTopK(), 
+		PhraseType.TYPED_PHRASES);
 	extractor.run();
     }
 

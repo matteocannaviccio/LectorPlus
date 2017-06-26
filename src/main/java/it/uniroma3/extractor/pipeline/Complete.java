@@ -8,7 +8,7 @@ import it.uniroma3.model.extraction.FactsExtractor.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 
 public class Complete {
-    
+
     /**
      * This is a pipeline in which we execute one step at a time. 
      * Need for testing.
@@ -16,7 +16,8 @@ public class Complete {
      * @param inputPath
      */
     protected static void singleStepProcess(WikiLanguage lang){
-	    Lector.init(lang, Configuration.getPipelineSteps());
+	Lector.init(lang, Configuration.getPipelineSteps());
+
 	if (Configuration.getPipelineSteps().contains("AP")){
 	    ArticleParser ap = new ArticleParser(Configuration.getOriginalArticlesFile(), Configuration.getParsedArticlesFile());
 	    ap.pipelinedProcess();
@@ -40,7 +41,7 @@ public class Complete {
 
 	Lector.closeAllConnections();
     }
-    
+
     /**
      * 
      * @param args
@@ -50,8 +51,10 @@ public class Complete {
 	for (String lang : languages){
 	    Configuration.init(args);
 	    Configuration.setParameter("language", lang);
-		Configuration.setParameter("dataFile", "/Users/khorda/Documents/Universita/supporto-MATTEO/dbpediachallenge-lector/data");
-		Configuration.printDetails();
+	  //Configuration.setParameter("dataFile", "/Users/khorda/Documents/Universita/supporto-MATTEO/dbpediachallenge-lector/data");
+	    Configuration.setParameter("dataFile", "/Users/matteo/Desktop/data");
+
+	    Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    singleStepProcess(wikiLang);
 	}

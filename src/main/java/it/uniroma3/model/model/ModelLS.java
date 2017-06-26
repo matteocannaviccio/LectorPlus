@@ -273,6 +273,7 @@ public class ModelLS extends Model{
     /**
      * 
      */
+    @Override
     public Pair<String, Double> predictRelation(WikiTriple t) {
 	String relation = null;
 	String phrase = t.getPhrasePlaceholders();

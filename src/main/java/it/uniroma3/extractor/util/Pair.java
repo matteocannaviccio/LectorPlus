@@ -36,6 +36,7 @@ public final class Pair<A, B> {
     /**
      * 
      */
+    @Override
     public int hashCode() {
 	return hashcode;
     }
@@ -43,6 +44,7 @@ public final class Pair<A, B> {
     /**
      * 
      */
+    @Override
     public boolean equals(Object o) {
 	if (o == null || o.getClass() != this.getClass()) { return false; }
 	@SuppressWarnings("rawtypes")
@@ -54,6 +56,7 @@ public final class Pair<A, B> {
     /**
      * 
      */
+    @Override
     public String toString(){
 	return "("+key.toString()+" ; "+value.toString()+")";
     }
@@ -64,6 +67,20 @@ public final class Pair<A, B> {
      */
     public String toString4Map(){
 	return key.toString()+" ; "+value.toString();
+    }
+
+    /**
+     * @return the key
+     */
+    public A getKey() {
+        return key;
+    }
+
+    /**
+     * @return the value
+     */
+    public B getValue() {
+        return value;
     }
 
 }

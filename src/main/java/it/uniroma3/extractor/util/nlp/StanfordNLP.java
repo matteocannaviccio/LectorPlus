@@ -32,7 +32,8 @@ public class StanfordNLP {
     public StanfordNLP(){
 	/********* this code only makes all writes to the System.err stream silent to avoid the print "Loading classifier ... " *****/
 	PrintStream err = System.err;
-	System.setErr(new PrintStream(new OutputStream() {public void write(int b) {}}));
+	System.setErr(new PrintStream(new OutputStream() {@Override
+	public void write(int b) {}}));
 	switch(Lector.getWikiLang().getLang()){
 	case en:
 	    this.classifier = CRFClassifier.getClassifierNoExceptions("edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
