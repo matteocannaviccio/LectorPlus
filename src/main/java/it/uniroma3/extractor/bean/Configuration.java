@@ -308,7 +308,11 @@ public class Configuration {
     public static String getProvenanceFile() {
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
-
+    
+    public static String getProvenanceOntologicalFile() {
+ 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceOntologicalFile");
+    }
+   
     /***********************************************************************/
     /***********************    TYPES INDEXES    ***************************/
     /***********************************************************************/
@@ -386,8 +390,6 @@ public class Configuration {
     public static String getSourceAirpediaTypes_Ref(){
 	return getTypesFolder("en") + "/" + keyValue.get("airpediaInstanceType");
     } 
-    
-    
 
     public static String getDBPediaOntologyFile(){
 	return getOntologyFolder() + "/" + keyValue.get("ontology");

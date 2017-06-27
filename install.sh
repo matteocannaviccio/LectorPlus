@@ -18,11 +18,16 @@ mkdir data/languages
 mkdir data/models
 mkdir data/sources
 mkdir data/sources/ontology
+mkdir data/spotlight
 
 ###############     Download Ontolgy    ###############
 echo "1) Download DBPedia Ontology (language independent)"
 wget -q  "http://downloads.dbpedia.org/2016-04/dbpedia_2016-04.nt"
 mv dbpedia_2016-04.nt data/sources/ontology
+
+##########     Download DBpedia Spotlight    ##########
+wget -q "http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar"
+mv dbpedia-spotlight-latest.jar data/sources/spotlight
 
 #### configure the environment for each language
 for ((i=0;i<${#LANGUAGES[@]};++i)); do
@@ -36,6 +41,7 @@ LANGUAGE=${LANGUAGES[i]}
 	mkdir data/sources/${LANGUAGE}/redirect
 	mkdir data/lists/${LANGUAGE}
 	mkdir data/models/${LANGUAGE}
+	mkdir data/spotlight/${LANGUAGE}
 
 	echo "--------------------------------  "
 	echo "Configuration for language:  ${LANGUAGE} "
@@ -225,6 +231,12 @@ LANGUAGE=${LANGUAGES[i]}
 		echo " -> downlaod en-token ..."
 		wget -q -O data/models/${LANGUAGE}/en-token.bin "http://opennlp.sourceforge.net/models-1.5/en-token.bin"
 	fi
+	
+	###############     Download DBPedia Spotlight model   ###############
+	echo "3b) Download DBPedia Spotloght model"
+	wget -q -O data/spotlight/${LANGUAGE}.tar.gz "/http://spotlight.sztaki.hu/downloads/latest_data/${LANGUAGE}.tar.gz"
+	cd data/spotlight/
+	tar -zxvf ${LANGUAGE}.tar.gz
 done
 
 echo ""

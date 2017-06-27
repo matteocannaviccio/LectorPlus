@@ -1,12 +1,12 @@
 package it.uniroma3.extractor.bean;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.entitydetection.FSMNationality;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.entitydetection.ReplAttacher;
@@ -346,37 +346,30 @@ public class Lector {
 		Configuration.getSpotlightModel(),
 		Configuration.getSpotlightLocalURL()
 		);
+	
 	File dirErr = new File(Configuration.getSpotlightLocalERR(2222));
 	pb.redirectError(dirErr);
 	try {
 	    p = pb.start();
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	try {
-	    p.waitFor(80, TimeUnit.SECONDS);
-	} catch (InterruptedException e) {
+	    
+	    // wait untill the server started
+	    BufferedReader logBR;
+	    String last = "";
+	    int maxChecks = 50;
+	    while(!last.startsWith("Server started") && maxChecks>0){
+		p.waitFor(5, TimeUnit.SECONDS);
+		logBR = new BufferedReader(new FileReader(Configuration.getSpotlightLocalERR(2222)));
+		String line = null;
+		while ((line = logBR.readLine()) != null) {
+		    last = line;
+		}
+		maxChecks -=1;
+	    }
+	  
+	} catch (IOException | InterruptedException e) {
 	    e.printStackTrace();
 	}
 	return p;
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public static Locale getLocale(){
-	if (wikiLang.equals(Lang.en))
-	    return Locale.ENGLISH;
-	if (wikiLang.equals(Lang.en))
-	    return new Locale("es", "ES");
-	if (wikiLang.equals(Lang.it))
-	    return Locale.getDefault();
-	if (wikiLang.equals(Lang.de))
-	    return Locale.GERMANY;
-	if (wikiLang.equals(Lang.fr))
-	    return Locale.FRANCE;
-	return null;
     }
 
 }

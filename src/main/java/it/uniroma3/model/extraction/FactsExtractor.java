@@ -30,8 +30,10 @@ public class FactsExtractor {
     public enum ModelType {BM25, LectorScore, NB, TextExtChallenge};
 
     private NTriplesWriter writer_facts;
-    private NTriplesWriter writer_ontological_facts;
     private ResultsWriterWrapper writer_provenance;
+    
+    private NTriplesWriter writer_ontological_facts;
+    private ResultsWriterWrapper writer_provenance_ontological;
 
     /**
      * 
@@ -44,6 +46,7 @@ public class FactsExtractor {
 	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile());
 	this.writer_ontological_facts = new NTriplesWriter(Configuration.getOutputOntologicalFactsFile());
 	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
+	this.writer_provenance_ontological = new ResultsWriterWrapper(Configuration.getProvenanceOntologicalFile());
     }
 
     /**
@@ -57,7 +60,6 @@ public class FactsExtractor {
      */
     public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, PhraseType typePhrase){
 	switch(type){
-
 	case BM25:
 	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
 	    break;
@@ -168,7 +170,7 @@ public class FactsExtractor {
 	// if there is ...
 	if (relation != null){
 	    if (!Lector.getDBPedia().getRelations(wikid, object).equals(relation)){
-		writer_provenance.provenance(wikid, sentence, wikid, relation, object);
+		writer_provenance_ontological.provenance(wikid, sentence, wikid, relation, object);
 		writer_ontological_facts.write(wikid, relation, object);
 	    }
 	    //Lector.getDbfacts(false).insertNovelFact(t, relation);
@@ -199,13 +201,10 @@ public class FactsExtractor {
 		    }
 		}
 	    }
-
 	}catch(SQLException e){
 	    e.printStackTrace();
 	}
-
 	return facts_extracted;
-
     }
 
     /**
@@ -234,7 +233,6 @@ public class FactsExtractor {
      * 
      */
     public void run(){
-	
 	System.out.print("Extracting normal facts ... ");
 	int facts_extracted = runExtractionFacts();
 	System.out.println(facts_extracted + " facts extracted." );
@@ -248,6 +246,8 @@ public class FactsExtractor {
 	    writer_facts.done();
 	    writer_ontological_facts.done();
 	    writer_provenance.done();
+	    writer_provenance_ontological.done();
+	    
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}

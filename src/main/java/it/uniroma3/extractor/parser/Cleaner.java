@@ -260,9 +260,9 @@ public class Cleaner {
 
 
     /* ***********************************************************************************
-     * 				REMOVE - RETRIEVE TABLES
+     * 				REMOVE - RETRIEVE LIST/TABLES
      * ***********************************************************************************/
-
+    
     /**
      * 
      * @param blocks
@@ -303,11 +303,7 @@ public class Cleaner {
 	}   
 	return listContent;
     }
-
-    /* ***********************************************************************************
-     * 				REMOVE - RETRIEVE LIST
-     * ***********************************************************************************/
-
+    
     /**
      * Normalize lists.
      * 
@@ -329,6 +325,7 @@ public class Cleaner {
     
     /**
      * Remove lists at all!
+     * The method is used to remove remnants of infoboxes, tables, taxonomies as well.
      * 
      * https://regex101.com/r/JhwkQh/2
      * 
@@ -336,7 +333,7 @@ public class Cleaner {
      * @return
      */
     public String replaceListsWithEmptyContent(String block){
-	Pattern LIST_CONTENT = Pattern.compile("(?m)^(;|#|\\*|:|\\|)+((?!\\n).+)++");
+	Pattern LIST_CONTENT = Pattern.compile("(?m)^\\s*(;|#|\\*|:|\\||\\│)+((?!\\n).+)++");
 	Matcher m = LIST_CONTENT.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");

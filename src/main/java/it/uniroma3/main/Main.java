@@ -12,7 +12,7 @@ public class Main {
 
     /**
      * This is the complete pipeline.
-     * We first initialize Lector with the componenets that are needed (i.e. from the pipeline)
+     * We first initialize Lector with the components that are needed (i.e. from the pipeline)
      * and at the end we close all the connections with the databases and the spotlight (if there are).
      * 
      * @param inputPath
