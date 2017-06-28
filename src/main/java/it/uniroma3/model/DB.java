@@ -31,10 +31,9 @@ public abstract class DB {
      * @return
      */
     public Connection obtainConnection(){
-	String sDriverName = "org.sqlite.JDBC";
 	Connection conn = null;
 	try {
-	    Class.forName(sDriverName);
+	    Class.forName("org.sqlite.JDBC");
 	    String sJdbc = "jdbc:sqlite";
 	    
 	    String sDbUrl;

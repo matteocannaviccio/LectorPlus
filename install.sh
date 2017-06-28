@@ -383,10 +383,10 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 	
 	###############     Download DBPedia Spotlight model   ###############
-	echo "3b) Download DBPedia Spotloght model"
+	echo "3b) Download DBPedia Spotlight model"
 	if [ ! -e "data/spotlight/${LANGUAGE}" ]; then
 		wget -q "http://spotlight.sztaki.hu/downloads/archive/models_20160113/${LANGUAGE}.tar.gz"
-		tar -xvzf ${LANGUAGE}.tar.gz
+		tar -xzf ${LANGUAGE}.tar.gz
 		rm ${LANGUAGE}.tar.gz
 		mv ${LANGUAGE} data/spotlight
 	else

@@ -39,7 +39,7 @@ public class ModelLSTextExt extends Model{
      * 
      * score (p, r) = log c(p,r) * c(p, r)/|c(p, other r)|
      * 
-     * and the generality cufoff:
+     * and the generality cutoff:
      * 
      * gen_cut = c(p_seed, r)/|c(p_seed, other r)| 
      * 
@@ -137,7 +137,9 @@ public class ModelLSTextExt extends Model{
 		double pU = 0;
 		if (unlab_phrases.containsKey(phrase))
 		    pU = unlab_phrases.get(phrase);
-
+		
+		if (phrase.split("\t").length != 3)
+		    continue;
 		String phraseSeed = phrase.split("\t")[1];
 		double pSeedR = 0;
 		if(seed_relphrasesCount.containsKey(relation)){
@@ -145,11 +147,11 @@ public class ModelLSTextExt extends Model{
 			pSeedR = seed_relphrasesCount.get(relation).get(phraseSeed);
 		    }
 		}
+
 		double pSeedL = seed_lab_phrases.get(phraseSeed);
 		double pSeedU = 0;
 		if (seed_unlab_phrases.containsKey(phraseSeed))
 		    pSeedU = seed_unlab_phrases.get(phraseSeed);
-
 		double probLab = pR/pL;
 		double probLabUnlab = pR/(pL+pU);
 		double probSeedLab = pSeedR/pSeedL;

@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
-import it.uniroma3.extractor.pipeline.Statistics;
 import it.uniroma3.extractor.util.io.XMLReader;
 import it.uniroma3.model.extraction.FactsExtractor;
 import it.uniroma3.model.extraction.FactsExtractor.ModelType;
@@ -50,7 +49,6 @@ public class CompletePipeline {
 	    .forEach(s -> Lector.getTriplifier().extractTriples(s));
 
 	    Lector.getTriplifier().updateBlock();
-	    //Lector.dischargePerThreadDBPS();
 	    
 	    long end_time = System.currentTimeMillis();
 	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");

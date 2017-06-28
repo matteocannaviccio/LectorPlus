@@ -317,9 +317,9 @@ public class QueryDB {
 		    String phrase = rs.getString(1);
 		    String ts = rs.getString(2);
 		    String to = rs.getString(3);
-		    phrase = ts+"\t"+phrase+"\t"+to;
-		    if (availablePhrases.contains(phrase) && !phrase.equals(""))
-			phrasesCount.add(phrase);
+		    String typedPhrase = ts+"\t"+phrase+"\t"+to;
+		    if (availablePhrases.contains(typedPhrase) && !phrase.equals(""))
+			phrasesCount.add(typedPhrase);
 		}
 	    }
 	}catch(SQLException e){
@@ -423,13 +423,13 @@ public class QueryDB {
 		    String phrase = rs.getString(2);
 		    String ts = rs.getString(3);
 		    String to = rs.getString(4);
-		    phrase = ts+"\t"+phrase+"\t"+to;
+		    String typedPhrase = ts+"\t"+phrase+"\t"+to;
 
 		    // filter only the phrases we are considering...
-		    if (availablePhrases.contains(phrase) && !phrase.equals("")){
+		    if (availablePhrases.contains(typedPhrase) && !phrase.equals("")){
 			if (!relation2phrasesCount.containsKey(relation))
 			    relation2phrasesCount.put(relation, new CounterMap<String>());
-			relation2phrasesCount.get(relation).add(phrase);
+			relation2phrasesCount.get(relation).add(typedPhrase);
 		    }
 		}
 	    }

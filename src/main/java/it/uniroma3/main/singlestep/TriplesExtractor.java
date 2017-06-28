@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.pipeline;
+package it.uniroma3.main.singlestep;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
