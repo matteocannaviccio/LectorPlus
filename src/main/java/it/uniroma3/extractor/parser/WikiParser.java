@@ -2,8 +2,8 @@ package it.uniroma3.extractor.parser;
 
 import java.util.Map;
 
-import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 /**

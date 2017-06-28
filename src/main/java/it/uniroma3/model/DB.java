@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.config.Configuration;
 /**
  * Obtain a connection to a specific DB, specified by its name.
  * 

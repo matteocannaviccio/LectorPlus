@@ -1,6 +1,6 @@
 package it.uniroma3.extractor.util.io.ntriples;
 
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 /**
  * An hand-made converter used to convert triples between String and NTriples format.

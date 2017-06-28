@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.util.KeyValueIndex;
 import it.uniroma3.extractor.util.Pair;

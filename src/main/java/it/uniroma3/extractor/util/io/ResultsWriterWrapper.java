@@ -9,7 +9,7 @@ import java.io.Writer;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Lector;
 
 public class ResultsWriterWrapper {
     private Writer out;

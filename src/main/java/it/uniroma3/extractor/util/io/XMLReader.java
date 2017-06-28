@@ -2,14 +2,10 @@ package it.uniroma3.extractor.util.io;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.tools.bzip2.CBZip2InputStream;
 /**
  * 
  * @author matteo
@@ -24,30 +20,10 @@ public class XMLReader{
      */
     public XMLReader(String file) {
 	if(file.endsWith("bz2"))
-	    this.br = getReaderBZip2(file);
+	    this.br = Compressed.getBufferedReaderForCompressedFile(file);
 	else
 	    this.br = getReaderXML(file);
     }
-    
-    /**
-     * 
-     * @param path
-     * @return
-     */
-    public BufferedReader getReaderBZip2(String path){
-	System.out.println("Creating reader from: " + path);
-	BufferedReader br = null;
-	try {
-	    FileInputStream fis = new FileInputStream(path);
-	    byte[] ignoreBytes = new byte[2];
-	    fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-	    br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis), "UTF8"));
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return br;
-    }
-
 
     /**
      * 

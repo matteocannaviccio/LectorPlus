@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.util.io.TSVReader;
 /**
  * 

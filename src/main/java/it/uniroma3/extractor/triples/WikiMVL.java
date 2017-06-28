@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Lector;
 /**
  * 
  * @author matteo

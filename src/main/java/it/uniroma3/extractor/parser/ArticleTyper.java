@@ -3,7 +3,7 @@ package it.uniroma3.extractor.parser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
 /**

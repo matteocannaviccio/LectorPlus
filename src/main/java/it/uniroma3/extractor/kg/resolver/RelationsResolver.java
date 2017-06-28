@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.normalizer.InverseDBPediaRelations;
 import it.uniroma3.extractor.kg.normalizer.Normalizer;

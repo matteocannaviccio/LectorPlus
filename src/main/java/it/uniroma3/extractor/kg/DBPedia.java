@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import it.uniroma3.extractor.bean.Configuration;
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 import it.uniroma3.extractor.kg.resolver.RedirectResolver;

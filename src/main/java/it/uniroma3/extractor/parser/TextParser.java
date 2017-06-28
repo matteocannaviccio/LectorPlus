@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.util.nlp.StupidNLP;
 /**
  * 

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.opencsv.CSVWriter;
 
-import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;

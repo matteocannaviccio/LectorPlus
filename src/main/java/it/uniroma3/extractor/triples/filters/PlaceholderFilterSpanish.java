@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.config.Configuration;
 /**
  * @author matteo
  */

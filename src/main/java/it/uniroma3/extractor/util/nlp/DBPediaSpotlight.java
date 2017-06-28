@@ -27,7 +27,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor.entitydetection.PatternComparator;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.io.TSVReader;

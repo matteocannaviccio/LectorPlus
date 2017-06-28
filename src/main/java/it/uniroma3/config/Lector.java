@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.bean;
+package it.uniroma3.config;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.entitydetection.FSMNationality;
 import it.uniroma3.extractor.entitydetection.FSMSeed;
 import it.uniroma3.extractor.entitydetection.ReplAttacher;
@@ -346,7 +347,7 @@ public class Lector {
 		Configuration.getSpotlightModel(),
 		Configuration.getSpotlightLocalURL()
 		);
-	
+
 	File dirErr = new File(Configuration.getSpotlightLocalERR(2222));
 	pb.redirectError(dirErr);
 	try {

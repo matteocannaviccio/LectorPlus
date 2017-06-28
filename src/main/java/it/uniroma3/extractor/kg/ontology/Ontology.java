@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import it.uniroma3.extractor.bean.Configuration;
+import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor.util.io.ntriples.NTriplesReader;
 import it.uniroma3.extractor.util.io.ntriples.NTriplesReader.Encoding;
 
