@@ -32,7 +32,7 @@ public class MarkupParser {
 	this.blacklist_wikilinks = new HashSet<String>();
 	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
 	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
-	
+
 	this.blacklist_names = new HashSet<String>();
 	this.blacklist_names.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
     }
@@ -59,19 +59,8 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
-    
+
     /**
-     * Remove only commonsense wikilinks.
-     * We chose commonsense wikilinks using the following heuristic:
-     * 
-     * 		none upper case characters in the anchor text. 
-     * 
-     * So the following will be not commonsense wikilinks:
-     *  - iPhone
-     *  - Real Madrid
-     *  - etc.
-     * 
-     *  e.g. [[multinational corporation|multinational]] -> multinational
      * 
      * @param originalText
      * @return
@@ -87,7 +76,11 @@ public class MarkupParser {
 	    }else{
 		rendered = m.group(3);
 	    }
-	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+	    try{
+		m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+	    }catch(Exception e){
+		System.out.println("EXCEPTION FOR : " + originalText);
+	    }
 	}
 	m.appendTail(cleanText);
 	return cleanText.toString();
@@ -190,8 +183,8 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
-    
-    
+
+
 
     /**
      * 
@@ -275,7 +268,7 @@ public class MarkupParser {
 		rendered = m.group(4);
 		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
-	    
+
 	    String categoryIdentifier = Lector.getWikiLang().getCategoryIdentifiers().get(0);
 	    if (!wikid.startsWith(categoryIdentifier+":") && !rendered.startsWith(categoryIdentifier+":")){
 		if (Configuration.solveRedirect())
