@@ -325,7 +325,7 @@ public class Lector {
      * Pull down the (local) server where DBPedia SPotlight is running on.
      */
     public static void closeDBPediaSpotlight() {
-	if(Configuration.useDBpediaSpotlight()){
+	if(Configuration.useDBpediaSpotlight() && localServerSideProcess != null){
 	    localServerSideProcess.destroy();
 	}
     }

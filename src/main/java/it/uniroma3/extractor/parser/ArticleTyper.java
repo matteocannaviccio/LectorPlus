@@ -97,9 +97,9 @@ public class ArticleTyper {
 		return ArticleType.PORTAL;
 	    }
 	
-	/* Filter to capture WIKIPEDIA portal articles */
-	for (String portalHook : Lector.getWikiLang().getProjectIdentifiers())
-	    if (article.getWikid().startsWith(portalHook + ":")){
+	/* Filter to capture WIKIPEDIA projet articles */
+	for (String projectHook : Lector.getWikiLang().getProjectIdentifiers())
+	    if (article.getWikid().startsWith(projectHook + ":")){
 		return ArticleType.PROJECT;
 	    }
 
