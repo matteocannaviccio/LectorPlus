@@ -186,7 +186,7 @@ LANGUAGE=${LANGUAGES[i]}
 			echo "       -> already present."
 		fi
 		echo "     -> type_instance_lhd.ttl"
-		if [ ! -e "data/sources/${LANGUAGE}/types/instance_types_sdtyped.ttl.bz2" ]; then
+		if [ ! -e "data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2" ]; then
 			wget -q -O data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2 "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_lhd_dbo_${LANGUAGE}.ttl.bz2"
 		else
 			echo "       -> already present."
@@ -247,7 +247,7 @@ LANGUAGE=${LANGUAGES[i]}
 
 	###############          Download lists      ###############
 	echo "3e) Download source lists:"
-	
+
 	if [ ${LANGUAGE} = "en" ]; then
 		echo "     -> currencies.tsv"
 		if [ ! -e "data/lists/${LANGUAGE}/currencies.tsv" ]; then
@@ -381,7 +381,7 @@ LANGUAGE=${LANGUAGES[i]}
 			echo "       -> already present."
 		fi
 	fi
-	
+
 	###############     Download DBPedia Spotlight model   ###############
 	echo "3b) Download DBPedia Spotlight model"
 	if [ ! -e "data/spotlight/${LANGUAGE}" ]; then
