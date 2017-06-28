@@ -88,7 +88,7 @@ public class WikiLanguage {
      * @return
      */
     public List<String> getProjectIdentifiers() {
-	return getValues("poject");
+	return getValues("project");
     }
 
     /**

@@ -82,8 +82,7 @@ public class TextParser {
      * @return
      */
     public String removeUselessWikilinks(String block){
-	String cleanBlock = Lector.getMarkupParser().cleanEmptyTemplateWikilinks(block);
-	cleanBlock = Lector.getMarkupParser().removeCommonSenseWikilinks(cleanBlock);
+	String cleanBlock = Lector.getMarkupParser().removeCommonSenseWikilinks(block);
 	return cleanBlock;
     }
 

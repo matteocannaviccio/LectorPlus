@@ -59,6 +59,39 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
+    
+    /**
+     * Remove only commonsense wikilinks.
+     * We chose commonsense wikilinks using the following heuristic:
+     * 
+     * 		none upper case characters in the anchor text. 
+     * 
+     * So the following will be not commonsense wikilinks:
+     *  - iPhone
+     *  - Real Madrid
+     *  - etc.
+     * 
+     *  e.g. [[multinational corporation|multinational]] -> multinational
+     * 
+     * @param originalText
+     * @return
+     */
+    private String removeTemplateWikilinks(String originalText){
+	Pattern TEMPLATEWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]|\\|]+)\\|" + "('')?([^\\{\\]]*\\{\\{[^\\}]*\\}\\}[^\\]]*)?('')?" + "\\]\\]+");
+	Matcher m = TEMPLATEWIKILINK.matcher(originalText);
+	StringBuffer cleanText = new StringBuffer();
+	String rendered;
+	while(m.find()){
+	    if (m.group(2) != null && m.group(4) != null){
+		rendered = m.group(2) + m.group(3) + m.group(4);
+	    }else{
+		rendered = m.group(3);
+	    }
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
+	}
+	m.appendTail(cleanText);
+	return cleanText.toString();
+    }
 
     /**
      * Detect wrong marked wikilinks that were originally rendered with a template
@@ -74,8 +107,8 @@ public class MarkupParser {
      * @return
      */
     public String cleanEmptyTemplateWikilinks(String originalText){
-	Pattern TEMPLATEWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]]+)\\|" + "\\]\\]+");
-	Matcher m = TEMPLATEWIKILINK.matcher(originalText);
+	Pattern EMPTYWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]]+)\\|" + "\\]\\]+");
+	Matcher m = EMPTYWIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	while(m.find()){
 	    String toRender = m.group(1).replaceAll("_", " ").replaceAll("#", " ");
@@ -118,8 +151,9 @@ public class MarkupParser {
      * @return
      */
     public String removeCommonSenseWikilinks(String originalText){
-	String noCommonSenseWikilink = removeLowerCaseWikilinks(originalText);
-	noCommonSenseWikilink = removeListofWikilinks(noCommonSenseWikilink);
+	String noCommonSenseWikilink = removeListofWikilinks(originalText);
+	noCommonSenseWikilink = removeTemplateWikilinks(noCommonSenseWikilink);
+	noCommonSenseWikilink = removeLowerCaseWikilinks(noCommonSenseWikilink);
 	return noCommonSenseWikilink;
     }
 
@@ -131,8 +165,9 @@ public class MarkupParser {
      * 		none upper case characters in the anchor text. 
      * 
      * So the following will be not commonsense wikilinks:
-     *  * iPhone
-     *  * Real madrid
+     *  - iPhone
+     *  - Real Madrid
+     *  - etc.
      * 
      *  e.g. [[multinational corporation|multinational]] -> multinational
      * 
@@ -155,6 +190,8 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
+    
+    
 
     /**
      * 
@@ -162,7 +199,8 @@ public class MarkupParser {
      * @return
      */
     private String removeListofWikilinks(String originalText){
-	Pattern LISTOF = Pattern.compile("\\[\\[+" + "(List of [^|]*+\\|)" + "('')?" + "([^]]+?)" + "('')?" + "\\]\\]++");
+	String listIdentifier = Lector.getWikiLang().getListIdentifiers().get(0).replaceAll("_",  "");
+	Pattern LISTOF = Pattern.compile("\\[\\[+" + "(" + listIdentifier+ "[^|]*+\\|)" + "('')?" + "([^]]+?)" + "('')?" + "\\]\\]++");
 	Matcher m = LISTOF.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
@@ -238,9 +276,8 @@ public class MarkupParser {
 		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
 	    
-	    // still language based.
-	    // TODO: change it
-	    if (!wikid.startsWith("Category:") && !rendered.startsWith("Category:")){
+	    String categoryIdentifier = Lector.getWikiLang().getCategoryIdentifiers().get(0);
+	    if (!wikid.startsWith(categoryIdentifier+":") && !rendered.startsWith(categoryIdentifier+":")){
 		if (Configuration.solveRedirect())
 		    wikid = Lector.getDBPedia().getRedirect(wikid);
 

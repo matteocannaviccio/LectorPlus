@@ -1,13 +1,24 @@
 package it.uniroma3.extractor.parser;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.uniroma3.extractor.bean.Configuration;
 import it.uniroma3.extractor.bean.Lector;
+import it.uniroma3.extractor.bean.WikiArticle;
+import it.uniroma3.extractor.bean.WikiLanguage;
 /**
  * Finite state machine to capture composite structures in Wikipedia Markup Language.
  * Those structures can be: infobox, bio, tables, template, etc.
@@ -333,14 +344,14 @@ public class Cleaner {
      * @return
      */
     public String replaceListsWithEmptyContent(String block){
-	Pattern LIST_CONTENT = Pattern.compile("(?m)^\\s*(;|#|\\*|:|\\||\\│)+((?!\\n).+)++");
+	//Pattern LIST_CONTENT = Pattern.compile("(?m)^\\s*(;|#|\\*|:|\\||\\│)+((?!\\n).+)++");
+	Pattern LIST_CONTENT = Pattern.compile("(?m)^\\s*(;|#|\\*|:)+((?!\\n).+)++");
 	Matcher m = LIST_CONTENT.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");
 	}
 	return block;
     }
-
 
 }
 
