@@ -71,6 +71,7 @@ public abstract class PlaceholderFilter {
      */
     public String preProcess(String phrase) {
 	phrase = Lector.getTextParser().removeParenthesis(phrase);
+	phrase = phrase.replaceAll("\t", " ").replaceAll("\n", " ");
 	phrase = phrase.toLowerCase();
 	return phrase;
     }
@@ -163,7 +164,9 @@ public abstract class PlaceholderFilter {
     public List<Pattern> fillDates() {
 	return Arrays.asList(
 		Pattern.compile("#YEAR#(\\s|,\\s)#DAY#"),
-		Pattern.compile("#DAY#(\\s|,\\s)#YEAR#")
+		Pattern.compile("#DAY#(\\s|,\\s)#YEAR#"),
+		Pattern.compile("#DAY#(\\s|,\\s)#MONTH#"),
+		Pattern.compile("#MONTH#(\\s|,\\s)#YEAR#")
 		);
     }
 
@@ -198,28 +201,17 @@ public abstract class PlaceholderFilter {
 	    phrase = phrase.substring(1).trim();
 	if (phrase.endsWith(" '") || phrase.endsWith(" \"") || phrase.endsWith(" -") || phrase.endsWith(" :"))
 	    phrase = phrase.substring(0, phrase.length() - 1).trim();
-
-	/*
-	Pattern pattern = Pattern.compile("([A-Za-z0-9,'´#\\.\\- ]+)");
-	Matcher matcher = pattern.matcher(phrase);
-	if (!matcher.matches())
-	    phrase = "";
-	else {
-	    pattern = Pattern.compile("([,'´#\\.\\- ]+)");
-	    matcher = pattern.matcher(phrase);
-	    if (matcher.matches())
-		phrase = "";
-	}
-	*/
 	
 	// remove noisy phrases
-	if (phrase.contains("|") || 
+	if (phrase.contains("|") ||
+		phrase.contains("│") || 
+		phrase.contains("{") || 
+		phrase.contains("}") || 
 		phrase.contains(";") || 
 		phrase.contains("(") ||
 		phrase.contains(":") || 
 		phrase.contains(")"))
 	    phrase = "";
-	
 
 	/*
 	 * Some nationalities are cutted, e.g. [Canad]ian or [French]ese
