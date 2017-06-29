@@ -79,7 +79,7 @@ public class Main {
 	    Configuration.updateParameter("language", lang);
 	    Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
-	    singleStepProcess(wikiLang);
+	    completeInMemoryProcess(wikiLang);
 	}
     }
 }
