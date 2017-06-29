@@ -1,5 +1,6 @@
 package it.uniroma3.extractor.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.regex.Pattern;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.util.io.TSVReader;
 
 /**
@@ -22,64 +24,55 @@ import it.uniroma3.extractor.util.io.TSVReader;
  */
 public class MarkupParser {
 
-    private Set<String> blacklist_wikilinks;	// this is a list of all the wikilinks that we do not want to highlight as entities
-    private Set<String> blacklist_names;	// this is a list of all the rendered names that we do not want to highlight as entities
+    // this is a list of all the wikid that we do not want to highlight as entities
+    private Set<String> blacklist_wikilinks;	
+
+    // this is a list of all the anchor texts that we do not want to highlight as entities
+    private Set<String> blacklist_names;
 
     /**
-     * 
+     * Initalize all the lists at the creation.ß
      */
     public MarkupParser(){
 	this.blacklist_wikilinks = new HashSet<String>();
 	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
 	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
-
 	this.blacklist_names = new HashSet<String>();
 	this.blacklist_names.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
     }
 
     /**
-     * Detect all the wikilinks and normalize them in text.
+     * Detect wikilinks that contain template in the anchor text and remove them.
      * 
-     * E.g.:  .
-     * 		.. artist SE-ORG<Britney_Spears> by SE-ORG<JIVE_Records>.
-     * became: 
-     * 		... artist Britney Spears by JIVE Records.
+     * For example, wikilinks such as:
+     * 		[[Mount_Rushmore|{{template}} pass mount]]
      * 
-     * @param originalText
-     * @return
-     */
-    public String removeAllWikilinks(String originalText) {
-	Pattern WIKILINK = Pattern.compile("<[A-Z-]+" + "<([^>]*?)>>");
-	Matcher m = WIKILINK.matcher(originalText);
-	StringBuffer cleanText = new StringBuffer();
-	while(m.find()){
-	    String renderedName = m.group(1).replaceAll("_", " ");
-	    m.appendReplacement(cleanText, Matcher.quoteReplacement(renderedName));
-	}
-	m.appendTail(cleanText);
-	return cleanText.toString();
-    }
-
-    /**
+     * become:
+     * 		{{template}} pass mount
+     * 
+     * In case the rendered name is null, or it is only a special character, we 
+     * remove it keep only the wikid in the wikilink.
      * 
      * @param originalText
      * @return
      */
     private String removeTemplateWikilinks(String originalText){
+	String specialCharacters = "^[" + "0-9/@#!-*\\$%^'&._+={}()" + "]+$" ;
+
 	Pattern TEMPLATEWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]|\\|]+)\\|" + "('')?([^\\{\\]]*\\{\\{[^\\}]*\\}\\}[^\\]]*)?('')?" + "\\]\\]+");
 	Matcher m = TEMPLATEWIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
 	while(m.find()){
-	    if (m.group(2) != null && m.group(4) != null){
-		rendered = m.group(2) + m.group(3) + m.group(4);
-	    }else{
-		rendered = m.group(3);
-	    }
-	    try{
+	    if (m.group(3) != null && !m.group(3).matches(specialCharacters)){
+		if (m.group(2) != null && m.group(4) != null){
+		    rendered = m.group(2) + m.group(3) + m.group(4);
+		}else{
+		    rendered = m.group(3);
+		}
 		m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
-	    }catch(Exception e){
-		System.out.println("EXCEPTION FOR : " + originalText);
+	    }else if (m.group(1) != null){
+		m.appendReplacement(cleanText, Matcher.quoteReplacement("[[" + m.group(1) + "]]"));
 	    }
 	}
 	m.appendTail(cleanText);
@@ -299,5 +292,50 @@ public class MarkupParser {
 	article.addWikilinks(wikilinks);
 
 	return cleanText.toString();
+    }
+
+    /**
+     * Detect all the wikilinks and normalize them in text.
+     * 
+     * E.g.:  .
+     * 		.. artist SE-ORG<Britney_Spears> by SE-ORG<JIVE_Records>.
+     * became: 
+     * 		... artist Britney Spears by JIVE Records.
+     * 
+     * @param originalText
+     * @return
+     */
+    public String removeAllWikilinks(String originalText) {
+	Pattern WIKILINK = Pattern.compile("<[A-Z-]+" + "<([^>]*?)>>");
+	Matcher m = WIKILINK.matcher(originalText);
+	StringBuffer cleanText = new StringBuffer();
+	while(m.find()){
+	    String renderedName = m.group(1).replaceAll("_", " ");
+	    m.appendReplacement(cleanText, Matcher.quoteReplacement(renderedName));
+	}
+	m.appendTail(cleanText);
+	return cleanText.toString();
+    }
+
+    public static void main(String[] args){
+	Configuration.init(new String[0]);
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.updateParameter("language", "de");
+	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), new HashSet<String>(Arrays.asList("FE".split(","))));
+
+	MarkupParser mp = new MarkupParser();
+
+	String text = "Obwohl der etymologische Ursprung des Wortes arabisch ist, entstanden die ersten "
+		+ "Algorithmen im [[Antikes_Griechenland|antiken Griechenland]]. Zu den wichtigsten "
+		+ "Beispielen gehören das [[Sieb des Eratosthenes]] zum Auffinden von [[Primzahlen]], welches "
+		+ "im Buch ''Einführung in die Arithmetik'' von [[Nikomachos_von_Gerasa|Nikomachos]] beschrieben "
+		+ "wurde und der [[Euklidischer_Algorithmus|euklidische Algorithmus]] zum Berechnen des "
+		+ "[[Größter gemeinsamer Teiler|größten gemeinsamen Teilers]] zweier [[natürliche Zahl|natürlicher Zahlen]] "
+		+ "aus dem Werk „[[Elemente_(Euklid)|die Elemente]]“. Einer der ältesten Algorithmen, die sich mit einer "
+		+ "[[reelle Zahl|reellen Zahl]] beschäftigen, ist der [[Auslöschung (numerische Mathematik)#Beispiel: "
+		+ "Algorithmus des Archimedes zur Kreiszahlberechnung|Algorithmus des Archimedes]] zur Approximation von "
+		+ "[[Kreiszahl|]], was zugleich auch eines der ältesten [[numerische Mathematik|numerischen Verfahren]] ist.";
+
+	System.out.println(mp.harvestAllWikilinks(text, WikiArticle.makeDummyArticle()));
     }
 }
