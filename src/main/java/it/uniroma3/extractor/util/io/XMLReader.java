@@ -80,8 +80,9 @@ public class XMLReader{
      */
     public List<String> nextChunk(int chunk){
 	List<String> s = new ArrayList<String>(chunk);
+	StringBuffer sb;
 	while(chunk > 0){
-	    StringBuffer sb = new StringBuffer();
+	    sb = new StringBuffer();
 	    String line;
 	    try {
 		// read untill the next article
@@ -106,7 +107,6 @@ public class XMLReader{
 	    s.add(sb.toString());
 	    chunk-=1;
 	}
-
 	return s;
     }
 

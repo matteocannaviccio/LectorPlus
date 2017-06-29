@@ -1,5 +1,6 @@
 package it.uniroma3.extractor.parser;
 
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -337,5 +338,6 @@ public class MarkupParser {
 		+ "[[Kreiszahl|]], was zugleich auch eines der ältesten [[numerische Mathematik|numerischen Verfahren]] ist.";
 
 	System.out.println(mp.harvestAllWikilinks(text, WikiArticle.makeDummyArticle()));
+	
     }
 }
