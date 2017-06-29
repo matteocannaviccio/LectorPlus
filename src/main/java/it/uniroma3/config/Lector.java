@@ -352,7 +352,6 @@ public class Lector {
 	pb.redirectError(dirErr);
 	try {
 	    p = pb.start();
-	    
 	    // wait untill the server started
 	    BufferedReader logBR;
 	    String last = "";

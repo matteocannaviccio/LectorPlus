@@ -26,6 +26,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor.entitydetection.PatternComparator;
@@ -73,7 +74,7 @@ public class DBPediaSpotlight {
 	// we do not want to process long sentences.
 	if (text.length() < 600){
 	    try {
-		 getMethod = new GetMethod(
+		getMethod = new GetMethod(
 			Configuration.getSpotlightLocalURL() +
 			"/annotate/?" +
 			"confidence=" + this.confidence +
@@ -137,13 +138,16 @@ public class DBPediaSpotlight {
 	    Gson gson = new Gson();
 	    if (jarray != null)
 		for (JsonElement jres : jarray) {
-		    Annotation ann = gson.fromJson(jres, Annotation.class);
-		    ann.setWikid();
-		    if ((Character.isUpperCase(ann.getSurfaceForm().charAt(0)) ||
-			    Character.isDigit(ann.getSurfaceForm().charAt(0))) && 
-			    !blacklist_wikilinks.contains(ann.getWikid()) &&
-			    !blacklist_names.contains(ann.getSurfaceForm())){
-			annotatedEntities.add(ann);
+		    try{
+			Annotation ann = gson.fromJson(jres, Annotation.class);
+			ann.setWikid();
+			if ((Character.isUpperCase(ann.getSurfaceForm().charAt(0)) ||
+				Character.isDigit(ann.getSurfaceForm().charAt(0))) && 
+				!blacklist_wikilinks.contains(ann.getWikid()) &&
+				!blacklist_names.contains(ann.getSurfaceForm())){
+			    annotatedEntities.add(ann);
+			}
+		    }catch(JsonSyntaxException e){
 		    }
 		}
 	}
@@ -208,6 +212,28 @@ public class DBPediaSpotlight {
     }
 
     /**
+     * Checks if it is woth to process the sentence with a dbpedia spotlight.
+     * I.e. it is worth if there is at least one capital letter in the span of text
+     * outside already marked entities.
+     * 
+     * 
+     * @param sentence
+     * @return
+     */
+    private static boolean checkIsWorth(String sentence){
+	boolean isWorth = true;
+	//remove first capital letter...
+	sentence = sentence.substring(1);
+
+	for (String span : sentence.split("<.*?>>")){
+	    isWorth = span.matches("^(.*?[A-Z]).*$");
+	    if (isWorth)
+		return true;
+	}
+	return false;
+    }
+
+    /**
      * @param block
      * @param PE
      * @return
@@ -215,30 +241,27 @@ public class DBPediaSpotlight {
     public List<String> annotateText(String block, String PE) {
 	List<String> sentences = new LinkedList<String>();
 
-	for (String part : StupidNLP.splitSentence(block)) {
-	    List<Pair<String, String>> annotations = getAnnotations(part, PE);
-
-	    List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
-	    for (Pair<String, String> entity : annotations) {
-		regex2entity.add(Pair.make(createRegexName(entity.key), entity.value));
-	    }
-
-	    Collections.sort(regex2entity, new PatternComparator());
-	    String annotatedBlock = part;
-
-	    for (Pair<String, String> regex : regex2entity) {
-		try {
-
-		    annotatedBlock = applyRegex(annotatedBlock, regex.value, regex.key);
-
-		} catch (Exception e) {
-		    System.out.println("Exception in:	" + regex.value);
-		    System.out.println("using the regex:	" + regex.key);
-		    System.out.println("--------------------------------------------------");
-		    break;
+	for (String sentence : StupidNLP.splitSentence(block)) {
+	    if (checkIsWorth(sentence)){
+		List<Pair<String, String>> annotations = getAnnotations(sentence, PE);
+		List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
+		for (Pair<String, String> entity : annotations) {
+		    regex2entity.add(Pair.make(createRegexName(entity.key), entity.value));
+		}
+		Collections.sort(regex2entity, new PatternComparator());
+		for (Pair<String, String> regex : regex2entity) {
+		    try {
+			sentence = applyRegex(sentence, regex.value, regex.key);
+		    } catch (Exception e) {
+			System.out.println("Exception in:	" + regex.value);
+			System.out.println("using the regex:	" + regex.key);
+			System.out.println("--------------------------------------------------");
+			break;
+		    }
 		}
 	    }
-	    sentences.add(annotatedBlock);
+	    // in any case, add the sentence to the "annotated" list of sentences, i.e. document
+	    sentences.add(sentence);
 	}
 	return sentences;
     }
