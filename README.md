@@ -1,5 +1,5 @@
 # LectorPlus
-**Lector** is an extraction tool originated from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions (i.e. phrases) that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version ([PDF](https://www.dropbox.com/s/ruoaxzelvzq5c8y/a9-cannaviccio.pdf?dl=0)):
+**Lector** is an extraction tool originated from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions (i.e. phrases) that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version ([PDF](https://www.dropbox.com/s/ruoaxzelvzq5c8y/a9-cannaviccio.pdf?dl=1)):
 
 	Matteo Cannaviccio, Denilson Barbosa and Paolo Merialdo
 	"Accurate Fact Harvesting from Natural Language Text in Wikipedia with Lector."   
