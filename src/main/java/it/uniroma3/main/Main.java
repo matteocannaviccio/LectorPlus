@@ -58,7 +58,7 @@ public class Main {
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    FactsExtractor extractor = new FactsExtractor();
 	    extractor.setModelForEvaluation(
-		    ModelType.TextExtChallenge, 
+		    ModelType.valueOf(Configuration.getLectorModelName()),
 		    "labeled_triples", 
 		    Configuration.getMinF(), 
 		    Configuration.getTopK(),
@@ -78,10 +78,10 @@ public class Main {
 	Configuration.init(args);
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
-	    System.out.println("\n------------------------------------");
-	    System.out.println("Starting a new LectorPlus execution.");
-	    System.out.println("------------------------------------");
-	    Configuration.printDetails();
+	    System.out.println("\n===================================");
+	    System.out.println("Starting a new LectorPlus execution");
+	    System.out.println("===================================");
+	    Configuration.printFullyDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    completeInMemoryProcess(wikiLang);
 	}

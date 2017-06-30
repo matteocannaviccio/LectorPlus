@@ -26,22 +26,26 @@ import org.apache.log4j.varia.NullAppender;
 public class Configuration {
 
     public static Map<String, String> keyValue = new TreeMap<String, String>();
-
+    
     /**
      * Print all the (interesting) details of the config file.
      */
-    public static void printDetails(){
+    public static void printFullyDetails(){
 	System.out.println("\nConfiguration");
 	System.out.println("-------------");
-	System.out.printf("%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
-	System.out.printf("%-30s %s\n", "Language:", Configuration.getLanguageCode());
-	System.out.printf("%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
-	System.out.printf("%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
-	System.out.printf("%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
-	System.out.printf("%-30s %s\n", "Tot. Articles:", (Configuration.getNumArticlesToProcess() == -1) ? "ALL" : Configuration.getNumArticlesToProcess());
-	System.out.printf("%-30s %s\n", "by:", Configuration.getChunkSize());
-	System.out.printf("%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
-	System.out.println("--------------");
+	System.out.printf("\t%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
+	System.out.printf("\t%-30s %s\n", "Language:", Configuration.getLanguageCode());
+	System.out.printf("\t%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
+	System.out.printf("\t%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
+	System.out.printf("\t%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
+	System.out.printf("\t%-30s %s\n", "Tot. Articles:", (Configuration.getNumArticlesToProcess() == -1) ? "ALL" : Configuration.getNumArticlesToProcess());
+	System.out.printf("\t%-30s %s\n", "by:", Configuration.getChunkSize());
+	System.out.printf("\t%-30s %s\n", "In memory:", (Configuration.inMemoryProcess()) ? "YES" : "NO");
+	System.out.printf("\t%-30s %s\n", "Solve Redirect:", (Configuration.solveRedirect()) ? "YES" : "NO");
+	System.out.printf("\t%-30s %s\n", "All wikilinks of page:", (Configuration.getOnlyTextWikilinks()) ? "NO" : "YES");
+	System.out.printf("\t%-30s %s\n", "Extraction model:", Configuration.getLectorModelName());
+	System.out.printf("\t%-30s %s\n", "minF-topK-cutoff:", Configuration.getMinF() +"-"+ ((Configuration.getTopK() == -1) ? "ALL" : Configuration.getTopK()) +"-"+ Configuration.getCutOff());
+	System.out.printf("\t%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
     }
 
     /**
@@ -459,6 +463,10 @@ public class Configuration {
     public static int getChunkSize(){
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
+    
+    public static String getLectorModelName(){
+	return keyValue.get("lectorModel");
+    } 
 
     public static int getMinF(){
 	return Integer.parseInt(keyValue.get("minF"));

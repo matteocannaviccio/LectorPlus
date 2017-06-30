@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor.triples.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
@@ -46,16 +47,16 @@ public abstract class Model{
 	this.minFreq = minFreq;
 
 	System.out.println("\nScoring model");
-	System.out.println("----------------");
-	System.out.printf("%-30s %s\n", "model: ", "LectorScore with " + type);
-	System.out.printf("%-30s %s\n", "minFreq: ", minFreq);
+	System.out.println("-------------");
+	System.out.printf("\t%-30s %s\n", "model: ", Configuration.getLectorModelName() + " with " + type);
+	System.out.printf("\t%-30s %s\n", "minFreq: ", minFreq);
 	this.available_phrases = availabePhrases(minFreq);
-	System.out.printf("%-30s %s\n", "labeled phrases: ", this.available_phrases.keySet().size());
+	System.out.printf("\t%-30s %s\n", "labeled phrases: ", this.available_phrases.keySet().size());
 	this.unlabeled_phrases = availableUnlabeledPhrases(available_phrases.keySet());
-	System.out.printf("%-30s %s\n", "un-labeled phrases: ", unlabeled_phrases.keySet().size());
+	System.out.printf("\t%-30s %s\n", "un-labeled phrases: ", unlabeled_phrases.keySet().size());
 	this.relation2phrasesCount = availableRelations2phrases(available_phrases.keySet());
-	System.out.printf("%-30s %s\n", "relations: ", relation2phrasesCount.keySet().stream().map(s -> s.replace("(-1)", "")).collect(Collectors.toSet()).size());
-	System.out.printf("%-30s %s\n", "avg. phrases/relation: ", String.format("%.2f", calcAvgValue(relation2phrasesCount)) + " p/r");
+	System.out.printf("\t%-30s %s\n", "relations: ", relation2phrasesCount.keySet().stream().map(s -> s.replace("(-1)", "")).collect(Collectors.toSet()).size());
+	System.out.printf("\t%-30s %s\n", "avg. phrases/relation: ", String.format("%.2f", calcAvgValue(relation2phrasesCount)) + " p/r");
     }
     
     /**

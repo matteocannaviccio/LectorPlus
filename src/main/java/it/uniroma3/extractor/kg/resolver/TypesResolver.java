@@ -104,7 +104,8 @@ public class TypesResolver {
     private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
-	    System.out.print("Creating " + new File(indexPath).getName() + " index ...");
+	    System.out.print("\t-->Creating " + new File(indexPath).getName() + " index");
+
 	    long start_time = System.currentTimeMillis();
 
 	    List<Pair<String, String>> keyvalues = Normalizer.normalizeInstanceTypesDataset(sourcePath);

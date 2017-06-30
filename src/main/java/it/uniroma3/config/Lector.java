@@ -74,17 +74,19 @@ public class Lector {
 	wikiLang = lang;
 	if (pipeline.contains("AP"))
 	    initAP();
+	initDBpedia();
 	if (pipeline.contains("ED"))
 	    initED();
 	if (pipeline.contains("TE"))
 	    initTE();
-	initDBpedia();
     }
 
     /**
      * Initializes Article Parser.
      */
     public static void initAP(){
+	System.out.println("\t-> Init Article Parser (AP)");
+
 	wikiParser = new WikiParser();
 	markupParser = new MarkupParser();
 	articleTyper = new ArticleTyper();
@@ -97,6 +99,8 @@ public class Lector {
      * Initializes Entity Detection.
      */
     public static void initED(){
+	System.out.println("\t-> Init Entity Detector (ED)");
+
 	entitiesFinder = new ReplFinder();
 	entitiesTagger = new ReplAttacher();
 
@@ -146,6 +150,7 @@ public class Lector {
      * Initializes Triple Extractor.
      */
     public static void initTE(){
+	System.out.println("\t-> Init Triple Extractor (TE) and model DB");
 	triplifier = new Triplifier();
     }
 
@@ -153,6 +158,7 @@ public class Lector {
      * Initialize the KG.
      */
     public static void initDBpedia(){
+	System.out.println("\t-> Init Knowledge Graph...");
 	dbpedia = new DBPedia();
     }
 
@@ -346,7 +352,7 @@ public class Lector {
      * @throws IOException 
      */
     private static Process runSpotlight() throws IOException {
-	System.out.println("-> Loading DBPedia Spotlight on " + Configuration.getSpotlightLocalURL() +" ... ");
+	System.out.println("\t-> Loading DBPedia Spotlight on " + Configuration.getSpotlightLocalURL());
 	ProcessBuilder pb = new ProcessBuilder(
 		"java",
 		"-Xmx16g",

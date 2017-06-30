@@ -80,7 +80,7 @@ public class ArticleParser {
 
 	while (!(lines = inputReader.nextChunk(Configuration.getChunkSize())).isEmpty()
 		&& cont < Configuration.getNumArticlesToProcess()) {
-	    System.out.print("Parsing: " + lines.size() + " articles.\t");
+	    System.out.print("\nParsing: " + lines.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    cont += lines.size();
 
@@ -93,13 +93,12 @@ public class ArticleParser {
 	    processedArticles.parallelStream().forEach(s -> outputWriter.println(s.toJson()));
 
 	    long end_time = System.currentTimeMillis();
-	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");
-	    System.out.println("Reading next batch.");
+	    System.out.printf("%-20s %s\n", "Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.", "Reading next batch.");
 	    processedArticles.clear();
 	    lines.clear();
 	}
 
-	System.out.println("************\nProcessed articles:\n" + stats.printStats());
+	stats.printStats();
 	stats.writeDetailsFile();
 	inputReader.closeBuffer();
 	outputWriter.close();

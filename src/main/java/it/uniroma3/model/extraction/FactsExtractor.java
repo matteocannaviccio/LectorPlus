@@ -41,8 +41,6 @@ public class FactsExtractor {
      * @param db_write
      */
     public FactsExtractor(){
-	System.out.println("Facts Extraction");
-	System.out.println("----------------");
 	Lector.getDbfacts(true);
 	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile());
 	this.writer_ontological_facts = new NTriplesWriter(Configuration.getOutputOntologicalFactsFile());
@@ -141,8 +139,6 @@ public class FactsExtractor {
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
 			if (processRecord(t)){
 			    facts_extracted+=1;
-			    if (facts_extracted % 5000 == 0 && facts_extracted > 0)
-				System.out.println("Extracted " + facts_extracted + " novel facts.");
 			}
 		    }
 		}
@@ -236,15 +232,16 @@ public class FactsExtractor {
      * 
      */
     public void run(){
-	System.out.print("Extracting normal facts ... ");
-	int facts_extracted = runExtractionFacts();
-	System.out.println(facts_extracted + " facts extracted." );
+	System.out.println("\nFacts Extraction");
+	System.out.println("----------------");
 	
-	System.out.print("Extracting ontological facts ... ");
+	System.out.print("\tExtracting normal facts ... ");
+	int facts_extracted = runExtractionFacts();
+	System.out.println("\t" + facts_extracted + " facts.");
+	
+	System.out.print("\tExtracting ontological facts ... ");
 	int ont_facts_extracted = runExtractionOntological();
-	System.out.println(ont_facts_extracted + " facts extracted." );
-
-	System.out.println("-------------------");
+	System.out.println("\t" + ont_facts_extracted + " facts.");
 
 	// close the output stream
 	try {

@@ -48,7 +48,6 @@ public class Normalizer{
      * @return
      */
     public static List<Pair<String, String>> normalizeMappingBasedDBPediaDump(String dumpFile){
-	int cont = 0;
 	String subject;
 	String object;
 	String pred;
@@ -60,10 +59,6 @@ public class Normalizer{
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
 
 	for(String triple : triples){
-	    cont++;
-	    if (cont % 6000000 == 0)
-		System.out.println("\t-> First iteration:\t" + cont);
-
 	    subject = triple.split("\t")[0];
 	    pred = triple.split("\t")[1];
 	    object = triple.split("\t")[2];
@@ -77,12 +72,7 @@ public class Normalizer{
 	}
 
 	// SECOND iteration: print clean triples in the following file
-	cont = 0;
 	for(String triple : triples){
-	    cont++;
-	    if (cont % 6000000 == 0)
-		System.out.println("\t-> Second iteration:\t" + cont);
-
 	    subject = triple.split("\t")[0];
 	    pred = triple.split("\t")[1];
 	    object = triple.split("\t")[2];

@@ -20,8 +20,8 @@ public class CompletePipeline {
      * @param configFile
      */
     public CompletePipeline(String inputFile){
-	System.out.println("\nComplete Pipeline");
-	System.out.println("-----------------");
+	System.out.println("\nComplete Pipeline (it takes many hours on whole dump)");
+	System.out.println("-----------------------------------------------------");
 	this.stats = new Statistics();
 	this.inputReader = new XMLReader(inputFile);
     }
@@ -37,7 +37,7 @@ public class CompletePipeline {
 
 	while (!(lines = inputReader.nextChunk(chunckSize)).isEmpty()
 		&& cont < totArticle) {	    
-	    System.out.print("Running next: " + lines.size() + " articles.\t");
+	    System.out.print("\tRunning next: " + lines.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    cont += lines.size();
 
@@ -52,8 +52,7 @@ public class CompletePipeline {
 	    Lector.getTriplifier().updateBlock();
 	    
 	    long end_time = System.currentTimeMillis();
-	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");
-	    System.out.println("Reading next batch.");
+	    System.out.printf("%-20s %s\n", "Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.", "Reading next batch.");
 	    lines.clear();
 	}
 		
@@ -67,7 +66,7 @@ public class CompletePipeline {
     public void extractNovelFacts(){
 	FactsExtractor extractor = new FactsExtractor();
 	extractor.setModelForEvaluation(
-		ModelType.TextExtChallenge, 
+		ModelType.valueOf(Configuration.getLectorModelName()),
 		"labeled_triples", 
 		Configuration.getMinF(), 
 		Configuration.getTopK(), 

@@ -120,7 +120,6 @@ public class KeyValueIndex {
      */
     private void createIndexFromList(List<Pair<String, String>> kvPairsList, String kvIndexPath) {
 	IndexWriter writer = createWriter(kvIndexPath);
-	int count_bad = 0;
 	int count_ok = 0;
 	try {
 	    for (Pair<String, String> pair : kvPairsList){
@@ -140,7 +139,7 @@ public class KeyValueIndex {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	System.out.print(count_ok +"(correct lines) and " + count_bad +"(bad lines)");
+	System.out.print("(correct lines: "+count_ok+")");
     }
 
     /**

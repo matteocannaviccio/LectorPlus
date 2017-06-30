@@ -55,9 +55,8 @@ public class ModelLSTextExt extends Model{
      */
     public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, double cutoff, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
-	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
-	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
-	System.out.println("---------------------------------------------------------------\n");
+	System.out.printf("\t%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+	System.out.printf("\t%-30s %s\n", "cutOff generality: ", cutoff);
 	
 	this.topk = topk;
 	this.generality_cutoff = cutoff;
