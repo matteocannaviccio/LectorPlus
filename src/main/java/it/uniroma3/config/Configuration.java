@@ -39,7 +39,7 @@ public class Configuration {
 	System.out.printf("%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
 	System.out.printf("%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
 	System.out.printf("%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
-	System.out.printf("%-30s %s\n", "Tot. Articles:", Configuration.getNumArticlesToProcess());
+	System.out.printf("%-30s %s\n", "Tot. Articles:", (Configuration.getNumArticlesToProcess() == -1) ? "ALL" : Configuration.getNumArticlesToProcess());
 	System.out.printf("%-30s %s\n", "by:", Configuration.getChunkSize());
 	System.out.printf("%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
 	System.out.println("--------------");

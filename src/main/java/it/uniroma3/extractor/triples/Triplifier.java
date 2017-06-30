@@ -163,7 +163,7 @@ public class Triplifier {
 
 		String phrase_placeholders = placeholderFilter.replace(phrase);
 
-		if (!phrase.equals("")){
+		if (!phrase_placeholders.equals("")){
 		    WikiTriple t = new WikiTriple(article.getWikid(), sentence, pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);
 		}
@@ -191,10 +191,10 @@ public class Triplifier {
 	    if(t.getPost().startsWith("'s"))
 		isCorrect = false;
 	    // we remove triples with objects intoduced with "that"
-	    if(t.getPhraseOriginal().endsWith(" that"))
-		isCorrect = false;
-	    // we remove triples with phrase longer than 10
-	    if (t.getPhraseOriginal().split(" ").length > 10)
+	    //if(t.getPhraseOriginal().endsWith(" that"))
+		//isCorrect = false;
+	    // we remove triples with phrase longer than 15
+	    if (t.getPhrasePlaceholders().split(" ").length > 15)
 		isCorrect = false;
 	    if (isCorrect)
 		filteredTriples.add(t);

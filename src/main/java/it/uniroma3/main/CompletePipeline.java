@@ -20,7 +20,9 @@ public class CompletePipeline {
      * @param configFile
      */
     public CompletePipeline(String inputFile){
-	System.out.println("\n**** COMPLETE PIPELINE ****");
+	System.out.println("\n--------------------");
+	System.out.println("COMPLETE PIPELINE");
+	System.out.println("--------------------");
 	this.stats = new Statistics();
 	this.inputReader = new XMLReader(inputFile);
     }
@@ -55,6 +57,8 @@ public class CompletePipeline {
 	    System.out.println("Reading next batch.");
 	    lines.clear();
 	}
+	System.out.println("--------------------");
+
 	System.out.println("************\nProcessed articles:\n" + stats.printStats());
 	inputReader.closeBuffer();
     }

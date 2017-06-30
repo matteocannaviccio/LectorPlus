@@ -78,6 +78,9 @@ public class Main {
 	Configuration.init(args);
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
+	    System.out.println("\n-------------------------------------------------------");
+	    System.out.println("Starting new LectorPlus execution for language: \t" + Configuration.getLanguageCode());
+	    System.out.println("-------------------------------------------------------");
 	    Configuration.printDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    completeInMemoryProcess(wikiLang);

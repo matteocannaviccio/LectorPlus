@@ -222,8 +222,10 @@ public class DBPediaSpotlight {
      */
     private static boolean checkIsWorth(String sentence){
 	boolean isWorth = true;
+	
 	//remove first capital letter...
-	sentence = sentence.substring(1);
+	if (!sentence.startsWith("<"))
+	    sentence = sentence.substring(1);
 
 	for (String span : sentence.split("<.*?>>")){
 	    isWorth = span.matches("^(.*?[A-Z]).*$");

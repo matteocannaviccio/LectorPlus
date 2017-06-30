@@ -69,7 +69,9 @@ public class Lector {
      * @param config
      */
     public static void init(WikiLanguage lang, Set<String> pipeline) {
-	System.out.println("\n**** INITIALIZING LECTOR ****");
+	System.out.println("\n--------------------");
+	System.out.println("INITIALIZING LECTOR");
+	System.out.println("--------------------");
 	wikiLang = lang;
 	if (pipeline.contains("AP"))
 	    initAP();
@@ -124,7 +126,15 @@ public class Lector {
 	};
 
 	if(Configuration.useDBpediaSpotlight()){
-	    localServerSideProcess = runSpotlight();
+	    
+	    try {
+		localServerSideProcess = runSpotlight();
+		
+	    } catch (IOException e) {
+		System.out.println("Problems with running local DBPedia Spotlight process!");
+		e.printStackTrace();
+	    }
+	    
 	    dbspot = new ThreadLocal<DBPediaSpotlight>() {
 		@Override protected DBPediaSpotlight initialValue() {
 		    return new DBPediaSpotlight(0.5, 0);
@@ -334,10 +344,10 @@ public class Lector {
     /**
      * Returns the process where DBPedia Spotlight is running on.
      * TODO: improve fixed-time waiting for the creation. 
+     * @throws IOException 
      */
-    private static Process runSpotlight() {
+    private static Process runSpotlight() throws IOException {
 	System.out.println("-> Loading DBPedia Spotlight on " + Configuration.getSpotlightLocalURL() +" ... ");
-	Process p = null;
 	ProcessBuilder pb = new ProcessBuilder(
 		"java",
 		"-Xmx16g",
@@ -347,28 +357,36 @@ public class Lector {
 		Configuration.getSpotlightModel(),
 		Configuration.getSpotlightLocalURL()
 		);
+	pb.redirectError(new File(Configuration.getSpotlightLocalERR(2222)));
+	
+	Process p = pb.start();
+	// Destroy the process on shutdown
+	Runtime.getRuntime().addShutdownHook(new Thread() {
+	    @Override
+	    public void run() {
+		p.destroy();
+	    }
+	});
 
-	File dirErr = new File(Configuration.getSpotlightLocalERR(2222));
-	pb.redirectError(dirErr);
+	
 	try {
-	    p = pb.start();
 	    // wait untill the server started
 	    BufferedReader logBR;
 	    String last = "";
 	    int maxChecks = 50;
 	    while(!last.startsWith("Server started") && maxChecks>0){
-		p.waitFor(5, TimeUnit.SECONDS);
-		logBR = new BufferedReader(new FileReader(Configuration.getSpotlightLocalERR(2222)));
-		String line = null;
-		while ((line = logBR.readLine()) != null) {
-		    last = line;
-		}
-		maxChecks -=1;
+	        p.waitFor(5, TimeUnit.SECONDS);
+	        logBR = new BufferedReader(new FileReader(Configuration.getSpotlightLocalERR(2222)));
+	        String line = null;
+	        while ((line = logBR.readLine()) != null) {
+	    	last = line;
+	        }
+	        maxChecks -=1;
 	    }
-	  
-	} catch (IOException | InterruptedException e) {
+	    
+	} catch (IOException | InterruptedException e ) {
 	    e.printStackTrace();
-	}
+	} 
 	return p;
     }
 
