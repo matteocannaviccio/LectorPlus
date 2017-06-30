@@ -31,7 +31,7 @@ public class Configuration {
      * Print all the (interesting) details of the config file.
      */
     public static void printDetails(){
-	System.out.println("\n\n-------------");
+	System.out.println("-------------");
 	System.out.println("Configuration");
 	System.out.println("-------------");
 	System.out.printf("%-30s %s\n", "Data Folder:", Configuration.getDataFolder());

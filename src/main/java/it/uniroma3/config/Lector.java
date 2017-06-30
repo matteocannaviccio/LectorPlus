@@ -69,7 +69,7 @@ public class Lector {
      * @param config
      */
     public static void init(WikiLanguage lang, Set<String> pipeline) {
-	System.out.println("\n--------------------");
+	System.out.println("--------------------");
 	System.out.println("INITIALIZING LECTOR");
 	System.out.println("--------------------");
 	wikiLang = lang;

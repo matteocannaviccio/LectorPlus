@@ -20,7 +20,7 @@ public class CompletePipeline {
      * @param configFile
      */
     public CompletePipeline(String inputFile){
-	System.out.println("\n--------------------");
+	System.out.println("--------------------");
 	System.out.println("COMPLETE PIPELINE");
 	System.out.println("--------------------");
 	this.stats = new Statistics();
