@@ -99,11 +99,10 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 
 	###############    Download Wikipedia   #####################
-	echo "3a) Download Wikipedia dump"
-	final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
-	tmp=$final"_temp"
-
 	if [ ${LANGUAGE} = "en" ]; then
+		echo "3a) Download Wikipedia dump (~14G)"
+		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
+		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp ${wikipedia_en}
 			mv $tmp $final
@@ -112,6 +111,9 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
+		echo "3a) Download Wikipedia dump (~2.5G)"
+		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
+		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp ${wikipedia_es}
 			mv $tmp $final
@@ -120,6 +122,9 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
+		echo "3a) Download Wikipedia dump (~4.2G)"
+		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
+		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp ${wikipedia_de}
 			mv $tmp $final
@@ -128,6 +133,9 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "it" ]; then
+		echo "3a) Download Wikipedia dump (~2.2G)"
+		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
+		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp ${wikipedia_it}
 			mv $tmp $final
@@ -136,6 +144,9 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "fr" ]; then
+		echo "3a) Download Wikipedia dump (~3.5G)"
+		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
+		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp ${wikipedia_fr}
 			mv $tmp $final
@@ -302,8 +313,10 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 
 		echo "     -> stopwords.tsv"
-		if [ ! -e "data/lists/${LANGUAGE}/stopwords.tsv" ]; then
-			wget -q -O data/lists/${LANGUAGE}/stopwords.tsv "https://www.dropbox.com/s/03ferhbc1tp15c7/stopwords.tsv?dl=0"
+		final="data/lists/${LANGUAGE}/stopwords.tsv"
+		tmp=$final"_temp"
+		if [ ! -e $final ]; then
+			wget -q -O $tmp "https://www.dropbox.com/s/03ferhbc1tp15c7/stopwords.tsv?dl=0"
 			mv $tmp $final
 		else
 			echo "       -> already present."

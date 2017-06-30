@@ -58,7 +58,7 @@ public class FactsExtractor {
      * @param typePhrase
      * @return
      */
-    public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, PhraseType typePhrase){
+    public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, double cutoff, PhraseType typePhrase){
 	switch(type){
 	case BM25:
 	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);

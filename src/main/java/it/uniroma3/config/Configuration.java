@@ -468,6 +468,10 @@ public class Configuration {
     public static int getTopK(){
 	return Integer.parseInt(keyValue.get("topK"));
     }
+    
+    public static double getCutOff(){
+	return Integer.parseInt(keyValue.get("cutoff"));
+    }
 
     public static boolean getOnlyTextWikilinks(){
 	return keyValue.get("onlyTextWikilinks").equalsIgnoreCase("true");	    

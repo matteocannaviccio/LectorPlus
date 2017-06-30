@@ -45,24 +45,8 @@ public class ModelLSTextExt extends Model{
      * 
      */
     // parameters
-    private double generality_cutoff = 0.1;
+    private double generality_cutoff;
     private int topk;
-
-    /**
-     * Constructor without the parameters.
-     * 
-     * @param db
-     */
-    public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
-	super(db, labeled, modelType, minFreq);
-	System.out.printf("%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
-	System.out.printf("%-30s %s\n", "cutOff generality: ", generality_cutoff);
-	System.out.println("---------------------------------------------------------------\n");
-	
-	this.topk = topk;
-	this.model = createModel();
-
-    }
 
     /**
      * Constructor with specific parameters alpha and beta.

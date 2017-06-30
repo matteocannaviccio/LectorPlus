@@ -69,6 +69,7 @@ public class CompletePipeline {
 		"labeled_triples", 
 		Configuration.getMinF(), 
 		Configuration.getTopK(), 
+		Configuration.getCutOff(),
 		PhraseType.TYPED_PHRASES);
 	extractor.run();
     }

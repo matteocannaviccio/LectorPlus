@@ -61,7 +61,8 @@ public class Main {
 		    ModelType.TextExtChallenge, 
 		    "labeled_triples", 
 		    Configuration.getMinF(), 
-		    Configuration.getTopK(), 
+		    Configuration.getTopK(),
+		    Configuration.getCutOff(),
 		    PhraseType.TYPED_PHRASES);
 	    extractor.run();
 	}
