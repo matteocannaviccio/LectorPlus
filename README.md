@@ -1,9 +1,12 @@
 # LectorPlus
-**Lector** is an extraction tool originated from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions (i.e. phrases) that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version. 
+**Lector** is an extraction tool originated from a joint research project between Roma Tre University and University of Alberta. The tool is able to extract facts from English Wikipedia article text, learning the expressions (i.e. phrases) that are commonly used to describe instances of relations between named entities in the text. It reaches an estimated precision of 95% in its first version ([PDF](https://www.dropbox.com/s/ruoaxzelvzq5c8y/a9-cannaviccio.pdf?dl=0)):
+
+	Matteo Cannaviccio, Denilson Barbosa and Paolo Merialdo
+	"Accurate Fact Harvesting from Natural Language Text in Wikipedia with Lector."   
+	In Proceedings of the 19th International Workshop on Web and Databases (WebDB '16). 
+	ACM, New York, NY, USA, Article 9, 6 pages. DOI: https://doi.org/10.1145/2932194.2932203
 
 **LectorPlus** is an extension in which the tool has been applied to different languages, other than English. It is able to extract facts for Spanish, Italian, French and German version of Wikipedia and focuses primarily on DBPedia as a reference Knowledge Graph.
-
-More information is available about the project at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
 
 ## Approach
 Each execution of the tool performs a first pass over the whole dump harvesting the phrases that are commonly used to describe instances of DBPedia properties in the text (e.g. `[Book] written by [Writer]` describes an instance of the property `writer`). Then, in a second pass, the tool uses the harvested phrases to extracts new instances of such properties involving named entities that were not related before.
@@ -31,7 +34,7 @@ The tool takes as input a Wikipedia XML dump (in one of the language above) and 
 	 ```
 	 dumps.properties
 	 ```
-	it lists the specific URLs of the input Wikipedia dumps. We alrready filled it with the complete dumps of Feb. 2017 in all the languages above but other versions can be easily used (from https://dumps.wikimedia.org/).
+	it lists the specific URLs of the input Wikipedia dumps. We already filled it with the complete dumps of May 2017 in all the languages above but other versions can be easily linked from https://dumps.wikimedia.org/.
 
 - Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the environment used by LectorPlus. 
 	
@@ -39,8 +42,8 @@ The tool takes as input a Wikipedia XML dump (in one of the language above) and 
 	```
 	sh install.sh
 	```
-	It will take some time<sup>*</sup> (many files to downlaod) but at the end it will create the root folder `/data` described below.
-	<sup>*</sup>: Note that the English Wikipedia dump only is around 12GB! 
+	It will take some time<sup>*</sup> (many GB to downlaod) but at the end it will create the root folder `/data` described below.
+	<sup>*</sup>: Note that the English Wikipedia dump only is ~14GB! 
 
 #### Structure of the folder `/data`
 The folder `/data` contains a list of sub-folders and includes all the necessary files. The languages inside parenthesis means that the content of the folder is repeated for all of them.
@@ -64,6 +67,9 @@ The folder `/data` contains a list of sub-folders and includes all the necessary
 	|-- sources (en es it de fr): other important files used in the process
 	|		|-- type: it contains the instance types, or other dictionaries (when present)
 	|		|-- redirect.tsv: it contains tsv files used to solve redirect names during the parsing
+	|
+	|-- spotlight (en es it de fr): contain the models to run DBpedia Spotlight for each langage
+	|		|-- dbpedia-spotlight-latest.jar
 
 Other folders are created at run-time:
 
@@ -81,17 +87,14 @@ maven clean install
 and running it using the following command:
 
 ```
-sh run.sh <output_folder>
+sh run.sh <output_folder_complete_path>
 ```
-It takes the path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
+It takes the complete path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
 The output folder will contain all the compressed NTriples files produced by the tool.
 
 
 ## Details and contacts
-More details can be found in the paper:
-
->  "Accurate Fact Harvesting from Natural Language Text in Wikipedia with Lector."   
->  by Matteo Cannaviccio, Denilson Barbosa and Paolo Merialdo.   
+More details can be found in the paper above and at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
 
 The paper was presented at the "19th International Workshop on the Web and Databases (WebDB 2016)" 
 (http://webdb2016.technion.ac.il/program.html).
