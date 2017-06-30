@@ -160,7 +160,7 @@ LANGUAGE=${LANGUAGES[i]}
 	###############      Download types     ###############
 	echo "3c) Download types mappings"
 
-	if [ ${LANGUAGE} = "en" ] || [ ${LANGUAGE} != "de" ] || [ ${LANGUAGE} != "es" ] || [ ${LANGUAGE} != "it" ] || [ ${LANGUAGE} != "fr" ] ; then
+	if [ ${LANGUAGE} = "en" ] || [ ${LANGUAGE} = "de" ] || [ ${LANGUAGE} = "es" ] || [ ${LANGUAGE} = "it" ] || [ ${LANGUAGE} = "fr" ] ; then
 
 		echo "     -> type_instance.ttl"
 		final="data/sources/${LANGUAGE}/types/instance_types.ttl.bz2"
@@ -184,7 +184,7 @@ LANGUAGE=${LANGUAGES[i]}
 
 	fi
 
-	if [ ${LANGUAGE} = "en" ] || [ ${LANGUAGE} != "de" ]; then
+	if [ ${LANGUAGE} = "en" ] || [ ${LANGUAGE} = "de" ]; then
 
 		echo "     -> type_instance_lhd.ttl"
 		final="data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2"
@@ -196,8 +196,8 @@ LANGUAGE=${LANGUAGES[i]}
 			echo "       -> already present."
 		fi
 
-		echo "     -> type_instance_sdtypes.ttl"
-		final="data/sources/${LANGUAGE}/types/instance_types_lhd.ttl.bz2"
+		echo "     -> type_instance_sdtyped.ttl"
+		final="data/sources/${LANGUAGE}/types/instance_types_sdtyped.ttl.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
 			wget -q -O $tmp "http://downloads.dbpedia.org/2016-04/core-i18n/${LANGUAGE}/instance_types_sdtyped_dbo_${LANGUAGE}.ttl.bz2"
