@@ -104,7 +104,7 @@ public class TypesResolver {
     private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
-	    System.out.print("\t-->Creating " + new File(indexPath).getName() + " index");
+	    System.out.print("\t\t--> " + new File(indexPath).getName() + " index\t");
 
 	    long start_time = System.currentTimeMillis();
 
