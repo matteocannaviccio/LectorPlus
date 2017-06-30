@@ -470,7 +470,7 @@ public class Configuration {
     }
     
     public static double getCutOff(){
-	return Integer.parseInt(keyValue.get("cutoff"));
+	return Double.parseDouble(keyValue.get("cutoff"));
     }
 
     public static boolean getOnlyTextWikilinks(){

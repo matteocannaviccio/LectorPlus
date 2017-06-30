@@ -44,7 +44,7 @@ public class RelationsResolver {
     private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
-	    System.out.print("Creating DBPedia index ...");
+	    System.out.println("Creating DBPedia index (after normalization) ...");
 	    long start_time = System.currentTimeMillis();
 
 	    List<Pair<String, String>> dbpedia_dump = Normalizer.normalizeMappingBasedDBPediaDump(Configuration.getDBPediaDumpFile());

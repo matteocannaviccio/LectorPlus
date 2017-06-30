@@ -196,8 +196,10 @@ public class FactsExtractor {
 
 		    if (processOntologicalRecord(wikid, sentence, subject_type, object)){
 			facts_extracted+=1;
+			/*
 			if (facts_extracted % 5000 == 0 && facts_extracted > 0)
 			    System.out.println("Extracted " + facts_extracted + " novel facts.");
+			    */
 		    }
 		}
 	    }
