@@ -45,9 +45,8 @@ public abstract class Model{
 	this.type = type;
 	this.minFreq = minFreq;
 
-	System.out.println("---------------------------------------------------------------");
-	System.out.println("Scoring model");
-	System.out.println("---------------------------------------------------------------");
+	System.out.println("\nScoring model");
+	System.out.println("----------------");
 	System.out.printf("%-30s %s\n", "model: ", "LectorScore with " + type);
 	System.out.printf("%-30s %s\n", "minFreq: ", minFreq);
 	this.available_phrases = availabePhrases(minFreq);

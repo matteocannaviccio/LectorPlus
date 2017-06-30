@@ -41,9 +41,8 @@ public class FactsExtractor {
      * @param db_write
      */
     public FactsExtractor(){
-	System.out.println("\n-------------------");
-	System.out.println("NEW FACTS EXTRACTION");
-	System.out.println("-------------------");
+	System.out.println("Facts Extraction");
+	System.out.println("----------------");
 	Lector.getDbfacts(true);
 	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile());
 	this.writer_ontological_facts = new NTriplesWriter(Configuration.getOutputOntologicalFactsFile());

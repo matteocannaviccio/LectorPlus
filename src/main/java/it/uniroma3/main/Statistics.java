@@ -42,6 +42,8 @@ public class Statistics {
      * @return
      */
     public String printStats() {
+	System.out.println("\nStats:");
+	System.out.println("-----");
 	StringBuffer stats = new StringBuffer();
 	for (Map.Entry<ArticleType, List<String>> entry : this.countTypes.entrySet())
 	    stats.append(String.format("%-20s %s\n", entry.getKey(), entry.getValue().size()));
