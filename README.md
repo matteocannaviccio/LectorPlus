@@ -95,10 +95,6 @@ The output folder will contain all the compressed NTriples files produced by the
 
 ## Details and contacts
 More details can be found in the paper above and at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
-
-The paper was presented at the "19th International Workshop on the Web and Databases (WebDB 2016)" 
-(http://webdb2016.technion.ac.il/program.html).
-
 If you have any questions, please feel free to contact the authors.
 
 - Matteo Cannaviccio (cannaviccio@uniroma3.it)
