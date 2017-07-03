@@ -1,5 +1,6 @@
 package it.uniroma3.model.evaluation;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,16 +10,17 @@ import java.util.HashSet;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.triples.WikiTriple;
-import it.uniroma3.extractor.triples.WikiTriple.TType;
+import it.uniroma3.extractor.bean.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple.TType;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.db.DBModel;
 import it.uniroma3.model.model.Model;
+import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
 import it.uniroma3.model.model.ModelLS;
+import it.uniroma3.model.model.ModelLSTextExt;
 import it.uniroma3.model.model.ModelNB;
 import it.uniroma3.model.model.ModelNB.ModelNBType;
 /**
@@ -29,17 +31,15 @@ import it.uniroma3.model.model.ModelNB.ModelNBType;
 public class Evaluator {
 
     private DBCrossValidation dbcrossvaliadation;
-
     private Model model;
-    public enum ModelType {LectorScore, BM25, NB};
 
     /**
      * 
      * @param model
      * @param db_read
      */
-    public Evaluator(DBModel dbmodel){
-	this.dbcrossvaliadation = createDBcrossvalidation(dbmodel, 5);
+    public Evaluator(String dbcrossvalidationName, DBModel dbmodel){
+	this.dbcrossvaliadation = createDBcrossvalidation(dbcrossvalidationName, dbmodel, 5);
     }
 
     /**
@@ -52,7 +52,7 @@ public class Evaluator {
      * @return
      */
     private void setModel(ModelType type, String labeled_table, int minFreq, 
-	    int topK, PhraseType typePhrase){
+	    int topK, double cutoff, PhraseType typePhrase){
 	switch(type){
 	case BM25:
 	    model = new ModelBM25(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
@@ -63,17 +63,24 @@ public class Evaluator {
 	case LectorScore:
 	    model = new ModelLS(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
 	    break;
+	case TextExtChallenge:
+	    model = new ModelLSTextExt(this.dbcrossvaliadation, labeled_table, minFreq, topK, cutoff, typePhrase);
+	    break;
 	}
     }
 
     /**
      * 
+     * @param crossDBName
      * @param dbmodel
      * @param nParts
      * @return
      */
-    private DBCrossValidation createDBcrossvalidation(DBModel dbmodel, int nParts){
-	return new DBCrossValidation("cross.db", dbmodel, nParts);
+    private DBCrossValidation createDBcrossvalidation(String crossDBName, DBModel dbmodel, int nParts){
+	if (!new File(crossDBName).exists())
+	    return new DBCrossValidation(crossDBName, dbmodel, nParts);
+	else
+	    return new DBCrossValidation(crossDBName);
     }
 
     /**
@@ -136,7 +143,7 @@ public class Evaluator {
 
 			// controlla se abbiamo recuperato qualcosa
 			if (prediction != null){
-			    if (relation.replace("(-1)", "").equals(prediction.replace("(-1)", ""))){
+			    if (Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject()).contains(prediction)){
 				//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + relation + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
 				bestPhrases.add(subject_type + " " + phrase_placeholder+ " " + object_type);
 				tp +=1;
@@ -159,8 +166,8 @@ public class Evaluator {
 	}
 	double precision = (double) tp/(tp+fp);
 	double recall = (double) tp/fntn;
-	System.out.println("Best Phrases : " + Ranking.getTopKRanking(bestPhrases, 20));
-	System.out.println("Bad Phrases : " + Ranking.getTopKRanking(badPhrases, 20));
+	//System.out.println("Best Phrases : " + Ranking.getTopKRanking(bestPhrases, 20));
+	//System.out.println("Bad Phrases : " + Ranking.getTopKRanking(badPhrases, 20));
 
 	return Pair.make(precision, recall);
     }
@@ -174,14 +181,13 @@ public class Evaluator {
      * @param minF
      * @return
      */
-    private Pair<Double, Double> runCrossValidation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF){
-	// {1,2,3,4,5} --> change if you want to average accross all the 5 parts
+    private Pair<Double, Double> runCrossValidation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF, double cutoff){
 	double avg_precision = 0.0;
 	double avg_recall = 0.0;
 	for (int it=0; it < nParts; it++){
 	    String labeled_table = "cv_labeled_triples_" + it;
 	    String evaluation_table = "cv_evaluation_triples_"+ it;
-	    this.setModel(modelType, labeled_table, minF, topK, phraseType);
+	    this.setModel(modelType, labeled_table, minF, topK, cutoff, phraseType);
 	    Pair<Double, Double> precision_recall =  this.runEvaluation(evaluation_table);
 	    avg_precision += precision_recall.key;
 	    avg_recall += precision_recall.value;
@@ -195,22 +201,36 @@ public class Evaluator {
      */
     public static void main(String[] args){
 	Configuration.init(new String[0]);
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.updateParameter("language", "it");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-	
-	Evaluator ev = new Evaluator(Lector.getDbmodel(false));
-	int nParts = 1;
-	int[] topk = new int[]{5, 100, -1};
-	int[] minF = new int[]{0, 10, 100};
+	/*************************************************/
 
-	ModelType model = ModelType.LectorScore;
-	int tk = 100;
-	int mF = 10;
-	Pair<Double, Double> evaluations = ev.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, tk, mF);
-	System.out.println("***********************************");
-	System.out.println("Results with model= " + model.name() + ", topk= " + tk + " and minF= " + mF);
-	System.out.println("-> Precision: " + (double) evaluations.key/nParts);
-	System.out.println("-> Recall: " + (double) evaluations.value/nParts);
+
+	System.out.println("\nEvaluation");
+	System.out.println("----------");
+
+	String dbname = Configuration.getLectorFolder() + "/" + "cross.db";
+	Evaluator ev = new Evaluator(dbname, Lector.getDbmodel(false));
+
+	int nParts = 2;
+	double[] cutoff = new double[]{0.1, 0.0};
+	int[] topk = new int[]{-1};
+	int[] minF = new int[]{5};
+
+	ModelType model = ModelType.TextExtChallenge;
+
+	for(int tk=0; tk<topk.length; tk++){
+	    for(int mf=0; mf<minF.length; mf++){
+		for(int cf=0; cf<cutoff.length; cf++){
+		    Pair<Double, Double> evaluations = ev.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, topk[tk], minF[mf], cutoff[cf]);
+		    System.out.println("\nResults with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf] + ", cutoff=" + cutoff[cf]);
+		    System.out.println("-> Precision: " + (double) evaluations.key/nParts);
+		    System.out.println("-> Recall: " + (double) evaluations.value/nParts);
+		}
+	    }
+	}
 
     }
 }

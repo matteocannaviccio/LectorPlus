@@ -2,7 +2,6 @@ package it.uniroma3.model.model;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Set;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -27,17 +26,21 @@ public class ModelBM25 extends Model{
     // parameters
     private double k = 1;
     private double b = 1;
-    private int topK;
+    private int topk;
 
 
     /**
      * 
      * @param db
      */
-    public ModelBM25(DB db, String labeled, int minFreq, int topK, PhraseType modelType) {
+    public ModelBM25(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
-	this.topK = topK;
+	System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+
+	this.topk = topk;
 	this.model = createModel();
+	
+	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
     }
 
     /**
@@ -47,36 +50,16 @@ public class ModelBM25 extends Model{
      * @return
      */
     private Map<String, String> createModel(){
-	if(verbose)
-	    System.out.println("-> Creating a " + type.name() + " BM25 model ...");
-
-	// we already have our labeled available phrases (from the model and the minFreq)... 
-	CounterMap<String> unlab_phrases = availableUnlabeledPhrases(this.available_phrases.keySet());
-	Map<String, CounterMap<String>> relations2phrasesCount = availableRelations2phrases(this.available_phrases.keySet());
-	Map<String, CounterMap<String>> phrases2relationsCount = availablePhrases2relations(this.available_phrases.keySet());
-	CounterMap<String> relations_counts = calculateRelationsCount(relations2phrasesCount);
-	double avgRelationsLength = calculateRelationsAverage(relations2phrasesCount);
-
-	if(verbose){
-	    System.out.println("\t--------");
-	    System.out.println("\t -> Total labeled phrases(> " + minFreq + " occ.): " + this.available_phrases.keySet().size());
-	    System.out.println("\t -> Total unlabeled phrases: " + unlab_phrases.size());
-	    System.out.println("\t -> Total relations: " + relations2phrasesCount.size());
-	    System.out.println("\t -> Avg. Lenght: " + avgRelationsLength);
-	    //System.out.println("Total relations (shrinked): " + relation2phrasesCount_shrinked.keySet().size());
-	    System.out.println("\t-----------------------");
-	}
-
-	if(verbose)
-	    System.out.println("-> Writing model ...");
+	
+	double avgRelationsLength = calculateRelationsAverage(this.relation2phrasesCount);
 
 	Map<String, String> model = createBM25Model(
 		avgRelationsLength, 
-		this.available_phrases, 
-		unlab_phrases, 
-		relations_counts,
-		phrases2relationsCount, 
-		relations2phrasesCount);
+		this.labeled_phrases, 
+		this.unlabeled_phrases, 
+		this.labeled_relations,
+		this.phrases2relationsCount, 
+		this.relation2phrasesCount);
 
 	return model;
     }
@@ -90,7 +73,7 @@ public class ModelBM25 extends Model{
      * @param relation2phrasesCount
      * @return
      */
-    private Map<String, String> createBM25Model(double avgRelationsLength, CounterMap<String> available_phrases,
+    private Map<String, String> createBM25Model(double avgRelationsLength, CounterMap<String> labeled_phrases,
 	    CounterMap<String> unlab_phrases, CounterMap<String> relations_counts, 
 	    Map<String, CounterMap<String>> phrases2relationsCount, Map<String, CounterMap<String>> relation2phrasesCount) {
 
@@ -106,7 +89,7 @@ public class ModelBM25 extends Model{
 	    for(Map.Entry<String, Integer> phraseCnt : relation2phrasesCount.get(relation).entrySet()){
 		String phrase = phraseCnt.getKey();
 		double pR = phraseCnt.getValue();
-		double pL = available_phrases.get(phrase);
+		double pL = labeled_phrases.get(phrase);
 		double pU = 0;
 		if (unlab_phrases.containsKey(phrase))
 		    pU = unlab_phrases.get(phrase);
@@ -144,7 +127,7 @@ public class ModelBM25 extends Model{
 	model.clear();
 
 	for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
-	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 6, topK).entrySet()){
+	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 6, topk).entrySet()){
 		model.put(phrase.getKey(), relation.getKey());
 	    }
 	}
@@ -179,34 +162,6 @@ public class ModelBM25 extends Model{
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-    }
-
-    /**
-     * 
-     * @param marks
-     * @return
-     */
-    private int calculateSum(Collection<Integer> marks) {
-	int sum = 0;
-	if(!marks.isEmpty()) {
-	    for (Integer mark : marks) {
-		sum += mark;
-	    }
-	}
-	return sum;
-    }
-
-    /**
-     * 
-     * @param marks
-     * @return
-     */
-    private CounterMap<String> calculateRelationsCount(Map<String, CounterMap<String>> relations2phrasesCount) {
-	CounterMap<String> relCounts = new CounterMap<String>();
-	for(Map.Entry<String, CounterMap<String>> entry : relations2phrasesCount.entrySet()){
-	    relCounts.put(entry.getKey(), calculateSum(entry.getValue().values()));
-	}
-	return relCounts;
     }
 
     /**

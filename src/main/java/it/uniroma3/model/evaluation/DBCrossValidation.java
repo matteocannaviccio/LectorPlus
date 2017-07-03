@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.model.db.QueryDB;
+import it.uniroma3.model.db.CRUD;
 /**
  * 
  * @author matteo
@@ -19,49 +19,54 @@ import it.uniroma3.model.db.QueryDB;
  */
 public class DBCrossValidation extends DB{
     // print the computation
-    protected static boolean verbose = false;
-
-    private QueryDB querydb;
+    protected static boolean verbose = true;
     private String dbModelName;
+    
+    /**
+     * A DBCrossValidation is built on top of the DBModel.
+     * This constructor is used when a DBCrossValidation already exists.
+     */
+    public DBCrossValidation(String dbname){
+	super(dbname);
+    }
 
     /**
      * A DBCrossValidation is built on top of the DBModel.
      * It has a name and a number of cross-validation parts.
+     * This constructor is used when a DBCrossValidation has to be created.
      */
     public DBCrossValidation(String dbname, DBModel dbmodel, int nParts){
 	super(dbname);
 	this.dbModelName = dbmodel.getDbname();
-	this.querydb = new QueryDB(dbmodel);
-	//createDB(nParts);
+	createDB(nParts, new CRUD(dbmodel));
     }
 
     /**
      * 
      */
-    protected void createDB(int nParts){
+    protected void createDB(int nParts, CRUD querydb){
+	System.out.print("\t-> creating DBCrossValidation with " + nParts + " parts, ");
+	
 	// first of all, we create the schema
-	if(verbose)
-	    System.out.println("-> creating schema of a DBCrossValidation with " + nParts + " parts.");
 	createSchema(nParts);
 
 	// then we insert all the unlabeled, only once
-	if(verbose)
-	    System.out.println("-> transferring unlabeled.");
 	batchInsertUnlabeledTriple();
-
-	// then, we randomly split the labeled triples in N parts
-	if(verbose)
-	    System.out.println("-> shuffling & splitting labeled triples");
-	List<Pair<WikiTriple, String>> labeled_facts = querydb.selectAllLabeledTriples();
+	
+	List<Pair<WikiTriple, String>> labeled_facts = querydb.selectAllLabeled();
 	int size = labeled_facts.size() / nParts;
 	List<List<Pair<WikiTriple, String>>> partitions = split(labeled_facts, nParts);
+	
+	/*
+	 * here we add a filter to avoid that an entity pair appear in more than one partition
+	 * TODO
+	 */
+	
 	labeled_facts.clear();
 
-	// and, for each one, we insert the N-1 labeled_triples and the evaluation_triples part
-	if(verbose)
-	    System.out.println("-> creating cross-validation \t n. parts:" + nParts + "\tof avg. size:" + size);
+	System.out.println("of avg. size: " + size);
+	
 	for (int n = 0; n<nParts; n++){
-	    System.out.println("\t---> cross-validation n.: " + n + "... ");
 	    for (int j = 0; j<nParts; j++){
 		if (j==n)
 		    batchInsertTriples("cv_evaluation_triples_" + n, partitions.get(j));
@@ -79,6 +84,7 @@ public class DBCrossValidation extends DB{
 	String dropUnlabeled = "DROP TABLE IF EXISTS unlabeled_triples";
 	String createUnlabeled = "CREATE TABLE unlabeled_triples("
 		+ "wikid text, "
+		+ "sentence text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
 		+ "phrase_pre text, "
@@ -211,6 +217,7 @@ public class DBCrossValidation extends DB{
 	    }
 	    pstmt.executeBatch();
 	    this.getConnection().commit();
+	    this.getConnection().setAutoCommit(true);
 	}catch(SQLException e){
 	    try {
 		this.getConnection().rollback();

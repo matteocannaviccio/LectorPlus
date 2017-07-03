@@ -3,11 +3,12 @@ package it.uniroma3.main;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.main.singlestep.ArticleParser;
-import it.uniroma3.main.singlestep.EntityDetection;
-import it.uniroma3.main.singlestep.TriplesExtractor;
-import it.uniroma3.model.extraction.FactsExtractor;
-import it.uniroma3.model.extraction.FactsExtractor.ModelType;
+import it.uniroma3.main.pipeline.ArticleParser;
+import it.uniroma3.main.pipeline.Complete;
+import it.uniroma3.main.pipeline.EntityDetection;
+import it.uniroma3.main.pipeline.FactsExtractor;
+import it.uniroma3.main.pipeline.TriplesExtractor;
+import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 /**
  * 
@@ -25,7 +26,7 @@ public class Main {
      */
     private static void completeInMemoryProcess(WikiLanguage lang){
 	Lector.init(lang, Configuration.getPipelineSteps());
-	CompletePipeline cp = new CompletePipeline(Configuration.getOriginalArticlesFile());
+	Complete cp = new Complete(Configuration.getOriginalArticlesFile());
 	cp.runPipeline(Configuration.getNumArticlesToProcess(), Configuration.getChunkSize());
 	cp.extractNovelFacts();
 	Lector.closeAllConnections();
@@ -83,7 +84,11 @@ public class Main {
 	    System.out.println("===================================");
 	    Configuration.printFullyDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
-	    completeInMemoryProcess(wikiLang);
+
+	    if (Configuration.getPipelineSteps().size() == 4 || (Configuration.getPipelineSteps().size() == 3 && !Configuration.getPipelineSteps().contains("FE")))
+		completeInMemoryProcess(wikiLang);
+	    else
+		singleStepProcess(wikiLang);
 	}
     }
 }

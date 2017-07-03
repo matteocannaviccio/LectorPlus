@@ -11,8 +11,7 @@ import java.util.Set;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.config.Lector;
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -55,12 +54,15 @@ public class ModelLSTextExt extends Model{
      */
     public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, double cutoff, PhraseType modelType) {
 	super(db, labeled, modelType, minFreq);
-	System.out.printf("\t%-30s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
-	System.out.printf("\t%-30s %s\n", "cutOff generality: ", cutoff);
-	
+	System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+	System.out.printf("\t%-35s %s\n", "cutOff generality: ", cutoff);
+
 	this.topk = topk;
 	this.generality_cutoff = cutoff;
 	this.model = createModel();
+	
+	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
+
     }
 
 
@@ -74,15 +76,14 @@ public class ModelLSTextExt extends Model{
 	/*
 	 * get the counts of seed phrases, both from labeled and unlabeled triples
 	 */
-	CounterMap<String> seed_labeledPhrases = db_read.getAvailablePhrases(0);
-	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(seed_labeledPhrases.keySet());
-	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(seed_labeledPhrases.keySet());
+	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(this.available_phrases.keySet());
+	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(this.available_phrases.keySet());
 
 	Map<String, String> model = createScoredBasedModel(
-		this.available_phrases, 
+		this.labeled_phrases, 
 		this.unlabeled_phrases, 
 		this.relation2phrasesCount,
-		seed_labeledPhrases,
+		this.available_phrases,
 		seed_unlabeledPhrases,
 		seed_relphraseCounts);
 
@@ -120,7 +121,7 @@ public class ModelLSTextExt extends Model{
 		double pU = 0;
 		if (unlab_phrases.containsKey(phrase))
 		    pU = unlab_phrases.get(phrase);
-		
+
 		if (phrase.split("\t").length != 3)
 		    continue;
 		String phraseSeed = phrase.split("\t")[1];
@@ -140,7 +141,7 @@ public class ModelLSTextExt extends Model{
 		double probSeedLab = pSeedR/pSeedL;
 		double probSeedLabUnlab = pSeedR/(pSeedL+pSeedU);
 		double scoreLectorTextExt = probLab * Math.log(pR+1);
-	
+
 		// add details ...
 		Double[] details = new Double[]{
 			pR, 
@@ -202,26 +203,31 @@ public class ModelLSTextExt extends Model{
     private void printDetails(Map<String, Map<String, Double[]>> relations2phrase_details){
 	try {
 	    CSVWriter writer = new CSVWriter(new FileWriter(Configuration.getLectorFolder() 
-		    + "/lector_score_" + Lector.getWikiLang().getLang().name() + ".csv"), ',');
+		    + "/lector_textext_score.csv"), ',');
 	    // header
 	    writer.writeNext(new String[]{
 		    "relation", 
 		    "phrase", 
-		    "c(pR)", 
+		    "c(pR)",
+		    "c(pL)",
+		    "c(pU)",
 		    "P(p|r)", 
 		    "P(pSeed|r,u)", 
-		    "score lector TextExt"});
+	    "score lector TextExt"});
 
 	    // content
 	    for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
-		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 10, -1).entrySet()){
+		for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 9, -1).entrySet()){
 		    String[] values = new String[15];
-		    values[0] = Lector.getDBPedia().getOntologyURI() + relation.getKey();
+		    //values[0] = Lector.getDBPedia().getOntologyURI() + relation.getKey();
+		    values[0] = "https://dbpedia.org/ontology/" + relation.getKey();
 		    values[1] = phrase.getKey();
 		    values[2] = String.valueOf(phrase.getValue()[0]); 	//c(PR)
-		    values[3] = String.valueOf(phrase.getValue()[6]); 	//P(p|r)
-		    values[4] = String.valueOf(phrase.getValue()[9]); 	//P(pSeed|r,u)
-		    values[5] = String.valueOf(phrase.getValue()[10]);  //score lector v1
+		    values[3] = String.valueOf(phrase.getValue()[1]); 	//c(PL)
+		    values[4] = String.valueOf(phrase.getValue()[2]); 	//c(PU)
+		    values[5] = String.valueOf(phrase.getValue()[6]); 	//P(p|r)
+		    values[6] = String.valueOf(phrase.getValue()[9]); 	//P(pSeed|r,u)
+		    values[7] = String.valueOf(phrase.getValue()[10]);  //score lector v1
 		    writer.writeNext(values);
 		}
 	    }

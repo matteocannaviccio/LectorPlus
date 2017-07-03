@@ -19,16 +19,19 @@ import org.apache.log4j.varia.NullAppender;
 
 /**
  * Loads the configuration file and set all the parameters.
+ * This static class contains all the paths, parameters and thresholds 
+ * that are required over the whole system.
  * 
  * @author matteo
  *
  */
 public class Configuration {
 
+    /* a map contains everything */
     public static Map<String, String> keyValue = new TreeMap<String, String>();
     
     /**
-     * Print all the (interesting) details of the config file.
+     * Print the (interesting) details of the config file.
      */
     public static void printFullyDetails(){
 	System.out.println("\nConfiguration");
@@ -49,6 +52,7 @@ public class Configuration {
     }
 
     /**
+     * Update a parameter after loading the config file.
      * 
      * @param key
      * @param value
@@ -58,6 +62,7 @@ public class Configuration {
     }
 
     /**
+     * Returns a map with the parameters obtained parsing the command line.
      * 
      * @param args
      * @return

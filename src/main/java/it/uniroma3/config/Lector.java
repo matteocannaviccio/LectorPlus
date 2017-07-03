@@ -7,25 +7,27 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import it.uniroma3.extractor._articleparser.ArticleTyper;
+import it.uniroma3.extractor._articleparser.BlockParser;
+import it.uniroma3.extractor._articleparser.MarkupParser;
+import it.uniroma3.extractor._articleparser.TextParser;
+import it.uniroma3.extractor._articleparser.WikiParser;
+import it.uniroma3.extractor._articleparser.XMLParser;
+import it.uniroma3.extractor._entitydetection.FSMNationality;
+import it.uniroma3.extractor._entitydetection.FSMSeed;
+import it.uniroma3.extractor._entitydetection.ReplAttacher;
+import it.uniroma3.extractor._entitydetection.ReplFinder;
+import it.uniroma3.extractor._entitydetection.dbsp.DBPediaSpotlight;
+import it.uniroma3.extractor._triplesextractor.Triplifier;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.entitydetection.FSMNationality;
-import it.uniroma3.extractor.entitydetection.FSMSeed;
-import it.uniroma3.extractor.entitydetection.ReplAttacher;
-import it.uniroma3.extractor.entitydetection.ReplFinder;
 import it.uniroma3.extractor.kg.DBPedia;
-import it.uniroma3.extractor.parser.ArticleTyper;
-import it.uniroma3.extractor.parser.BlockParser;
-import it.uniroma3.extractor.parser.MarkupParser;
-import it.uniroma3.extractor.parser.TextParser;
-import it.uniroma3.extractor.parser.WikiParser;
-import it.uniroma3.extractor.parser.XMLParser;
-import it.uniroma3.extractor.triples.Triplifier;
-import it.uniroma3.extractor.util.nlp.DBPediaSpotlight;
 import it.uniroma3.extractor.util.nlp.OpenNLP;
 import it.uniroma3.extractor.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.model.extraction.DBFacts;
 /**
+ * This static class declares and initializes all the components needed in the system.
+ * Some components are declared ThreadLocal, to ensure the existance of a copy for each thread.
+ * e using DBPedia Spotlight, Lector class contains the refenrece to the external process.
  * 
  * @author matteo
  *
@@ -58,7 +60,6 @@ public class Lector {
     private static DBPedia dbpedia;
     private static Triplifier triplifier;
     /* Keep the (open) connections here */
-    private static DBFacts dbfacts;
     private static DBModel dbmodel;
 
 
@@ -86,7 +87,6 @@ public class Lector {
      */
     public static void initAP(){
 	System.out.println("\t-> Init Article Parser (AP)");
-
 	wikiParser = new WikiParser();
 	markupParser = new MarkupParser();
 	articleTyper = new ArticleTyper();
@@ -307,27 +307,9 @@ public class Lector {
 
 
     /**
-     * 
-     * @param create
-     * @return
-     */
-    public static DBFacts getDbfacts(boolean create) {
-	if (dbfacts == null){
-	    dbfacts = new DBFacts(Configuration.getDBFacts());
-	    if (create)
-		dbfacts.createFactsDB();
-	}
-	return dbfacts;
-    }
-
-    /**
      * Close all the connections that are open.
      */
     public static void closeAllConnections(){
-	if (dbfacts != null){
-	    dbfacts.closeConnection();
-	    dbfacts = null;
-	}
 	if (dbmodel != null){
 	    dbmodel.closeConnection();
 	    dbmodel = null;
@@ -364,8 +346,11 @@ public class Lector {
 		);
 	pb.redirectError(new File(Configuration.getSpotlightLocalERR(2222)));
 	
+	/*
+	 * Start a new separate process but keep an hook shutdown process
+	 * for its termination based on the parent process.
+	 */
 	Process p = pb.start();
-	// Destroy the process on shutdown
 	Runtime.getRuntime().addShutdownHook(new Thread() {
 	    @Override
 	    public void run() {

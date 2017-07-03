@@ -8,7 +8,7 @@ import java.util.Map;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -40,16 +40,15 @@ public class ModelPLM extends Model{
 	Map<String, Map<String, Double>> relations_probabilities = new HashMap<String, Map<String, Double>>();
 
 	System.out.println("-> get typed phrases count for the relations");
-	Map<String, CounterMap<String>> relation2phrasesCount = availableRelations2phrases(this.available_phrases.keySet());
 	System.out.println("-> "+ relation2phrasesCount.size() +" relations.");
-	CounterMap<String> labeledFactsByRelation = availableRelations(this.available_phrases.keySet());
 
 	System.out.println("-> creating distributions");
 	for (Map.Entry<String, CounterMap<String>> relation : relation2phrasesCount.entrySet()){
 	    if (!relations_probabilities.containsKey(relation.getKey()))
 		relations_probabilities.put(relation.getKey(), new HashMap<String, Double>());
+	    
 	    for (Map.Entry<String, Integer> phrase : relation.getValue().entrySet()){
-		double prob = (double)phrase.getValue()/labeledFactsByRelation.get(relation.getKey());
+		double prob = (double)phrase.getValue()/this.labeled_relations.get(relation.getKey());
 		relations_probabilities.get(relation.getKey()).put(phrase.getKey(), prob);
 	    }
 	}
@@ -159,8 +158,12 @@ public class ModelPLM extends Model{
      * @param args
      */
     public static void main(String[] args){
-	ModelPLM model = new ModelPLM(new DBModel("model.db"), "labeled_triples", 100, PhraseType.NO_TYPES_PHRASES);
-	for (Map.Entry<String, Integer> relation : Ranking.getRanking(model.availableRelations(model.available_phrases.keySet())).entrySet()){
+	Configuration.init(new String[0]);
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_dbsp");
+	Configuration.updateParameter("language", "en");
+	
+	ModelPLM model = new ModelPLM(new DBModel(Configuration.getDBModel()), "labeled_triples", 1, PhraseType.NO_TYPES_PHRASES);
+	for (Map.Entry<String, Integer> relation : Ranking.getRanking(model.labeled_relations).entrySet()){
 	    //System.out.println("RELATION: " + relation.getKey() + "(" + relation.getValue() + ")" +"\t SIMILAR: " +  Ranking.getInverseDoubleKRanking(model.findSimilarRelations(relation.getKey()), 3));
 	    Map<String, Double> rank = Ranking.getInverseDoubleKRanking(model.findSimilarRelations(relation.getKey()), -1);
 	    if (rank.size() > 0){

@@ -7,8 +7,8 @@ import java.util.Queue;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.uniroma3.extractor.triples.WikiMVL;
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiMVL;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.model.DB;
 /**
@@ -102,7 +102,6 @@ public class DBModel extends DB{
      * 
      */
     public void createNecessaryIndexes(){
-	System.out.print("Writing indexes ... ");
 	String indexModelRelationPhrase = "CREATE INDEX IF NOT EXISTS indexmodelrelationphrase "
 		+ "ON labeled_triples(relation, phrase_placeholder)";
 	String indexModelPhrase = "CREATE INDEX IF NOT EXISTS indexmodelphrase "
@@ -128,7 +127,6 @@ public class DBModel extends DB{
 	    }
 	    e.printStackTrace();
 	}
-	System.out.println("Done!");
 
     }
 

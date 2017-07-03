@@ -3,7 +3,7 @@ package it.uniroma3.model.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;

@@ -11,7 +11,7 @@ import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.extractor.triples.WikiTriple;
+import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -93,15 +93,14 @@ public class ModelLS extends Model{
 	/*
 	 * get the counts of seed phrases, both from labeled and unlabeled triples
 	 */
-	CounterMap<String> seed_labeledPhrases = db_read.getAvailablePhrases(0);
-	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(seed_labeledPhrases.keySet());
-	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(seed_labeledPhrases.keySet());
+	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(this.available_phrases.keySet());
+	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(this.available_phrases.keySet());
 
 	Map<String, String> model = createScoredBasedModel(
-		this.available_phrases, 
+		this.labeled_phrases, 
 		this.unlabeled_phrases, 
 		this.relation2phrasesCount,
-		seed_labeledPhrases,
+		this.available_phrases,
 		seed_unlabeledPhrases,
 		seed_relphraseCounts);
 

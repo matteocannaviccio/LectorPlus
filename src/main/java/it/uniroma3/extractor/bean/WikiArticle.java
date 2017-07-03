@@ -11,8 +11,9 @@ import com.google.gson.GsonBuilder;
 
 import it.uniroma3.extractor.bean.WikiLanguage.Lang;
 /**
- *
- * 
+ * This class contains everything that is contained in a Wikipedia article.
+ * It also expresses the annotations that are created/inferred during the entity
+ * detection step such as pronouns, sub-name, aliases, and wikilinks.
  * 
  * @author matteo
  *
