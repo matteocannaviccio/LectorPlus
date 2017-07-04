@@ -77,9 +77,14 @@ public class ArticleParser {
 	List<String> lines;
 	List<WikiArticle> processedArticles = new LinkedList<WikiArticle>();
 	int cont = 0;
+	
+	// change it, if we need to process the whole dump
+	int totArticle = Configuration.getNumArticlesToProcess();
+	if (totArticle == -1)
+	    totArticle = Integer.MAX_VALUE;
 
 	while (!(lines = inputReader.nextChunk(Configuration.getChunkSize())).isEmpty()
-		&& cont < Configuration.getNumArticlesToProcess()) {
+		&& cont < totArticle) {
 	    System.out.print("\nParsing: " + lines.size() + " articles.\t");
 	    long start_time = System.currentTimeMillis();
 	    cont += lines.size();

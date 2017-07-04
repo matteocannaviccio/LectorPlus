@@ -9,7 +9,16 @@ import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.DB;
 /**
+ * This is the implementation of a Naive Bayes Classifier.
+ * The classifier can be:
  * 
+ *  - CLASSIC: in this case we use un-typed phrases and un-typed relations but the inference
+ *             is made considering the dependence that exists between phrases and types.
+ *        
+ *  - TYPED_RELATIONS: in this case the relations (aka. documents) are typed and the inference
+ *  		       is performed using a MLE with the un-typed phrases.
+ *  
+ *  
  * @author matteo
  *
  */
@@ -23,7 +32,7 @@ public class ModelNB extends Model{
     public ModelNBType nbType;
     public enum ModelNBType {TYPED_RELATIONS, CLASSIC};
 
-    private Map<String, Double> priors = new HashMap<String, Double>();
+    private Map<String, Double> relations_priors = new HashMap<String, Double>();
     private CounterMap<String> labeledFactsByRelation = new CounterMap<String>();
     private CounterMap<String> typeRelationCount = new CounterMap<String>();
 
@@ -74,7 +83,7 @@ public class ModelNB extends Model{
 	    System.out.println("\t-> Fill the map of priors for each relation.");
 	int countLabeledFacts = db_read.countValues(labeledFactsByRelation);
 	for(Map.Entry<String, Integer> entry : labeledFactsByRelation.entrySet()){
-	    priors.put(entry.getKey(), (double) entry.getValue()/countLabeledFacts);
+	    relations_priors.put(entry.getKey(), (double) entry.getValue()/countLabeledFacts);
 	}
 	
 	// get the count of each typed relation
@@ -95,9 +104,6 @@ public class ModelNB extends Model{
 	    this.typeRelationPhraseCount = db_read.getRelationTypesPhraseCounts(this.available_phrases.keySet());
 	    break;
 	}
-	
-	if(verbose)
-	    System.out.println("**************************************");
     }
 
     /**
@@ -213,7 +219,7 @@ public class ModelNB extends Model{
     public double getProbabilityClassic(String phrase, String relation, String typeSubject, String typeObject){
 	return  this.probTypesGivenRel(typeSubject, typeObject, relation) *
 		this.probPhraseGivenTypesAndRel(phrase, typeSubject, typeObject, relation) * 
-		this.priors.get(relation);
+		this.relations_priors.get(relation);
     }
 
     /**
@@ -223,7 +229,7 @@ public class ModelNB extends Model{
      * @return
      */
     public double getProbabilityTypedRelation(String phrase, String typedRelation){
-	return  priors.get(typedRelation) * 
+	return  relations_priors.get(typedRelation) * 
 		probPhraseGivenTypedRel(phrase, typedRelation);
     }
 
@@ -234,7 +240,7 @@ public class ModelNB extends Model{
 	double prob = 0.0;
 	
 	Map<String, Double> ranking = new HashMap<String, Double>();
-	for (String r : priors.keySet()){
+	for (String r : relations_priors.keySet()){
 	    if (this.getType().equals(ModelNBType.TYPED_RELATIONS)){
 		prob = getProbabilityTypedRelation(t.getPhrasePlaceholders(), r);
 	    }else

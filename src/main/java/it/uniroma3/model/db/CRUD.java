@@ -4,7 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,52 @@ public class CRUD {
 	}
 	return triples;
     }
+    
+    /*********************************************** 
+     * 
+     *       SELECT ALL labeled PAIRS of Entities
+     * 
+     ***********************************************/
+    public Map<String, List<Pair<WikiTriple, String>>> selectAllLabeledPairs(){
+	Map<String, List<Pair<WikiTriple, String>>> triples = new HashMap<String, List<Pair<WikiTriple, String>>>();
+
+	String query = "SELECT * FROM " + this.labeled_facts;
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String wikid = rs.getString(1);
+		    String phrase_original = rs.getString(2);
+		    String phrase_placeholder = rs.getString(3);
+		    String pre = rs.getString(4);
+		    String post = rs.getString(5);
+		    String subject = rs.getString(6);
+		    String wiki_subject = rs.getString(7);
+		    String type_subject = rs.getString(8);
+		    String object = rs.getString(9);
+		    String wiki_object = rs.getString(10);
+		    String type_object = rs.getString(11);
+		    String relation = rs.getString(12);
+		    
+		    String key = wiki_subject + "\t" + phrase_placeholder + "\t" + wiki_object;
+		    WikiTriple t = new WikiTriple(wikid, "", phrase_original,
+			    phrase_placeholder, pre, post, subject, object, 
+			    type_subject, type_object, TType.JOINABLE.name());
+		    
+		    if (triples.containsKey(key)){
+			triples.get(key).add(Pair.make(t, relation));
+		    }else{
+			List<Pair<WikiTriple, String>> list = new LinkedList<Pair<WikiTriple, String>>();
+			list.add(Pair.make(t, relation));
+			triples.put(key, list);
+		    }
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+	return triples;
+    }
+
 
     /***************************************** 
      * 
