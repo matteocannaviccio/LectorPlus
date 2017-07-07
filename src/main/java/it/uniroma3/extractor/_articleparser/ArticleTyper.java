@@ -140,7 +140,7 @@ public class ArticleTyper {
 	    }
 
 	/* Filter to capture DRAFT articles (hard-coded) */
-	if (article.getWikid().startsWith("Draft:")){
+	if (article.getWikid().startsWith("Draft:") || article.getWikid().startsWith("Parroquia_Junquillal")){
 	    return ArticleType.DRAFT;
 	}
 

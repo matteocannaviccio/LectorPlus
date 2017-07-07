@@ -11,7 +11,6 @@ import java.util.Set;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -25,7 +24,7 @@ import it.uniroma3.model.DB;
  * @author matteo
  *
  */
-public class ModelLSTextExt extends Model{
+public class ModelTextExt extends Model{
 
     /*
      * A model is essentially a mapping between phrases and relations.
@@ -52,15 +51,15 @@ public class ModelLSTextExt extends Model{
      * 
      * @param db
      */
-    public ModelLSTextExt(DB db, String labeled, int minFreq, int topk, double cutoff, PhraseType modelType) {
-	super(db, labeled, modelType, minFreq);
+    public ModelTextExt(DB db, String labeled, int minFreq, int topk, double cutoff) {
+	super(db, labeled, PhraseType.TYPED_PHRASES, minFreq);
 	System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
 	System.out.printf("\t%-35s %s\n", "cutOff generality: ", cutoff);
 
 	this.topk = topk;
 	this.generality_cutoff = cutoff;
 	this.model = createModel();
-	
+
 	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
 
     }
@@ -76,16 +75,17 @@ public class ModelLSTextExt extends Model{
 	/*
 	 * get the counts of seed phrases, both from labeled and unlabeled triples
 	 */
-	CounterMap<String> seed_unlabeledPhrases = db_read.getUnlabeledPhrasesCount(this.available_phrases.keySet());
-	Map<String, CounterMap<String>> seed_relphraseCounts = db_read.getRelationPhrasesCount(this.available_phrases.keySet());
+	CounterMap<String> p_UT_counts = crud.getP_UT_counts(this.p_available.keySet());
+	Map<String, CounterMap<String>> r2pCount = crud.getRtoCountedP_LT(this.p_available.keySet(), false);
+	Map<String, CounterMap<String>> r2ptCount = crud.getRtoCountedPT_LT(this.p_available.keySet(), false);
 
 	Map<String, String> model = createScoredBasedModel(
-		this.labeled_phrases, 
-		this.unlabeled_phrases, 
-		this.relation2phrasesCount,
-		this.available_phrases,
-		seed_unlabeledPhrases,
-		seed_relphraseCounts);
+		this.pt_LT_counts, 
+		this.pt_UT_counts, 
+		r2ptCount,
+		this.p_available,
+		p_UT_counts,
+		r2pCount);
 
 	return model;
     }  
@@ -121,7 +121,6 @@ public class ModelLSTextExt extends Model{
 		double pU = 0;
 		if (unlab_phrases.containsKey(phrase))
 		    pU = unlab_phrases.get(phrase);
-
 		if (phrase.split("\t").length != 3)
 		    continue;
 		String phraseSeed = phrase.split("\t")[1];
@@ -136,6 +135,7 @@ public class ModelLSTextExt extends Model{
 		double pSeedU = 0;
 		if (seed_unlab_phrases.containsKey(phraseSeed))
 		    pSeedU = seed_unlab_phrases.get(phraseSeed);
+
 		double probLab = pR/pL;
 		double probLabUnlab = pR/(pL+pU);
 		double probSeedLab = pSeedR/pSeedL;
@@ -241,15 +241,33 @@ public class ModelLSTextExt extends Model{
      * 
      */
     @Override
-    public Pair<String, Double> predictRelation(WikiTriple t) {
+    public Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type) {
 	String relation = null;
-	String phrase = t.getPhrasePlaceholders();
+	String phrase = phrase_placeholder;
 	if (this.type.equals(PhraseType.TYPED_PHRASES))
-	    phrase = t.getSubjectType() + "\t" + phrase + "\t" + t.getObjectType();
+	    phrase = subject_type + "\t" + phrase + "\t" +object_type;
 	if (model.containsKey(phrase)){
 	    relation = model.get(phrase);
 	}
 	return Pair.make(relation, 1.0);
+    }
+
+    /**
+     * 
+     * @param map
+     * @return
+     */
+    protected double calcAvgValueAfterCutoff(Map<String, String> map){
+	int countPhrases = 0;
+
+	CounterMap<String> relations = new CounterMap<>();
+	for (String relation : map.values())
+	    relations.add(relation);
+
+	for (String entry : relations.keySet()){
+	    countPhrases += relations.get(entry);
+	}
+	return (double)countPhrases/relations.size();
     }
 
     /**

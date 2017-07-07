@@ -221,7 +221,6 @@ public class DBCrossValidation extends DB{
 		     * pairs triple - label because at query time we check the correctness of the
 		     * prediction using DBpedia and not the relation in the triple (12, labeled_triple.value)
 		     */
-		    
 		    Pair<WikiTriple, String> labeled_triple = all_labeled_facts.get(pair).get(0);
 		    pstmt.setString(1, labeled_triple.key.getWikid());
 		    pstmt.setString(2, labeled_triple.key.getPhraseOriginal());

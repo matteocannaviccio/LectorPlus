@@ -3,16 +3,26 @@ package it.uniroma3.model.model;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
-
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.CRUD;
 /**
+ * This is an abstract model. Each possible implementation of a model extends it.
+ * In order to create a new model, we always need to filter out noisy phrases,
+ * either if we use TYPED_PHRASES or NO_TYPES_PHRASES kind of phrases: 
+ * we filter out them using minF parameter retrieving the available_phrases list.
+ * 
+ * Then, using such available_phrases we are able to retrieve:
+ *  - p_LT_counts: phrases that are labeled with a relation and their counts
+ *  - p_UT_counts: phrases that are not labeled with a relation and their counts
+ *  - r_counts: counts of relations that are involved in the model
+ *  
+ *  We also build two mappings that are useful for some implementations, such as:
+ *   - relation2phrasesCount: map the relations to the relative counted phrases
+ *   - phrases2relationsCount: map the phrases to the relative counted relations
+ * 
  * 
  * @author matteo
  *
@@ -21,30 +31,22 @@ public abstract class Model{
 
     // print the computation
     protected static boolean verbose = true;
-    
+    protected CRUD crud;
+
     // those are the possible variations of the model.
     // It can uses typed phrases (e.g. [Person] was born in [Settlement]) or not (e.g. was born in).
     public enum PhraseType {TYPED_PHRASES, NO_TYPES_PHRASES};
-    public enum ModelType {LectorScore, BM25, NB, TextExtChallenge};
-    
+    public enum ModelType {BM25, NB, TextExtChallenge};
+
     /*
      * these are the phrases that are contained in the model which are present at least minFreq
      * times in the whole Wikipedia.
      */
-    protected int minF;
-    protected CounterMap<String> available_phrases;
-    
-    /*
-     * Those are the associations between relation and (typed) phrases.
-     */
     protected PhraseType type;
-    protected CounterMap<String> labeled_phrases;
-    protected CounterMap<String> unlabeled_phrases;
-    protected CounterMap<String> labeled_relations;
-    protected Map<String, CounterMap<String>> relation2phrasesCount;
-    protected Map<String, CounterMap<String>> phrases2relationsCount;
-
-    protected CRUD db_read;
+    protected int minF;
+    protected CounterMap<String> p_available;
+    protected CounterMap<String> pt_LT_counts;
+    protected CounterMap<String> pt_UT_counts;
 
     /**
      * A model takes a db (that can be a DBModel or a DBCrossValidation), the name of the labeled table
@@ -58,20 +60,12 @@ public abstract class Model{
     public Model(DB dbModel, String labeled, PhraseType type, int minF){
 	System.out.println("\nScoring model");
 	System.out.println("-------------");
-	
-	this.db_read = new CRUD(dbModel, labeled);
+	this.crud = new CRUD(dbModel, labeled);
 	this.type = type;
 	this.minF = minF;
 	initializeModel(minF);
-	System.out.printf("\t%-35s %s\n", "model: ", Configuration.getLectorModelName() + " with " + type);
-	System.out.printf("\t%-35s %s\n", "minFreq: ", minF);
-	System.out.printf("\t%-35s %s\n", "available seed-phrases: ", this.available_phrases.size());
-	System.out.printf("\t%-35s %s\n", "labeled phrases: ", this.labeled_phrases.keySet().size());
-	System.out.printf("\t%-35s %s\n", "un-labeled phrases: ", this.unlabeled_phrases.keySet().size());
-	System.out.printf("\t%-35s %s\n", "relations: ", this.relation2phrasesCount.keySet().stream().map(s -> s.replace("(-1)", "")).collect(Collectors.toSet()).size());
-	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (before): ", String.format("%.2f", calcAvgValue(relation2phrasesCount)) + " p/r");
     }
-    
+
     /**
      * Initializes all the phrases that are included in the model, considering
      * the threshold that filter out rare phrases (i.e. minFreq).
@@ -79,14 +73,17 @@ public abstract class Model{
      * @param minFreq
      */
     private void initializeModel(int minFreq){
-	this.available_phrases = availabePhrases(minFreq);
-	this.labeled_phrases = getAllLabeledPhrases(available_phrases.keySet());
-	this.unlabeled_phrases = getAllUnlabeledPhrases(available_phrases.keySet());
-	this.relation2phrasesCount = getAllRelations2phrases(available_phrases.keySet());
-	this.phrases2relationsCount = getAllPhrases2relations(available_phrases.keySet());
-	this.labeled_relations = calculateRelationsCount(relation2phrasesCount);
+	this.p_available = crud.getAvailablePhrases(minFreq);
+	this.pt_LT_counts = getAllLabeledPhrases(p_available.keySet());
+	this.pt_UT_counts = getAllUnlabeledPhrases(p_available.keySet());
+
+	System.out.printf("\t%-35s %s\n", "initializing model: ", type);
+	System.out.printf("\t%-35s %s\n", "minFreq: ", minFreq);
+	System.out.printf("\t%-35s %s\n", "n° different available phrases: ", this.p_available.size());
+	System.out.printf("\t%-35s %s\n", "n° different labeled phrases: ", calculateSum(this.pt_LT_counts));
+	System.out.printf("\t%-35s %s\n", "n° different un-labeled phrases: ", calculateSum(this.pt_UT_counts));
     }
-    
+
     /**
      * @return the type
      */
@@ -94,18 +91,6 @@ public abstract class Model{
 	return type;
     }
 
-
-    /**
-     * Obtain the vocabulary of labeled phrases that exists more than minFreq times.
-     * We always consider un-typed phrases in this filtering.
-     * 
-     * @param minFreq
-     * @return
-     */
-    private CounterMap<String> availabePhrases(int minFreq) {
-	return db_read.getAvailablePhrases(minFreq);
-    }
-    
     /**
      * Obtain the vocabulary of labeled phrases.
      * 
@@ -113,18 +98,18 @@ public abstract class Model{
      * @return
      */
     protected CounterMap<String> getAllLabeledPhrases(Set<String> available){
-	CounterMap<String> unlab_phrases = null;
+	CounterMap<String> lab_phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
-	    unlab_phrases = db_read.getLabeledTypedPhrasesCount(available);
+	    lab_phrases = crud.getPT_LT_counts(available);
 	    break;
 	case NO_TYPES_PHRASES:
-	    unlab_phrases = db_read.getLabeledPhrasesCount(available);
+	    lab_phrases = p_available;
 	    break;
 	}
-	return unlab_phrases;
+	return lab_phrases;
     } 
-    
+
     /**
      * Obtain the vocabulary of unlabeled phrases.
      * 
@@ -135,72 +120,37 @@ public abstract class Model{
 	CounterMap<String> unlab_phrases = null;
 	switch(type){
 	case TYPED_PHRASES:
-	    unlab_phrases = db_read.getUnlabeledTypedPhrasesCount(available);
+	    unlab_phrases = crud.getPT_UT_counts(available);
 	    break;
 	case NO_TYPES_PHRASES:
-	    unlab_phrases = db_read.getUnlabeledPhrasesCount(available);
+	    unlab_phrases = crud.getP_UT_counts(available);
 	    break;
 	}
 	return unlab_phrases;
     } 
 
-    /**
-     * Obtain the mapping counts between relation and (typed) phrases. 
-     * 
-     * @param available
-     * @return
-     */
-    protected Map<String, CounterMap<String>> getAllRelations2phrases(Set<String> available){
-	Map<String, CounterMap<String>> relations2phrasesAndCount = null;
-	switch(type){
-	case TYPED_PHRASES:
-	    relations2phrasesAndCount = db_read.getRelationTypedPhrasesCount(available);
-	    break;
-	case NO_TYPES_PHRASES:
-	    relations2phrasesAndCount = db_read.getRelationPhrasesCount(available);
-	    break;
-	}
-	return relations2phrasesAndCount;
-    } 
 
-    /**
-     * Obtain the mapping counts between (typed) phrases and relations. 
-     * 
-     * @param available
-     * @return
-     */
-    protected Map<String, CounterMap<String>> getAllPhrases2relations(Set<String> available){
-	Map<String, CounterMap<String>> phrases2relationsAndCount = null;
-	switch(type){
-	case TYPED_PHRASES:
-	    phrases2relationsAndCount = db_read.getTypedPhrasesRelationsCount(available);
-	    break;
-	case NO_TYPES_PHRASES:
-	    phrases2relationsAndCount = db_read.getPhrasesRelationsCount(available);
-	    break;
-	}
-	return phrases2relationsAndCount;
-    }
-    
     /**
      * 
      * @param marks
      * @return
      */
-    private CounterMap<String> calculateRelationsCount(Map<String, CounterMap<String>> relations2phrasesCount) {
+    protected CounterMap<String> calculateRelationsCount(Map<String, CounterMap<String>> relations2phrasesCount) {
 	CounterMap<String> relCounts = new CounterMap<String>();
 	for(Map.Entry<String, CounterMap<String>> entry : relations2phrasesCount.entrySet()){
-	    relCounts.put(entry.getKey(), calculateSum(entry.getValue().values()));
+	    if (!entry.getKey().equals("NONE"))
+		relCounts.put(entry.getKey(), calculateSum(entry.getValue().values()));
 	}
 	return relCounts;
     }
-    
+
+
     /**
      * 
      * @param marks
      * @return
      */
-    private int calculateSum(Collection<Integer> marks) {
+    protected int calculateSum(Collection<Integer> marks) {
 	int sum = 0;
 	if(!marks.isEmpty()) {
 	    for (Integer mark : marks) {
@@ -209,7 +159,20 @@ public abstract class Model{
 	}
 	return sum;
     }
-    
+
+    /**
+     * 
+     * @param marks
+     * @return
+     */
+    protected int calculateSum(CounterMap<String> marks) {
+	int sum = 0;
+	for (String entry : marks.keySet()){
+	    sum += marks.get(entry);
+	}
+	return sum;
+    }
+
 
     /**
      * 
@@ -223,24 +186,7 @@ public abstract class Model{
 	}
 	return (double)countPhrases/map.size();
     }
-    
-    /**
-     * 
-     * @param map
-     * @return
-     */
-    protected double calcAvgValueAfterCutoff(Map<String, String> map){
-	int countPhrases = 0;
-	
-	CounterMap<String> relations = new CounterMap<>();
-	for (String relation : map.values())
-	    relations.add(relation);
-	
-	for (String entry : relations.keySet()){
-	    countPhrases += relations.get(entry);
-	}
-	return (double)countPhrases/relations.size();
-    }
+
 
     /**
      * This is the only method that can be used from the clients.
@@ -248,7 +194,7 @@ public abstract class Model{
      * @param phrase
      * @return
      */
-    public abstract Pair<String, Double> predictRelation(WikiTriple t);
+    public abstract Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type);
 
     /**
      * 
@@ -256,5 +202,5 @@ public abstract class Model{
      * @return
      */
     public abstract boolean canPredict(String expectedRelation);
-    
+
 }

@@ -5,9 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import it.uniroma3.config.Configuration;
@@ -22,10 +20,8 @@ import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
-import it.uniroma3.model.model.ModelLS;
-import it.uniroma3.model.model.ModelLSTextExt;
 import it.uniroma3.model.model.ModelNB;
-import it.uniroma3.model.model.ModelNB.ModelNBType;
+import it.uniroma3.model.model.ModelTextExt;
 /**
  * 
  * @author matteo
@@ -69,19 +65,16 @@ public class Evaluator {
      * @param typePhrase
      * @return
      */
-    private void setModel(ModelType type, String labeled_table, int minFreq, int topK, double cutoff, PhraseType typePhrase){
+    private void setModel(ModelType type, String labeled_table, int minFreq, int topK, double cutoff){
 	switch(type){
 	case BM25:
-	    model = new ModelBM25(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
+	    model = new ModelBM25(this.dbcrossvaliadation, labeled_table, minFreq);
 	    break;
 	case NB:
-	    model = new ModelNB(this.dbcrossvaliadation, labeled_table, minFreq, ModelNBType.CLASSIC);
-	    break;
-	case LectorScore:
-	    model = new ModelLS(this.dbcrossvaliadation, labeled_table, minFreq, topK, typePhrase);
+	    model = new ModelNB(this.dbcrossvaliadation, labeled_table, minFreq);
 	    break;
 	case TextExtChallenge:
-	    model = new ModelLSTextExt(this.dbcrossvaliadation, labeled_table, minFreq, topK, cutoff, typePhrase);
+	    model = new ModelTextExt(this.dbcrossvaliadation, labeled_table, minFreq, topK, cutoff);
 	    break;
 	}
     }
@@ -104,7 +97,7 @@ public class Evaluator {
      * @return
      */
     private Pair<String, Double> processRecord(WikiTriple t){
-	return model.predictRelation(t);
+	return model.predictRelation(t.getSubjectType(), t.getPhrasePlaceholders(), t.getObjectType());
     }
 
     /**
@@ -130,7 +123,6 @@ public class Evaluator {
 		    String subject_type = rs.getString(8);
 		    String object = rs.getString(9);
 		    String object_type = rs.getString(11);
-		    String relation = rs.getString(12);
 
 		    WikiTriple t = new WikiTriple(wikid, "",phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
@@ -140,11 +132,10 @@ public class Evaluator {
 			Pair<String, Double> pred = processRecord(t);
 			String prediction = pred.key;
 			double prob = pred.value;
+			Set<String> expected = Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject());
 
 			// controlla se abbiamo recuperato qualcosa
-			if (prediction != null){
-			    Set<String> expected = Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject());
-
+			if (prediction != null && !prediction.equals("NONE")){
 			    if (expected.contains(prediction)){
 				//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
 				tp +=1;
@@ -152,10 +143,11 @@ public class Evaluator {
 				//System.out.println("FALSE POSITIVE ("+ String.format ("%.2f", prob) +")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
 				fp +=1;
 			    }
+
 			    // altrimenti, se non abbiamo recuperato niente
 			}else{ 
 			    //predictions.add(Pair.make(relation, "-"));
-			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + expected + " - predicted: - ---> " + subject_type + " " + phrase_original+ " " + object_type);
+			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + expected + " - predicted: "+prediction+"  ---> " + subject_type + " " + phrase_original+ " " + object_type);
 			}
 		    }
 		}
@@ -175,6 +167,7 @@ public class Evaluator {
      * 
      * @param model
      */
+    /*
     private Map<String, Double> runEvaluationPerRelation(String table_name){
 	Map<String, int[]> relation2counts = new HashMap<String, int[]>();
 	Map<String, Double> relation2precision = new HashMap<String, Double>();
@@ -205,7 +198,7 @@ public class Evaluator {
 			// controlla se abbiamo recuperato qualcosa
 			if (prediction != null){
 			    cases.add(prediction);
-			    
+
 			    if (!relation2counts.containsKey(prediction))
 				relation2counts.put(prediction, new int[2]);
 
@@ -232,13 +225,14 @@ public class Evaluator {
 	for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()){
 	    int tp = relation2counts.get(perRelationCount.getKey())[0];
 	    int fp = relation2counts.get(perRelationCount.getKey())[1];
-	    
+
 	    double precision = (double) tp/(tp+fp);
 	    relation2precision.put(perRelationCount.getKey(), precision);
 	}
 
 	return relation2precision;
     }
+     */
 
     /**
      * 
@@ -255,7 +249,7 @@ public class Evaluator {
 	for (int it=0; it < nParts; it++){
 	    String labeled_table = "cv_labeled_triples_" + it;
 	    String evaluation_table = "cv_evaluation_triples_"+ it;
-	    this.setModel(modelType, labeled_table, minF, topK, cutoff, phraseType);
+	    this.setModel(modelType, labeled_table, minF, topK, cutoff);
 	    Pair<Double, Double> precision_recall =  this.runEvaluation(evaluation_table);
 	    avg_precision += precision_recall.key;
 	    avg_recall += precision_recall.value;
@@ -272,6 +266,7 @@ public class Evaluator {
      * @param minF
      * @return
      */
+    /*
     private Map<String, Double> runCrossValidationPerRelation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF, double cutoff){
 	Map<String, Double> globalPrecisionRecall = new HashMap<String, Double>();
 	for (int it=0; it < nParts; it++){
@@ -287,6 +282,7 @@ public class Evaluator {
 	}
 	return globalPrecisionRecall;
     }
+     */ 
 
     /**
      * 
@@ -308,17 +304,16 @@ public class Evaluator {
 	Evaluator evaluator = new Evaluator(dbname, Lector.getDbmodel(false));
 
 	int nParts = 1;
-	double[] cutoff = new double[]{0.1, 0.0};
+	double[] cutoff = new double[]{0.1};
 	int[] topk = new int[]{-1};
-	int[] minF = new int[]{5};
+	int[] minF = new int[]{1};
 
-	ModelType model = ModelType.TextExtChallenge;
+	ModelType model = ModelType.NB;
 
-	/*
 	for(int tk=0; tk<topk.length; tk++){
 	    for(int mf=0; mf<minF.length; mf++){
 		for(int cf=0; cf<cutoff.length; cf++){
-		    Pair<Double, Double> evaluations = ev.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, topk[tk], minF[mf], cutoff[cf]);
+		    Pair<Double, Double> evaluations = evaluator.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, topk[tk], minF[mf], cutoff[cf]);
 		    System.out.println("\nResults with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf] + ", cutoff=" + cutoff[cf]);
 		    double precision = (double) evaluations.key/nParts;
 		    double recall = (double) evaluations.value/nParts;
@@ -329,8 +324,7 @@ public class Evaluator {
 		}
 	    }
 	}
-	 */
-
+	/*
 	for(int tk=0; tk<topk.length; tk++){
 	    for(int mf=0; mf<minF.length; mf++){
 		for(int cf=0; cf<cutoff.length; cf++){
@@ -343,6 +337,6 @@ public class Evaluator {
 		}
 	    }
 	}
-
+	 */
     }
 }

@@ -20,6 +20,7 @@ public class DBModel extends DB{
 
     public DBModel(String dbname){
 	super(dbname);
+	createNecessaryIndexes();
     }
 
     public void createModelDB(){
@@ -102,6 +103,7 @@ public class DBModel extends DB{
      * 
      */
     public void createNecessaryIndexes(){
+	System.out.println("Creating indexes");
 	String indexModelRelationPhrase = "CREATE INDEX IF NOT EXISTS indexmodelrelationphrase "
 		+ "ON labeled_triples(relation, phrase_placeholder)";
 	String indexModelPhrase = "CREATE INDEX IF NOT EXISTS indexmodelphrase "
@@ -127,6 +129,7 @@ public class DBModel extends DB{
 	    }
 	    e.printStackTrace();
 	}
+	System.out.println("Done");
 
     }
 

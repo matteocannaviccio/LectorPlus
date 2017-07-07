@@ -10,7 +10,6 @@ import java.util.Set;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.extractor.util.Ranking;
@@ -26,21 +25,15 @@ public class ModelBM25 extends Model{
     // parameters
     private double k = 1;
     private double b = 1;
-    private int topk;
 
 
     /**
      * 
      * @param db
      */
-    public ModelBM25(DB db, String labeled, int minFreq, int topk, PhraseType modelType) {
-	super(db, labeled, modelType, minFreq);
-	System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
-
-	this.topk = topk;
+    public ModelBM25(DB db, String labeled, int minFreq) {
+	super(db, labeled, PhraseType.TYPED_PHRASES, minFreq);
 	this.model = createModel();
-	
-	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
     }
 
     /**
@@ -50,16 +43,19 @@ public class ModelBM25 extends Model{
      * @return
      */
     private Map<String, String> createModel(){
+	CounterMap<String> r_count = crud.getR_count(p_available.keySet(), false);
+	Map<String, CounterMap<String>> r2ptCount = crud.getRtoCountedPT_LT(this.p_available.keySet(), false);
+	Map<String, CounterMap<String>> pt2rCount = crud.getPtoCountedR_LT(this.p_available.keySet(), false);
+	double avgRelationsLength = calculateRelationsAverage(r2ptCount);
 	
-	double avgRelationsLength = calculateRelationsAverage(this.relation2phrasesCount);
 
 	Map<String, String> model = createBM25Model(
 		avgRelationsLength, 
-		this.labeled_phrases, 
-		this.unlabeled_phrases, 
-		this.labeled_relations,
-		this.phrases2relationsCount, 
-		this.relation2phrasesCount);
+		this.pt_LT_counts, 
+		this.pt_UT_counts, 
+		r_count,
+		pt2rCount, 
+		r2ptCount);
 
 	return model;
     }
@@ -67,7 +63,7 @@ public class ModelBM25 extends Model{
     /**
      * 
      * @param avgRelationsLength
-     * @param available_phrases
+     * @param p_available
      * @param unlab_phrases
      * @param phrases2relationsCount
      * @param relation2phrasesCount
@@ -127,7 +123,7 @@ public class ModelBM25 extends Model{
 	model.clear();
 
 	for (Map.Entry<String, Map<String, Double[]>> relation : relations2phrase_details.entrySet()){
-	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 6, topk).entrySet()){
+	    for (Map.Entry<String, Double[]> phrase : Ranking.getDoubleKRanking(relation.getValue(), 6, -1).entrySet()){
 		model.put(phrase.getKey(), relation.getKey());
 	    }
 	}
@@ -179,11 +175,9 @@ public class ModelBM25 extends Model{
 
 
     @Override
-    public Pair<String, Double> predictRelation(WikiTriple t) {
+    public Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type) {
 	String relation = null;
-	String phrase = t.getPhrasePlaceholders();
-	if (this.type.equals(PhraseType.TYPED_PHRASES))
-	    phrase = t.getSubjectType() + "\t" + phrase + "\t" + t.getObjectType();
+	String phrase = subject_type + "\t" + phrase_placeholder + "\t" + object_type;
 	if (model.containsKey(phrase)){
 	    relation = model.get(phrase);
 	}
