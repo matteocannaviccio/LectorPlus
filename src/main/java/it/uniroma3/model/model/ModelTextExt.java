@@ -259,11 +259,9 @@ public class ModelTextExt extends Model{
      */
     protected double calcAvgValueAfterCutoff(Map<String, String> map){
 	int countPhrases = 0;
-
 	CounterMap<String> relations = new CounterMap<>();
 	for (String relation : map.values())
 	    relations.add(relation);
-
 	for (String entry : relations.keySet()){
 	    countPhrases += relations.get(entry);
 	}

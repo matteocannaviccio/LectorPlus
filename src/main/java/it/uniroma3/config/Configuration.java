@@ -502,7 +502,7 @@ public class Configuration {
     }
     
     public static boolean useDBpediaSpotlight(){
-	return keyValue.get("useSpotlight").equalsIgnoreCase("true");
+	return keyValue.get("useSpotlight").equalsIgnoreCase("yes");
     }
 
     public static double getPronounThreshold(){
