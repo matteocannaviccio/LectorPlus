@@ -76,6 +76,8 @@ Other folders are created at run-time:
 	|-- index: it will contains the Lucene index of DBPedia MappingBased objects, redirects and types
 	|
 	|-- lector: it will contains a csv file with the phrases used by LectorPlus, for each language
+	|
+	|-- <output>: it will contains the NTriples output, , for each language
 	
 ### Build and run
 
@@ -87,9 +89,12 @@ maven clean install
 and running it using the following command:
 
 ```
-sh run.sh <output_folder_name>
+sh run.sh <output_folder_name> <yes/no>
 ```
 It takes the complete path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
+
+The second parameter is used to choose if LectorPlus uses or not *DBpedia Spotlight* for the Entity Detection step. DBpedia Spotlight is executed locally as a different process, but its life cycle will be managed by the main LectorPlus process. 
+Using DBSP increase the recall of the entities detected and the conseguent facts, at the cost of slowing down the computation. 
 
 #### Output folder
 The `<output_folder_name>` is the name of the data-subfolder that will contain the the compressed NTriples files produced by the tool. The files produced are:
