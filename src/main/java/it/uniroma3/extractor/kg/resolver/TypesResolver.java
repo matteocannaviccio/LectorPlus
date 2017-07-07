@@ -62,6 +62,7 @@ public class TypesResolver {
 	    indexDBTax = getIndexOrCreate(Configuration.getDBTaxTypesIndex(), Configuration.getSourceDBTaxInstanceTypes());
 	    indexOriginal_ref = indexOriginal;
 	    indexAirpedia_ref = indexAirpedia;
+	    break;
 
 	case de:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
@@ -70,12 +71,14 @@ public class TypesResolver {
 	    indexLHD = getIndexOrCreate(Configuration.getLHDTypesIndex(), Configuration.getSourceLHDInstanceTypes());
 	    indexOriginal_ref = getIndex(Configuration.getTypesIndex_Ref());
 	    indexAirpedia_ref = getIndex(Configuration.getAirpediaIndex_Ref());
+	    break;
 
 	default:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
 	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaTypes());
 	    indexOriginal_ref = getIndex(Configuration.getTypesIndex_Ref());
 	    indexAirpedia_ref = getIndex(Configuration.getAirpediaIndex_Ref());
+	    break;
 	}
     }
 
@@ -89,8 +92,6 @@ public class TypesResolver {
 	KeyValueIndex index = null;
 	if (new File(indexPath).exists())
 	    index = new KeyValueIndex(indexPath);
-	else
-	    System.out.println("Index requested does not exist.");
 	return index; 
     }
     
