@@ -94,7 +94,6 @@ sh run.sh <output_folder_name> <yes/no>
 It takes the complete path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
 
 The second parameter, `<yes/no>` is used to choose if LectorPlus uses or not *DBpedia Spotlight* for the Entity Detection step. DBpedia Spotlight is executed locally as a different process, but its life cycle will be managed by the main LectorPlus process. 
-Using DBSP increase the recall of the entities detected and the conseguent facts, at the cost of slowing down the computation. 
 
 #### Output folder
 The `<output_folder_name>` is the name of the data-subfolder that will contain the the compressed NTriples files produced by the tool. The files produced are:
