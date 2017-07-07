@@ -87,6 +87,43 @@ public class NTriplesConverter {
 	converted_line.append(subject + "\t" + predicate + "\t" + object);
 	return converted_line.toString();
     }
+    
+    /**
+     * It reads triples that are used to describe facts between named entities
+     * from an .nt or .ttl file.
+     * It discard every line that contains a literal as object.
+     * 
+     * @param line
+     * @return
+     */
+    public static String convertRDFOntologyLines2String(String line){
+	setURILang();
+	line = removeLastDot(line);
+	StringBuffer converted_line = new StringBuffer();
+	String[] text_line = line.split(">\\s(<|\")");
+	String subject;
+	String object;
+
+	if (text_line[0].contains(ONTOLOGY)){
+	    subject = text_line[0].replaceAll(ONTOLOGY, "");
+	    subject = strip(subject, "<", ">");
+	}
+	else
+	    return null;
+
+	if (!text_line[1].contains("rdf-schema#subClassOf"))
+	    return null;
+
+	if (text_line[2].contains(ONTOLOGY)){
+	    object = text_line[2].replaceAll(ONTOLOGY, "");
+	    object = strip(object, "<", ">");
+	}
+	else
+	    return null;
+	
+	converted_line.append(subject + "\t" + object);
+	return converted_line.toString();
+    }
 
     /**
      * 

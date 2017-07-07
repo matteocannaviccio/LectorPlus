@@ -38,7 +38,7 @@ public class Ontology {
      * @param pathOntology
      */
     private void initOntology(String pathOntology){
-	List<String> pairs = NTriplesReader.readTriples(pathOntology, Encoding.tsv); 
+	List<String> pairs = NTriplesReader.readTriples(pathOntology, Encoding.tsv, true); 
 	for(String pair : pairs){
 	    String subject = pair.split("\t")[0];
 	    String object = pair.split("\t")[1];
@@ -56,12 +56,13 @@ public class Ontology {
      */
     public OntPath getOntPath(String node){
 
-	if (node.startsWith("[") && node.endsWith("]"))
-	    node = node.substring(1, node.length()-1);
-
 	if (node.equals("[none]")){
 	    return OntPath.make(null, 0);
 	}
+
+	if (node.startsWith("[") && node.endsWith("]"))
+	    node = node.substring(1, node.length()-1);
+
 	List<List<Node>> levels = new LinkedList<List<Node>>();
 	List<Node> levelLeaf = new LinkedList<Node>();
 	levelLeaf.add(Node.make(node));
@@ -88,7 +89,7 @@ public class Ontology {
 	}
 	return OntPath.make(levels, 1);
     }
-    
+
     /**
      * Returns true if the first argument is a parent type of the second.
      * 
@@ -98,6 +99,8 @@ public class Ontology {
      */
     public boolean isChildOf(String possibleParent, String possibleChild){
 	OntPath pathChild = getOntPath(possibleChild);
+	if (possibleParent.startsWith("[") && possibleParent.endsWith("]"))
+	    possibleParent = possibleParent.substring(1, possibleParent.length()-1);
 	return pathChild.contains(possibleParent);
     }
 

@@ -163,14 +163,18 @@ public class DBPedia {
      */
     
     public static void main(String[] args){
-	Configuration.init(args);
+	Configuration.init(new String[0]);
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.updateParameter("language", "en");
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
 	DBPedia t = new DBPedia();
 
 	String entity = "Sergei_Zubov";
-
+	
+	System.out.println(Lector.getDBPedia().isChildOf("Person", "[Writer]"));
+	
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexOriginal()).forEach(System.out::println);
 

@@ -53,7 +53,7 @@ public class NTriplesReader {
      * @param path
      * @param encoding
      */
-    public static List<String> readTriples(String path, Encoding encoding){
+    public static List<String> readTriples(String path, Encoding encoding, boolean isOntology){
 	List<String> triples = new LinkedList<String>();
 	BufferedReader reader = getReader(path, encoding);
 	String line;
@@ -63,7 +63,11 @@ public class NTriplesReader {
 		 * it checks that the triple is interesting 
 		 * (i.e. dbpedia resources and one propery)
 		 */
-		String t = NTriplesConverter.convertRDFFacts2String(line);
+		String t;
+		if (isOntology)
+		    t = NTriplesConverter.convertRDFOntologyLines2String(line);
+		else
+		    t = NTriplesConverter.convertRDFFacts2String(line);
 		if (t != null)
 		    triples.add(t);
 	    }

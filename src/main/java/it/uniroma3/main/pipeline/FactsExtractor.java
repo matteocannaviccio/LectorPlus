@@ -16,10 +16,8 @@ import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
-import it.uniroma3.model.model.ModelLS;
-import it.uniroma3.model.model.ModelLSTextExt;
 import it.uniroma3.model.model.ModelNB;
-import it.uniroma3.model.model.ModelNB.ModelNBType;
+import it.uniroma3.model.model.ModelTextExt;
 /**
  * 
  * @author matteo
@@ -59,19 +57,15 @@ public class FactsExtractor {
     public void setModelForEvaluation(ModelType type, String labeled_table, int minFreq, int topK, double cutoff, PhraseType typePhrase){
 	switch(type){
 	case BM25:
-	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq, topK, PhraseType.TYPED_PHRASES);
+	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq);
 	    break;
 
 	case NB:
-	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq, ModelNBType.CLASSIC);
-	    break;
-
-	case LectorScore:
-	    model = new ModelLS(Lector.getDbmodel(false), labeled_table, minFreq, topK, 0.5, 0.5, PhraseType.TYPED_PHRASES);
+	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq);
 	    break;
 
 	case TextExtChallenge:
-	    model = new ModelLSTextExt(Lector.getDbmodel(false), labeled_table, minFreq, topK, cutoff, PhraseType.TYPED_PHRASES);
+	    model = new ModelTextExt(Lector.getDbmodel(false), labeled_table, minFreq, topK, cutoff);
 	    break;
 	}
     }
@@ -85,7 +79,7 @@ public class FactsExtractor {
      * @return
      */
     private boolean processRecord(WikiTriple t){
-	Pair<String, Double> prediction = model.predictRelation(t);
+	Pair<String, Double> prediction = model.predictRelation(t.getSubjectType(), t.getPhrasePlaceholders(), t.getObjectType());
 
 	// assign a relation
 	String relation = prediction.key;
@@ -215,7 +209,7 @@ public class FactsExtractor {
     private String stupidNationalityRelationChooser(String subject_type){
 	String relation = null;
 	if (!subject_type.equals("[none]")){
-	    if (Lector.getDBPedia().isChildOf(subject_type, "Person")){
+	    if (Lector.getDBPedia().isChildOf("[Person]", subject_type)){
 		relation = "nationality";
 	    }else{
 		relation = "country";
