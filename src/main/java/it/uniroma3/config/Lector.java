@@ -290,7 +290,6 @@ public class Lector {
 	return wikiLang;
     }
 
-
     /**
      * 
      * @param create

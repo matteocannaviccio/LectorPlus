@@ -20,7 +20,7 @@ public class DBModel extends DB{
 
     public DBModel(String dbname){
 	super(dbname);
-	createNecessaryIndexes();
+	//createNecessaryIndexes();
     }
 
     public void createModelDB(){
