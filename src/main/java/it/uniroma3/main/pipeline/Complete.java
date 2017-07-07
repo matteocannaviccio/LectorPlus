@@ -34,6 +34,7 @@ public class Complete {
     public void runPipeline(int totArticle, int chunckSize){
 	List<String> lines;
 	int cont = 0;
+	
 	// change it, if we need to process the whole dump
 	if (totArticle == -1)
 	    totArticle = Integer.MAX_VALUE;

@@ -7,6 +7,9 @@ public class InverseDBPediaRelations {
     
     public static Map<String, String> inverse(){
 	Map<String, String> inverse = new HashMap<String, String>();
+	inverse.put("associatedBand(-1)", "associatedMusicalArtist");
+	inverse.put("associatedMusicalArtist(-1)", "associatedMusicalArtist");
+	inverse.put("associatedBand", "associatedMusicalArtist");
 	inverse.put("architect(-1)","significantBuilding");
 	inverse.put("author(-1)","notableWork");
 	inverse.put("board(-1)","keyPerson");

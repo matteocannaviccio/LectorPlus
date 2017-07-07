@@ -55,7 +55,7 @@ public class Normalizer{
 	List<Pair<String, String>> entityPair2relation = new LinkedList<Pair<String, String>>();
 
 	// FIRST iteration: save second parts
-	List<String> triples = NTriplesReader.readTriples(dumpFile, Encoding.compressed); 
+	List<String> triples = NTriplesReader.readTriples(dumpFile, Encoding.compressed, false); 
 	Map<String, List<String>> subject2secondparts = new HashMap<String, List<String>>();
 
 	for(String triple : triples){
