@@ -28,25 +28,25 @@ git clone https://github.com/miccia4/LectorPlus.git
 
 ### Setting up the environment
 
-The tool takes as input a Wikipedia XML dump (in one of the language above) and outputs several NTriples files with the triples that have been extracted. 
+The tool takes as input a Wikipedia XML dump and outputs several NTriples files with the triples that have been extracted.
+So far, the system is released for five different languages of Wikipedia (English, Spanish, German, Italian and French) but it can be adapted for other versions as well.
 
-- In order to run the tool on specific versions of Wikipedia please edit the file:
+- In order to run the tool on a specific Wikipedia dump, please edit the file:
 	 ```
 	 dumps.properties
 	 ```
-	it lists the specific URLs of the input Wikipedia dumps. We already filled it with the complete dumps of May 2017 in all the languages above but other versions can be easily linked from https://dumps.wikimedia.org/.
+	it lists the specific URLs of the input dumps. We already filled it with the dumps of May 2017 in all the languages above, but other versions can be easily harvested from https://dumps.wikimedia.org/. Just copy and paste the relative URLs. 
 
-- Also, in order to simplify the download of those dumps and the picking up of the other necessary files we provide a script which creates the folders and set up the environment used by LectorPlus. 
+- In order to simplify the download and the picking up of all the necessary files (e.g. the dumps above) we provide a script which creates the folders and set up the complete environment used by LectorPlus. 
 	
 	Run once our install script:
 	```
 	sh install.sh
 	```
-	It will take some time<sup>*</sup> (many GB to downlaod) but at the end it will create the root folder `/data` described below.
-	<sup>*</sup>: Note that the English Wikipedia dump only is ~14GB! 
+	It will take some time (many GB to downlaod!) but at the end it will create and fill the folder `/data` described below. The script can be executed many times, it will check for the presence of the files before download them again.
 
 #### Structure of the folder `/data`
-The folder `/data` contains a list of sub-folders and includes all the necessary files. The languages inside parenthesis means that the content of the folder is repeated for all of them.
+The folder `/data` contains a list of sub-folders and includes all the necessary files. The languages inside parenthesis means that the content of the folder is repeated for all those languages.
 
 	|-- input (en es it de fr):									
 	|		|-- wikipedia: it contains the initial dump of Wikipedia
@@ -87,11 +87,17 @@ maven clean install
 and running it using the following command:
 
 ```
-sh run.sh <output_folder_complete_path>
+sh run.sh <output_folder_name>
 ```
 It takes the complete path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
-The output folder will contain all the compressed NTriples files produced by the tool.
 
+#### Output folder
+The `<output_folder_name>` is the name of the data-subfolder that will contain the the compressed NTriples files produced by the tool. The files produced are:
+
+ - facts.bz2 = contains the facts extracted by LectorPlus
+ - facts_ont.bz2 = contains the facts extracted from the first sentence of the articles (nationality, country).
+ 
+Both the files are paired with the relative provenance file (draft).
 
 ## Details and contacts
 More details can be found in the paper above and at the Lector homepage: http://www.dia.uniroma3.it/db/lector/
