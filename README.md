@@ -93,6 +93,7 @@ sh run.sh <output_folder_name> <yes/no>
 ```
 It takes the complete path of the output folder as a parameter and executes the extraction from all the Wikipedia dumps listed in `dumps.properties` file.
 
+#### DBpedia Spotlight
 The second parameter, `<yes/no>` is used to choose if LectorPlus uses or not *DBpedia Spotlight* for the Entity Detection step. DBpedia Spotlight is executed locally as a different process, but its life cycle will be managed by the main LectorPlus process. 
 
 #### Output folder
