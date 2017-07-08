@@ -105,15 +105,14 @@ public class TypesResolver {
     private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
-	    System.out.print("\t\t--> " + new File(indexPath).getName() + " index\t");
+	    System.out.printf("\t\t%-20s %-20s %s", "--> Read & Index:", new File(indexPath).getName(), "");
 
 	    long start_time = System.currentTimeMillis();
-
 	    List<Pair<String, String>> keyvalues = Normalizer.normalizeInstanceTypesDataset(sourcePath);
 	    index = new KeyValueIndex(keyvalues, indexPath);
-
 	    long end_time = System.currentTimeMillis();
-	    System.out.println(" done in " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time)  + " sec.");
+	    
+	    System.out.printf("%-20s %s\n", "lines: " + index.getIndexedLines(), "indexed in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
 	}
 	else // we already have the index
 	    index = new KeyValueIndex(indexPath);
@@ -258,7 +257,7 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Configuration.updateParameter("language", "it");
+	Configuration.updateParameter("language", "de");
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
