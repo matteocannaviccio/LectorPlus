@@ -35,6 +35,7 @@ import org.apache.lucene.store.FSDirectory;
 public class KeyValueIndex {
 
     private IndexSearcher indexSearcher;
+    private int indexedLines;
 
     /**
      * This is the constructor if we need to create the index from a list of pairs.
@@ -42,7 +43,7 @@ public class KeyValueIndex {
      * @param kvIndexPath
      */
     public KeyValueIndex(List<Pair<String, String>> kvPairsList, String kvIndexPath){
-	this.createIndexFromList(kvPairsList, kvIndexPath);
+	indexedLines = this.createIndexFromList(kvPairsList, kvIndexPath);
 	this.indexSearcher = createSearcher(kvIndexPath);
     }
 
@@ -116,9 +117,11 @@ public class KeyValueIndex {
 
     /**
      * 
-     * @param pathToPhrases
+     * @param kvPairsList
+     * @param kvIndexPath
+     * @return
      */
-    private void createIndexFromList(List<Pair<String, String>> kvPairsList, String kvIndexPath) {
+    private int createIndexFromList(List<Pair<String, String>> kvPairsList, String kvIndexPath) {
 	IndexWriter writer = createWriter(kvIndexPath);
 	int count_ok = 0;
 	try {
@@ -139,7 +142,7 @@ public class KeyValueIndex {
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	System.out.print("(correct lines: "+count_ok+")");
+	return count_ok;
     }
 
     /**
@@ -184,6 +187,14 @@ public class KeyValueIndex {
 	    e.printStackTrace();
 	}
 	return values;
+    }
+
+
+    /**
+     * @return the indexedLines
+     */
+    public int getIndexedLines() {
+        return indexedLines;
     }
 
 }
