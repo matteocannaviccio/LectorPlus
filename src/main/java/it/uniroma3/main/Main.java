@@ -29,7 +29,7 @@ public class Main {
 	Complete cp = new Complete(Configuration.getOriginalArticlesFile());
 	cp.runPipeline(Configuration.getNumArticlesToProcess(), Configuration.getChunkSize());
 	cp.extractNovelFacts();
-	Lector.closeAllConnections();
+	Lector.close();
     }
 
     /**
@@ -68,7 +68,7 @@ public class Main {
 	    extractor.run();
 	}
 
-	Lector.closeAllConnections();
+	Lector.close();
     }
 
     /**

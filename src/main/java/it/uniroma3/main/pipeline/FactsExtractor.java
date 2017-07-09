@@ -17,6 +17,8 @@ import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
 import it.uniroma3.model.model.ModelNB;
+import it.uniroma3.model.model.ModelNBFilter;
+import it.uniroma3.model.model.ModelNBind;
 import it.uniroma3.model.model.ModelTextExt;
 /**
  * 
@@ -59,11 +61,15 @@ public class FactsExtractor {
 	case BM25:
 	    model = new ModelBM25(Lector.getDbmodel(false), labeled_table, minFreq);
 	    break;
-
 	case NB:
 	    model = new ModelNB(Lector.getDbmodel(false), labeled_table, minFreq);
 	    break;
-
+	case NBind:
+	    model = new ModelNBind(Lector.getDbmodel(false), labeled_table, minFreq);
+	    break;
+	case NBfilter:
+	    model = new ModelNBFilter(Lector.getDbmodel(false), labeled_table, minFreq);
+	    break;
 	case TextExtChallenge:
 	    model = new ModelTextExt(Lector.getDbmodel(false), labeled_table, minFreq, topK, cutoff);
 	    break;

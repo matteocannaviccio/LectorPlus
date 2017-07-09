@@ -53,14 +53,17 @@ public class ModelTextExt extends Model{
      */
     public ModelTextExt(DB db, String labeled, int minFreq, int topk, double cutoff) {
 	super(db, labeled, PhraseType.TYPED_PHRASES, minFreq);
-	System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
-	System.out.printf("\t%-35s %s\n", "cutOff generality: ", cutoff);
+	if (verbose){
+	    System.out.printf("\t%-35s %s\n", "topK: ", (topk == -1) ? "ALL" : topk);
+	    System.out.printf("\t%-35s %s\n", "cutOff generality: ", cutoff);
+	}
 
 	this.topk = topk;
 	this.generality_cutoff = cutoff;
 	this.model = createModel();
 
-	System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
+	if (verbose)
+	    System.out.printf("\t%-35s %s\n", "avg. phrases/relation (after): ", String.format("%.2f", calcAvgValueAfterCutoff(model)) + " p/r");
 
     }
 

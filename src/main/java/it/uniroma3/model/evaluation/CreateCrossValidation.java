@@ -15,9 +15,11 @@ public class CreateCrossValidation {
 	System.out.println("----------");
 
 	String dbname = Configuration.getLectorFolder() + "/" + "cross.db";
+	System.out.println(dbname);
 	Evaluator evaluator = new Evaluator(dbname, Lector.getDbmodel(false));
 	
 	System.out.println("Done");
+	Lector.close();
 	
     }
 
@@ -34,7 +36,6 @@ public class CreateCrossValidation {
 	    System.out.println("===================================");
 	    Configuration.printFullyDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
-
 	    CreateCrossValidation.create(wikiLang);
 	}
 

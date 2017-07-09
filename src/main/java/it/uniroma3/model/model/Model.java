@@ -30,13 +30,13 @@ import it.uniroma3.model.db.CRUD;
 public abstract class Model{
 
     // print the computation
-    protected static boolean verbose = true;
+    protected static boolean verbose = false;
     protected CRUD crud;
 
     // those are the possible variations of the model.
     // It can uses typed phrases (e.g. [Person] was born in [Settlement]) or not (e.g. was born in).
     public enum PhraseType {TYPED_PHRASES, NO_TYPES_PHRASES};
-    public enum ModelType {BM25, NB, TextExtChallenge};
+    public enum ModelType {BM25, NB, NBind, TextExtChallenge, NBfilter};
 
     /*
      * these are the phrases that are contained in the model which are present at least minFreq
@@ -58,8 +58,10 @@ public abstract class Model{
      * @param minFreqWithR
      */
     public Model(DB dbModel, String labeled, PhraseType type, int minF){
-	System.out.println("\nScoring model");
-	System.out.println("-------------");
+	if (verbose){
+	    System.out.println("\nScoring model");
+	    System.out.println("-------------");
+	}
 	this.crud = new CRUD(dbModel, labeled);
 	this.type = type;
 	this.minF = minF;
@@ -77,11 +79,13 @@ public abstract class Model{
 	this.pt_LT_counts = getAllLabeledPhrases(p_available.keySet());
 	this.pt_UT_counts = getAllUnlabeledPhrases(p_available.keySet());
 
-	System.out.printf("\t%-35s %s\n", "initializing model: ", type);
-	System.out.printf("\t%-35s %s\n", "minFreq: ", minFreq);
-	System.out.printf("\t%-35s %s\n", "n° different available phrases: ", this.p_available.size());
-	System.out.printf("\t%-35s %s\n", "n° different labeled phrases: ", calculateSum(this.pt_LT_counts));
-	System.out.printf("\t%-35s %s\n", "n° different un-labeled phrases: ", calculateSum(this.pt_UT_counts));
+	if (verbose){
+	    System.out.printf("\t%-35s %s\n", "initializing model: ", type);
+	    System.out.printf("\t%-35s %s\n", "minFreq: ", minFreq);
+	    System.out.printf("\t%-35s %s\n", "n° different available phrases: ", this.p_available.size());
+	    System.out.printf("\t%-35s %s\n", "n° different labeled phrases: ", calculateSum(this.pt_LT_counts));
+	    System.out.printf("\t%-35s %s\n", "n° different un-labeled phrases: ", calculateSum(this.pt_UT_counts));
+	}
     }
 
     /**

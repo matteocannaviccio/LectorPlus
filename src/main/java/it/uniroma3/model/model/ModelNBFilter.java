@@ -18,13 +18,13 @@ import it.uniroma3.model.db.DBModel;
  * @author matteo
  *
  */
-public class ModelNB extends Model{
+public class ModelNBFilter extends Model{
     private CounterMap<String> r_count;
     private CounterMap<String> pt_count;
     private Map<String, CounterMap<String>> pt2rCount;
     private int count_all_triples;
-    protected boolean includeNone = false;
-
+    protected boolean includeNone = true;
+    
     /**
      * 
      * @param db
@@ -33,7 +33,7 @@ public class ModelNB extends Model{
      * @param minFreq
      * @param minFreqWithR
      */
-    public ModelNB(DB db, String labeled, int minFreq) {
+    public ModelNBFilter(DB db, String labeled, int minFreq) {
 	super(db, labeled, PhraseType.NO_TYPES_PHRASES, minFreq);
 	createModel();
     }
@@ -243,8 +243,19 @@ public class ModelNB extends Model{
 	}
 
 	if (ranking.size() > 0){
-	    relation = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getKey();
-	    prob = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getValue();
+	    if (ranking.containsKey("NONE")){
+		if (ranking.get("NONE") < 0.75){
+		    ranking.remove("NONE");
+		    relation = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getKey();
+		    prob = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getValue();
+		}else{
+		    relation = "NONE";
+		    prob = ranking.get("NONE");
+		}
+	    }else{
+		relation = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getKey();
+		prob = Ranking.getTopKRanking(ranking, 1).entrySet().iterator().next().getValue();
+	    }
 	}
 
 	return Pair.make(relation, prob);

@@ -45,9 +45,8 @@ public class ModelBM25 extends Model{
     private Map<String, String> createModel(){
 	CounterMap<String> r_count = crud.getR_count(p_available.keySet(), false);
 	Map<String, CounterMap<String>> r2ptCount = crud.getRtoCountedPT_LT(this.p_available.keySet(), false);
-	Map<String, CounterMap<String>> pt2rCount = crud.getPtoCountedR_LT(this.p_available.keySet(), false);
+	Map<String, CounterMap<String>> pt2rCount = crud.getPTtoCountedR_LT(this.p_available.keySet(), false);
 	double avgRelationsLength = calculateRelationsAverage(r2ptCount);
-	
 
 	Map<String, String> model = createBM25Model(
 		avgRelationsLength, 

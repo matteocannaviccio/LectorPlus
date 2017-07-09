@@ -1,11 +1,16 @@
 package it.uniroma3.model.evaluation;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import it.uniroma3.config.Configuration;
@@ -15,12 +20,15 @@ import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.bean.WikiTriple.TType;
 import it.uniroma3.extractor.util.CounterMap;
 import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.db.DBModel;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 import it.uniroma3.model.model.ModelBM25;
 import it.uniroma3.model.model.ModelNB;
+import it.uniroma3.model.model.ModelNBFilter;
+import it.uniroma3.model.model.ModelNBind;
 import it.uniroma3.model.model.ModelTextExt;
 /**
  * 
@@ -31,7 +39,18 @@ public class Evaluator {
 
     private DBCrossValidation dbcrossvaliadation;
     private Model model;
-    private CounterMap<String> cases = new CounterMap<String>();
+    /**
+     * This is a map containing 3 numbers for each relation:
+     * [0] = true positive
+     * [1] = false positive
+     * [2] = all predicted
+     */
+    private Map<String, int[]> relation2counts = new HashMap<String, int[]>();
+    private int totalCounts;
+
+    private Map<String, Double> relation2accuracy;
+    private Map<String, Integer> relation2hits;
+    private Pair<Double, Double> evals;
 
     /**
      * 
@@ -40,6 +59,11 @@ public class Evaluator {
      */
     public Evaluator(String dbcrossvalidationName, DBModel dbmodel){
 	this.dbcrossvaliadation = loadOrCreateCrossValidationDB(dbcrossvalidationName, dbmodel, 5);
+    }
+
+    private void initializeCounts(){
+	relation2counts = new HashMap<String, int[]>();
+	totalCounts = 0;
     }
 
     /**
@@ -73,6 +97,12 @@ public class Evaluator {
 	case NB:
 	    model = new ModelNB(this.dbcrossvaliadation, labeled_table, minFreq);
 	    break;
+	case NBind:
+	    model = new ModelNBind(this.dbcrossvaliadation, labeled_table, minFreq);
+	    break;
+	case NBfilter:
+	    model = new ModelNBFilter(this.dbcrossvaliadation, labeled_table, minFreq);
+	    break;
 	case TextExtChallenge:
 	    model = new ModelTextExt(this.dbcrossvaliadation, labeled_table, minFreq, topK, cutoff);
 	    break;
@@ -104,13 +134,9 @@ public class Evaluator {
      * 
      * @param model
      */
-    private Pair<Double, Double> runEvaluation(String table_name){
-	int tp = 0;
-	int fp = 0;
-	int fntn = 0;
+    private void runEvaluation(String table_name){
 
 	String all = "SELECT * FROM " + table_name;
-
 	try (Statement stmt = this.dbcrossvaliadation.getConnection().createStatement()){
 	    try (ResultSet rs = stmt.executeQuery(all)){
 		while(rs.next()){
@@ -128,27 +154,7 @@ public class Evaluator {
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
-			fntn +=1;
-			Pair<String, Double> pred = processRecord(t);
-			String prediction = pred.key;
-			double prob = pred.value;
-			Set<String> expected = Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject());
-
-			// controlla se abbiamo recuperato qualcosa
-			if (prediction != null && !prediction.equals("NONE")){
-			    if (expected.contains(prediction)){
-				//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
-				tp +=1;
-			    }else{
-				//System.out.println("FALSE POSITIVE ("+ String.format ("%.2f", prob) +")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
-				fp +=1;
-			    }
-
-			    // altrimenti, se non abbiamo recuperato niente
-			}else{ 
-			    //predictions.add(Pair.make(relation, "-"));
-			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + expected + " - predicted: "+prediction+"  ---> " + subject_type + " " + phrase_original+ " " + object_type);
-			}
+			updateCounts(t);
 		    }
 		}
 	    }
@@ -157,186 +163,220 @@ public class Evaluator {
 	    e.printStackTrace();
 	}
 
-	double precision = (double) tp/(tp+fp);
-	double recall = (double) tp/fntn;
+    }
 
+    /**
+     * 
+     * @param t
+     * @param relation2counts
+     */
+    private void updateCounts(WikiTriple t){
+	Pair<String, Double> pred = processRecord(t);
+	String prediction = pred.key;
+	totalCounts+=1;
+
+	// controlla se abbiamo recuperato qualcosa
+	if (prediction != null && !prediction.equals("NONE")){
+	    // abbiamo fatto una predizione
+	    Set<String> expected = Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject());
+
+	    if (!relation2counts.containsKey(prediction))
+		relation2counts.put(prediction, new int[3]);
+	    relation2counts.get(prediction)[2]+=1;
+	    if (expected.contains(prediction)){
+		//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
+		relation2counts.get(prediction)[0]+=1;
+	    }else{
+		//System.out.println("FALSE POSITIVE ("+ String.format ("%.2f", prob) +")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
+		relation2counts.get(prediction)[1]+=1;
+	    }
+	}
+    }
+
+
+    /**
+     * Returns a map containg the accuracy for each relation.
+     * 
+     * @param relation2counts
+     * @return
+     */
+    private Map<String, Double> calcAccuracyPerRelation(){
+	/**
+	 * This is a map containg the accuracy for each relation
+	 */
+	Map<String, Double> relation2accuracy = new HashMap<String, Double>();
+	for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()){
+	    int tp = relation2counts.get(perRelationCount.getKey())[0];
+	    int all_predicted = relation2counts.get(perRelationCount.getKey())[2];
+	    double accuracy = (double) tp/(all_predicted);
+	    relation2accuracy.put(perRelationCount.getKey(), accuracy);
+	}
+	return relation2accuracy;
+    }
+
+    /**
+     * Returns a map containg the hits and tests for each relation.
+     * 
+     * @param relation2counts
+     * @return
+     */
+    private Map<String, Integer> calcHitsPerRelation(){
+	Map<String, Integer> relation2hits = new HashMap<String, Integer>();
+	for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()){
+	    int all_predicted = relation2counts.get(perRelationCount.getKey())[2];
+	    relation2hits.put(perRelationCount.getKey(), all_predicted);
+	}
+	return relation2hits;
+    }
+
+    /**
+     * 
+     * @param relation2counts
+     * @return
+     */
+    private Pair<Double, Double> calcAccuracyRecallGlobal(Map<String, int[]> relation2counts){
+	int tp_global = 0;
+	int fp_global = 0;
+	for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()){
+	    tp_global += relation2counts.get(perRelationCount.getKey())[0];
+	    fp_global += relation2counts.get(perRelationCount.getKey())[1];
+	}
+	double precision = (double) tp_global/(tp_global+fp_global);
+	double recall = (double) tp_global/totalCounts;
 	return Pair.make(precision, recall);
     }
 
     /**
      * 
-     * @param model
+     * @param nParts
+     * @param modelType
+     * @param phraseType
+     * @param topK
+     * @param minF
+     * @return
      */
-    /*
-    private Map<String, Double> runEvaluationPerRelation(String table_name){
-	Map<String, int[]> relation2counts = new HashMap<String, int[]>();
-	Map<String, Double> relation2precision = new HashMap<String, Double>();
-	String all = "SELECT * FROM " + table_name;
+    private void runCrossValidation(int nParts, ModelType modelType, int topK, int minF, double cutoff){
+	double avg_acc = 0.0;
+	double avg_rec = 0.0;
 
-	try (Statement stmt = this.dbcrossvaliadation.getConnection().createStatement()){
-	    try (ResultSet rs = stmt.executeQuery(all)){
-		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String phrase_original = rs.getString(2);
-		    String phrase_placeholder = rs.getString(3);
-		    String pre = rs.getString(4);
-		    String post = rs.getString(5);
-		    String subject = rs.getString(6);
-		    String subject_type = rs.getString(8);
-		    String object = rs.getString(9);
-		    String object_type = rs.getString(11);
-		    String relation = rs.getString(12);
+	for (int it=0; it < nParts; it++){
+	    String labeled_table = "cv_labeled_triples_" + it;
+	    String evaluation_table = "cv_evaluation_triples_"+ it;
+	    initializeCounts();
+	    this.setModel(modelType, labeled_table, minF, topK, cutoff);
+	    this.runEvaluation(evaluation_table);
 
-		    WikiTriple t = new WikiTriple(wikid, "",phrase_original, phrase_placeholder, pre, post, 
-			    subject, object, subject_type, object_type, TType.JOINABLE.name());
+	    Pair<Double, Double> avg_measures = calcAccuracyRecallGlobal(relation2counts);
+	    avg_acc += avg_measures.key;
+	    avg_rec += avg_measures.value;
+	}
 
-		    if (!t.getWikiSubject().equals(t.getWikiObject())){
-			Pair<String, Double> pred = processRecord(t);
-			String prediction = pred.key;
-			double prob = pred.value;
-			Set<String> expected = Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject());
-			// controlla se abbiamo recuperato qualcosa
-			if (prediction != null){
-			    cases.add(prediction);
+	relation2accuracy = calcAccuracyPerRelation();
+	relation2hits = calcHitsPerRelation();
+	evals = Pair.make(avg_acc/nParts, avg_rec/nParts);
+    }
 
-			    if (!relation2counts.containsKey(prediction))
-				relation2counts.put(prediction, new int[2]);
+    /**
+     * @return the relation2counts
+     */
+    public Map<String, int[]> getRelation2counts() {
+	return relation2counts;
+    }
 
-			    if (expected.contains(prediction)){
-				//System.out.println("TRUE POSITIVE ("+ String.format ("%.2f", prob)+")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
-				relation2counts.get(prediction)[0] += 1;
-			    }else{
-				//System.out.println("FALSE POSITIVE ("+ String.format ("%.2f", prob) +")\t" + "expected: " + expected + " - predicted: " + prediction +" ---> " + subject_type + " " + phrase_original+ " " + object_type);
-				relation2counts.get(prediction)[1] += 1;
-			    }
-			    // altrimenti, se non abbiamo recuperato niente
-			}else{
-			    //predictions.add(Pair.make(relation, "-"));
-			    //System.out.println("FALSE NEGATIVE\t" + "expected: " + expected + " - predicted: - ---> " + subject_type + " " + phrase_original+ " " + object_type);
+    /**
+     * @return the relation2accuracy
+     */
+    public Map<String, Double> getRelation2accuracy() {
+	return relation2accuracy;
+    }
+
+    /**
+     * @return the evals
+     */
+    public Pair<Double, Double> getEvals() {
+	return evals;
+    }
+
+    private void run() throws IOException{
+
+	int nParts = 5;
+	/*--*/
+	double[] cutoff = new double[]{0.1, 0.0};
+	int[] topk = new int[]{-1};
+	int[] minF = new int[]{1,3,5};
+	ModelType[] models = new ModelType[]{ModelType.NB, ModelType.NBfilter, ModelType.NBind, ModelType.TextExtChallenge, ModelType.BM25};
+	/*--*/
+	BufferedWriter bw = new BufferedWriter(new FileWriter(new File(Configuration.getLectorFolder() + "/cross_validation_results.tsv")));
+
+	/**
+	 * This will print a dataset with the following columns:
+	 * 
+	 * ModelType  \t  minF  \t  topK  \t  cutoff  \t  label   \t   accuracy  \t  recall
+	 * 
+	 */
+	bw.write("model\tminF\ttopK\tcutoff\tlabel\taccuracy\trecall\tf1\n");
+	bw.flush();
+	for(ModelType model : models){
+	    for(int tk=0; tk<topk.length; tk++){
+		for(int mf=0; mf<minF.length; mf++){
+		    if(model.equals(ModelType.TextExtChallenge)){
+			for(int cf=0; cf<cutoff.length; cf++){
+			    runCrossValidation(nParts, model, topk[tk], minF[mf], cutoff[cf]);
+			    System.out.println("Results with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf] + ", cutoff=" + cutoff[cf]);
+			    double precision = getEvals().key;
+			    double recall = getEvals().value;
+			    String label = model.name()+", minF="+minF[mf]+", topK="+topk[tk]+", cutoff="+cutoff[cf];
+			    bw.write(model.name() + "\t" + minF[mf] + "\t" + topk[tk] + "\t" + cutoff[cf] + "\t" + label+ "\t"+ precision + "\t" + recall + "\n");
+			    bw.flush();
+			    File perRelationDetails = new File(Configuration.getLectorFolder() + "/relations/" + model +"_"+topk[tk]+"_"+minF[mf]+"_"+cutoff[cf]+".tsv");
+			    perRelationDetails.getParentFile().mkdirs();
+			    BufferedWriter bw2 = new BufferedWriter(new FileWriter(perRelationDetails));
+			    for (String relation : Ranking.getRanking(this.relation2accuracy).keySet())
+				bw2.write(relation + "\t" + this.relation2accuracy.get(relation) + "\t" + this.relation2hits.get(relation) + "\n");
+			    bw2.close();
+
 			}
+		    }else{
+			runCrossValidation(nParts, model, topk[tk], minF[mf], 0.0);
+			System.out.println("Results with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf]);
+			double precision = getEvals().key;
+			double recall = getEvals().value;
+			String label = model.name()+", minF="+minF[mf]+", topK="+topk[tk];
+			bw.write(model.name() + "\t" + minF[mf] + "\t" + topk[tk] + "\t" + 0.0 + "\t" + label + "\t" + precision + "\t" + recall + "\n");
+			bw.flush();
+			File perRelationDetails = new File(Configuration.getLectorFolder() + "/relations/" + model +"_"+topk[tk]+"_"+minF[mf]+".tsv");
+			perRelationDetails.getParentFile().mkdirs();
+			BufferedWriter bw2 = new BufferedWriter(new FileWriter(perRelationDetails));
+			for (String relation : Ranking.getRanking(this.relation2accuracy).keySet())
+			    bw2.write(relation + "\t" + this.relation2accuracy.get(relation) + "\t" + this.relation2hits.get(relation) + "\n");
+			bw2.close();
 		    }
 		}
 	    }
 
-	}catch(SQLException e){
-	    e.printStackTrace();
 	}
-
-	for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()){
-	    int tp = relation2counts.get(perRelationCount.getKey())[0];
-	    int fp = relation2counts.get(perRelationCount.getKey())[1];
-
-	    double precision = (double) tp/(tp+fp);
-	    relation2precision.put(perRelationCount.getKey(), precision);
-	}
-
-	return relation2precision;
+	bw.close();
     }
-     */
-
-    /**
-     * 
-     * @param nParts
-     * @param modelType
-     * @param phraseType
-     * @param topK
-     * @param minF
-     * @return
-     */
-    private Pair<Double, Double> runCrossValidation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF, double cutoff){
-	double avg_precision = 0.0;
-	double avg_recall = 0.0;
-	for (int it=0; it < nParts; it++){
-	    String labeled_table = "cv_labeled_triples_" + it;
-	    String evaluation_table = "cv_evaluation_triples_"+ it;
-	    this.setModel(modelType, labeled_table, minF, topK, cutoff);
-	    Pair<Double, Double> precision_recall =  this.runEvaluation(evaluation_table);
-	    avg_precision += precision_recall.key;
-	    avg_recall += precision_recall.value;
-	}
-	return Pair.make(avg_precision, avg_recall);
-    }
-
-    /**
-     * 
-     * @param nParts
-     * @param modelType
-     * @param phraseType
-     * @param topK
-     * @param minF
-     * @return
-     */
-    /*
-    private Map<String, Double> runCrossValidationPerRelation(int nParts, ModelType modelType, PhraseType phraseType, int topK, int minF, double cutoff){
-	Map<String, Double> globalPrecisionRecall = new HashMap<String, Double>();
-	for (int it=0; it < nParts; it++){
-	    String labeled_table = "cv_labeled_triples_" + it;
-	    String evaluation_table = "cv_evaluation_triples_"+ it;
-	    this.setModel(modelType, labeled_table, minF, topK, cutoff, phraseType);
-	    Map<String, Double> relation_precision =  this.runEvaluationPerRelation(evaluation_table);
-	    for (Map.Entry<String, Double> rel : relation_precision.entrySet()){
-		if (!globalPrecisionRecall.containsKey(rel.getKey()))
-		    globalPrecisionRecall.put(rel.getKey(), 0.0);
-		globalPrecisionRecall.put(rel.getKey(), rel.getValue() + globalPrecisionRecall.get(rel.getKey()));
-	    }
-	}
-	return globalPrecisionRecall;
-    }
-     */ 
 
     /**
      * 
      * @param args
+     * @throws IOException 
      */
-    public static void main(String[] args){
-	Configuration.init(new String[0]);
-	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
-	Configuration.updateParameter("language", "en");
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-	/*************************************************/
-
-
-	System.out.println("\nEvaluation");
-	System.out.println("----------");
-
-	String dbname = Configuration.getLectorFolder() + "/" + "cross.db";
-	Evaluator evaluator = new Evaluator(dbname, Lector.getDbmodel(false));
-
-	int nParts = 1;
-	double[] cutoff = new double[]{0.1};
-	int[] topk = new int[]{-1};
-	int[] minF = new int[]{1};
-
-	ModelType model = ModelType.NB;
-
-	for(int tk=0; tk<topk.length; tk++){
-	    for(int mf=0; mf<minF.length; mf++){
-		for(int cf=0; cf<cutoff.length; cf++){
-		    Pair<Double, Double> evaluations = evaluator.runCrossValidation(nParts, model, PhraseType.TYPED_PHRASES, topk[tk], minF[mf], cutoff[cf]);
-		    System.out.println("\nResults with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf] + ", cutoff=" + cutoff[cf]);
-		    double precision = (double) evaluations.key/nParts;
-		    double recall = (double) evaluations.value/nParts;
-		    double f1 = 2.0 * ((precision*recall)/(precision+recall));
-		    System.out.println("-> Precision: " + precision);
-		    System.out.println("-> Recall: " + recall);
-		    System.out.println("-> F1: " + f1);
-		}
-	    }
+    public static void main(String[] args) throws IOException{
+	Configuration.init(args);
+	for (String lang : Configuration.getLanguages()){
+	    Configuration.updateParameter("language", lang);
+	    String dbname = Configuration.getLectorFolder() + "/" + "cross.db";
+	    Evaluator evaluator = new Evaluator(dbname, Lector.getDbmodel(false));
+	    Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		    new HashSet<String>(Arrays.asList(new String[]{"FE"})));
+	    System.out.println("\nEvaluation in " + Configuration.getLanguageCode());
+	    System.out.println("----------");
+	    evaluator.run();
+	    Lector.close();
 	}
-	/*
-	for(int tk=0; tk<topk.length; tk++){
-	    for(int mf=0; mf<minF.length; mf++){
-		for(int cf=0; cf<cutoff.length; cf++){
-		    Map<String, Double> evaluations = evaluator.runCrossValidationPerRelation(nParts, model, PhraseType.TYPED_PHRASES, topk[tk], minF[mf], cutoff[cf]);
-		    System.out.println("\nResults with model= " + model.name() + ", topk= " + topk[tk] + ", minF= " + minF[mf] + ", cutoff=" + cutoff[cf]);
-		    for (Map.Entry<String, Double> entry: evaluations.entrySet()){
-			System.out.printf("\t%-40s %-20s %s\n", "Relation: " + entry.getKey(), "examples: " + evaluator.cases.get(entry.getKey()), "prec: " + (double) entry.getValue()/nParts);
 
-		    }
-		}
-	    }
-	}
-	 */
     }
+
 }

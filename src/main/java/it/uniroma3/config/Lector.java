@@ -308,12 +308,11 @@ public class Lector {
     /**
      * Close all the connections that are open.
      */
-    public static void closeAllConnections(){
+    public static void close(){
 	if (dbmodel != null){
 	    dbmodel.closeConnection();
 	    dbmodel = null;
 	}
-
 	// kill DBPedia SPotlight process, if exists
 	closeDBPediaSpotlight();
     }
