@@ -64,16 +64,17 @@ public class CRUD {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String phrase_original = rs.getString(2);
-		    String phrase_placeholder = rs.getString(3);
-		    String pre = rs.getString(4);
-		    String post = rs.getString(5);
-		    String subject = rs.getString(6);
-		    String type_subject = rs.getString(8);
-		    String object = rs.getString(9);
-		    String type_object = rs.getString(11);
-		    String relation = rs.getString(12);
-		    triples.add(Pair.make(new WikiTriple(wikid, "", phrase_original,
+		    String section = rs.getString(2);
+		    String phrase_original = rs.getString(3);
+		    String phrase_placeholder = rs.getString(4);
+		    String pre = rs.getString(5);
+		    String post = rs.getString(6);
+		    String subject = rs.getString(7);
+		    String type_subject = rs.getString(9);
+		    String object = rs.getString(10);
+		    String type_object = rs.getString(12);
+		    String relation = rs.getString(13);
+		    triples.add(Pair.make(new WikiTriple(wikid, section, "", phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name()), relation));
 		}
@@ -96,20 +97,21 @@ public class CRUD {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String phrase_original = rs.getString(2);
-		    String phrase_placeholder = rs.getString(3);
-		    String pre = rs.getString(4);
-		    String post = rs.getString(5);
-		    String subject = rs.getString(6);
-		    String wiki_subject = rs.getString(7);
-		    String type_subject = rs.getString(8);
-		    String object = rs.getString(9);
-		    String wiki_object = rs.getString(10);
-		    String type_object = rs.getString(11);
-		    String relation = rs.getString(12);
+		    String section = rs.getString(2);
+		    String phrase_original = rs.getString(3);
+		    String phrase_placeholder = rs.getString(4);
+		    String pre = rs.getString(5);
+		    String post = rs.getString(6);
+		    String subject = rs.getString(7);
+		    String wiki_subject = rs.getString(8);
+		    String type_subject = rs.getString(9);
+		    String object = rs.getString(10);
+		    String wiki_object = rs.getString(11);
+		    String type_object = rs.getString(12);
+		    String relation = rs.getString(13);
 
 		    String key = wiki_subject + "\t" + phrase_placeholder + "\t" + wiki_object;
-		    WikiTriple t = new WikiTriple(wikid, "", phrase_original,
+		    WikiTriple t = new WikiTriple(wikid, section, "", phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name());
 
@@ -141,16 +143,17 @@ public class CRUD {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String sentence = rs.getString(2);
-		    String phrase_original = rs.getString(3);
-		    String phrase_placeholder = rs.getString(4);
-		    String pre = rs.getString(5);
-		    String post = rs.getString(6);
-		    String subject = rs.getString(7);
-		    String type_subject = rs.getString(9);
-		    String object = rs.getString(10);
-		    String type_object = rs.getString(12);
-		    triples.add(new WikiTriple(wikid, sentence, phrase_original,
+		    String section = rs.getString(2);
+		    String sentence = rs.getString(3);
+		    String phrase_original = rs.getString(4);
+		    String phrase_placeholder = rs.getString(5);
+		    String pre = rs.getString(6);
+		    String post = rs.getString(7);
+		    String subject = rs.getString(8);
+		    String type_subject = rs.getString(10);
+		    String object = rs.getString(11);
+		    String type_object = rs.getString(13);
+		    triples.add(new WikiTriple(wikid, section, sentence, phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name()));
 		}

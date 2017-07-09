@@ -82,6 +82,7 @@ public class DBCrossValidation extends DB{
 	String dropUnlabeled = "DROP TABLE IF EXISTS unlabeled_triples";
 	String createUnlabeled = "CREATE TABLE unlabeled_triples("
 		+ "wikid text, "
+		+ "section text, "
 		+ "sentence text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
@@ -119,6 +120,7 @@ public class DBCrossValidation extends DB{
 	String dropLabeled = "DROP TABLE IF EXISTS "+table_name;
 	String createLabeled = "CREATE TABLE "+table_name+"("
 		+ "wikid text, "
+		+ "section text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
 		+ "phrase_pre text, "
@@ -194,7 +196,7 @@ public class DBCrossValidation extends DB{
      * @param labeled
      */
     private void batchInsertTriples(String table_name, List<String> pairs, boolean insertDuplicatePairs){
-	String insert = "INSERT INTO "+table_name+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	String insert = "INSERT INTO "+table_name+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	try{
 	    this.getConnection().setAutoCommit(false);
 	    PreparedStatement pstmt = this.getConnection().prepareStatement(insert);
@@ -202,17 +204,18 @@ public class DBCrossValidation extends DB{
 		if (insertDuplicatePairs){
 		    for (Pair<WikiTriple, String> labeled_triple :  all_labeled_facts.get(pair)){
 			pstmt.setString(1, labeled_triple.key.getWikid());
-			pstmt.setString(2, labeled_triple.key.getPhraseOriginal());
-			pstmt.setString(3, labeled_triple.key.getPhrasePlaceholders());
-			pstmt.setString(4, labeled_triple.key.getPre());
-			pstmt.setString(5, labeled_triple.key.getPost());
-			pstmt.setString(6, labeled_triple.key.getSubject());
-			pstmt.setString(7, labeled_triple.key.getWikiSubject());
-			pstmt.setString(8, labeled_triple.key.getSubjectType());
-			pstmt.setString(9, labeled_triple.key.getObject());
-			pstmt.setString(10, labeled_triple.key.getWikiObject());
-			pstmt.setString(11, labeled_triple.key.getObjectType());
-			pstmt.setString(12, labeled_triple.value);
+			pstmt.setString(2, labeled_triple.key.getSection());
+			pstmt.setString(3, labeled_triple.key.getPhraseOriginal());
+			pstmt.setString(4, labeled_triple.key.getPhrasePlaceholders());
+			pstmt.setString(5, labeled_triple.key.getPre());
+			pstmt.setString(6, labeled_triple.key.getPost());
+			pstmt.setString(7, labeled_triple.key.getSubject());
+			pstmt.setString(8, labeled_triple.key.getWikiSubject());
+			pstmt.setString(9, labeled_triple.key.getSubjectType());
+			pstmt.setString(10, labeled_triple.key.getObject());
+			pstmt.setString(11, labeled_triple.key.getWikiObject());
+			pstmt.setString(12, labeled_triple.key.getObjectType());
+			pstmt.setString(13, labeled_triple.value);
 			pstmt.addBatch();
 		    }
 		}else{
@@ -223,17 +226,18 @@ public class DBCrossValidation extends DB{
 		     */
 		    Pair<WikiTriple, String> labeled_triple = all_labeled_facts.get(pair).get(0);
 		    pstmt.setString(1, labeled_triple.key.getWikid());
-		    pstmt.setString(2, labeled_triple.key.getPhraseOriginal());
-		    pstmt.setString(3, labeled_triple.key.getPhrasePlaceholders());
-		    pstmt.setString(4, labeled_triple.key.getPre());
-		    pstmt.setString(5, labeled_triple.key.getPost());
-		    pstmt.setString(6, labeled_triple.key.getSubject());
-		    pstmt.setString(7, labeled_triple.key.getWikiSubject());
-		    pstmt.setString(8, labeled_triple.key.getSubjectType());
-		    pstmt.setString(9, labeled_triple.key.getObject());
-		    pstmt.setString(10, labeled_triple.key.getWikiObject());
-		    pstmt.setString(11, labeled_triple.key.getObjectType());
-		    pstmt.setString(12, labeled_triple.value);
+		    pstmt.setString(2, labeled_triple.key.getSection());
+		    pstmt.setString(3, labeled_triple.key.getPhraseOriginal());
+		    pstmt.setString(4, labeled_triple.key.getPhrasePlaceholders());
+		    pstmt.setString(5, labeled_triple.key.getPre());
+		    pstmt.setString(6, labeled_triple.key.getPost());
+		    pstmt.setString(7, labeled_triple.key.getSubject());
+		    pstmt.setString(8, labeled_triple.key.getWikiSubject());
+		    pstmt.setString(9, labeled_triple.key.getSubjectType());
+		    pstmt.setString(10, labeled_triple.key.getObject());
+		    pstmt.setString(11, labeled_triple.key.getWikiObject());
+		    pstmt.setString(12, labeled_triple.key.getObjectType());
+		    pstmt.setString(13, labeled_triple.value);
 		    pstmt.addBatch();
 		}
 	    }

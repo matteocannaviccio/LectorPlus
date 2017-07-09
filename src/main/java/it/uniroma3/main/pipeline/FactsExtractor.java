@@ -95,12 +95,13 @@ public class FactsExtractor {
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
 		if (!Lector.getDBPedia().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getInvertedSubject(), relation, t.getInvertedObject());
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getWholeSentence(), t.getInvertedLectorSubject(), 
+			    t.getInvertedSubject(), relation, t.getInvertedLectorObject(), t.getInvertedObject());
 		    writer_facts.write(t.getInvertedSubject(), relation, t.getInvertedObject());
 		}
 	    }else{
 		if (!Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getWholeSentence(), t.getWikiSubject(), relation, t.getWikiObject());
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getWholeSentence(), t.getSubject(), t.getWikiSubject(), relation, t.getObject(), t.getWikiObject());
 		    writer_facts.write(t.getWikiSubject(), relation, t.getWikiObject());
 		}
 	    }
@@ -121,17 +122,18 @@ public class FactsExtractor {
 	    try (ResultSet rs = stmt.executeQuery(allUnlabeledTriplesQuery)){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String sentence = rs.getString(2);
-		    String phrase_original = rs.getString(3);
-		    String phrase_placeholder = rs.getString(4);
-		    String pre = rs.getString(5);
-		    String post = rs.getString(6);
-		    String subject = rs.getString(7);
-		    String subject_type = rs.getString(9);
-		    String object = rs.getString(10);
-		    String object_type = rs.getString(12);
+		    String section = rs.getString(2);
+		    String sentence = rs.getString(3);
+		    String phrase_original = rs.getString(4);
+		    String phrase_placeholder = rs.getString(5);
+		    String pre = rs.getString(6);
+		    String post = rs.getString(7);
+		    String subject = rs.getString(8);
+		    String subject_type = rs.getString(10);
+		    String object = rs.getString(11);
+		    String object_type = rs.getString(13);
 
-		    WikiTriple t = new WikiTriple(wikid, sentence, phrase_original, phrase_placeholder, pre, post, 
+		    WikiTriple t = new WikiTriple(wikid, section, sentence, phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
 
 		    if (!t.getWikiSubject().equals(t.getWikiObject())){
@@ -165,7 +167,7 @@ public class FactsExtractor {
 	// if there is ...
 	if (relation != null){
 	    if (!Lector.getDBPedia().getRelations(wikid, object).equals(relation)){
-		writer_provenance_ontological.provenance(wikid, sentence, wikid, relation, object);
+		writer_provenance_ontological.provenance(wikid, "#Abstract", sentence, "TITLE", wikid, relation, "NAT", object);
 		writer_ontological_facts.write(wikid, relation, object);
 	    }
 	    //Lector.getDbfacts(false).insertNovelFact(t, relation);

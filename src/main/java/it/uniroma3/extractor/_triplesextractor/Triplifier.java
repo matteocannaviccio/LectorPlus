@@ -59,10 +59,11 @@ public class Triplifier {
      */
     public void extractTriples(WikiArticle article) {
 	for (Map.Entry<String, List<String>> sentenceCollection : article.getSentences().entrySet()) {
+	    String section = sentenceCollection.getKey();
 	    for (String sentence : sentenceCollection.getValue()) {
 		sentence = Lector.getTextParser().removeParenthesis(sentence);
 		sentence = replaceMultiValuedList(sentence, sentenceCollection.getKey(), article.getWikid());
-		for (WikiTriple t : createTriples(article, sentence)) {
+		for (WikiTriple t : createTriples(article, sentence, section)) {
 		    processTriple(t);
 		}
 	    }
@@ -125,7 +126,7 @@ public class Triplifier {
      * @param sentence
      * @return
      */
-    public List<WikiTriple> createTriples(WikiArticle article, String sentence) {
+    public List<WikiTriple> createTriples(WikiArticle article, String sentence, String section) {
 	List<WikiTriple> triples = new ArrayList<WikiTriple>();
 
 	// find entities
@@ -166,7 +167,7 @@ public class Triplifier {
 		String phrase_placeholders = placeholderFilter.replace(phrase);
 
 		if (!phrase_placeholders.equals("")){
-		    WikiTriple t = new WikiTriple(article.getWikid(), sentence, pre, subject, phrase, phrase_placeholders, object, post);
+		    WikiTriple t = new WikiTriple(article.getWikid(), section, sentence, pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);
 		}
 		// change subject now for the next triple

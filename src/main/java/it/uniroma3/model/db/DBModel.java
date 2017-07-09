@@ -27,6 +27,7 @@ public class DBModel extends DB{
 	String dropLabeled = "DROP TABLE IF EXISTS labeled_triples";
 	String createLabeled = "CREATE TABLE labeled_triples("
 		+ "wikid text, "
+		+ "section text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
 		+ "phrase_pre text, "
@@ -41,6 +42,7 @@ public class DBModel extends DB{
 	String dropUnlabeled = "DROP TABLE IF EXISTS unlabeled_triples";
 	String createUnlabeled = "CREATE TABLE unlabeled_triples("
 		+ "wikid text, "
+		+ "section text, "
 		+ "sentence text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
@@ -55,6 +57,7 @@ public class DBModel extends DB{
 	String dropOther = "DROP TABLE IF EXISTS other_triples";
 	String createOther = "CREATE TABLE other_triples("
 		+ "wikid text, "
+		+ "section text, "
 		+ "phrase_original text, "
 		+ "phrase_placeholder text, "
 		+ "phrase_pre text, "
@@ -137,39 +140,41 @@ public class DBModel extends DB{
      * This is the schema of labeled_triples:
      * 
      * 		01- wikid text
-     * 		02- phrase_original text
-     * 		03- phrase_placeholder text
-     * 		04- phrase_pre text
-     * 		05- phrase_post text
-     * 		06- subject text
-     * 		07- wiki_subject text
-     * 		08- type_subject text
-     * 		09- object text
-     * 		10- wiki_object text
-     * 		11- type_object text
-     * 		12- relation text
+     * 		02- section text
+     * 		03- phrase_original text
+     * 		04- phrase_placeholder text
+     * 		05- phrase_pre text
+     * 		06- phrase_post text
+     * 		07- subject text
+     * 		08- wiki_subject text
+     * 		09- type_subject text
+     * 		10- object text
+     * 		11- wiki_object text
+     * 		12- type_object text
+     * 		13- relation text
      * 
      * @param triple
      * @param relation
      */
     public void batchInsertLabeledTriple(Queue<Pair<WikiTriple, String>> labeled_triples){
-	String insert = "INSERT INTO labeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	String insert = "INSERT INTO labeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	try {
 	    this.getConnection().setAutoCommit(false);
 	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
 	    for (Pair<WikiTriple, String> triple : labeled_triples){
 		stmt.setString(1, triple.key.getWikid());
-		stmt.setString(2, triple.key.getPhraseOriginal());
-		stmt.setString(3, triple.key.getPhrasePlaceholders());
-		stmt.setString(4, triple.key.getPre());
-		stmt.setString(5, triple.key.getPost());
-		stmt.setString(6, triple.key.getSubject());
-		stmt.setString(7, triple.key.getWikiSubject());
-		stmt.setString(8, triple.key.getSubjectType());
-		stmt.setString(9, triple.key.getObject());
-		stmt.setString(10, triple.key.getWikiObject());
-		stmt.setString(11, triple.key.getObjectType());
-		stmt.setString(12, triple.value);
+		stmt.setString(2, triple.key.getSection());
+		stmt.setString(3, triple.key.getPhraseOriginal());
+		stmt.setString(4, triple.key.getPhrasePlaceholders());
+		stmt.setString(5, triple.key.getPre());
+		stmt.setString(6, triple.key.getPost());
+		stmt.setString(7, triple.key.getSubject());
+		stmt.setString(8, triple.key.getWikiSubject());
+		stmt.setString(9, triple.key.getSubjectType());
+		stmt.setString(10, triple.key.getObject());
+		stmt.setString(11, triple.key.getWikiObject());
+		stmt.setString(12, triple.key.getObjectType());
+		stmt.setString(13, triple.value);
 		stmt.addBatch();
 	    }	    
 	    stmt.executeBatch();
@@ -188,38 +193,40 @@ public class DBModel extends DB{
      * This is the schema of unlabeled_triples:
      * 
      * 		01- wikid text
-     * 		02- sentence text
-     * 		03- phrase_original text
-     * 		04- phrase_placeholder text
-     *      	05- phrase_pre text
-     * 		06- phrase_post text
-     * 		07- subject text
-     * 		08- wiki_subject text
-     * 		09- type_subject text
-     * 		10- object text
-     * 		11- wiki_object text
-     * 		12- type_object text
+     * 		02- section text,
+     * 		03- sentence text
+     * 		04- phrase_original text
+     * 		05- phrase_placeholder text
+     *      	06- phrase_pre text
+     * 		07- phrase_post text
+     * 		08- subject text
+     * 		09- wiki_subject text
+     * 		10- type_subject text
+     * 		11- object text
+     * 		12- wiki_object text
+     * 		13- type_object text
      * 
      * @param triple
      */
     public void batchInsertUnlabeledTriple(Queue<WikiTriple> unlabeled_triples){
-	String insert = "INSERT INTO unlabeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	String insert = "INSERT INTO unlabeled_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	try {
 	    this.getConnection().setAutoCommit(false);
 	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
 	    for (WikiTriple triple : unlabeled_triples){
 		stmt.setString(1, triple.getWikid());
-		stmt.setString(2, triple.getWholeSentence());
-		stmt.setString(3, triple.getPhraseOriginal());
-		stmt.setString(4, triple.getPhrasePlaceholders());
-		stmt.setString(5, triple.getPre());
-		stmt.setString(6, triple.getPost());
-		stmt.setString(7, triple.getSubject());
-		stmt.setString(8, triple.getWikiSubject());
-		stmt.setString(9, triple.getSubjectType());
-		stmt.setString(10, triple.getObject());
-		stmt.setString(11, triple.getWikiObject());
-		stmt.setString(12, triple.getObjectType());
+		stmt.setString(2, triple.getSection());
+		stmt.setString(3, triple.getWholeSentence());
+		stmt.setString(4, triple.getPhraseOriginal());
+		stmt.setString(5, triple.getPhrasePlaceholders());
+		stmt.setString(6, triple.getPre());
+		stmt.setString(7, triple.getPost());
+		stmt.setString(8, triple.getSubject());
+		stmt.setString(9, triple.getWikiSubject());
+		stmt.setString(10, triple.getSubjectType());
+		stmt.setString(11, triple.getObject());
+		stmt.setString(12, triple.getWikiObject());
+		stmt.setString(13, triple.getObjectType());
 		stmt.addBatch();
 	    }	    
 	    stmt.executeBatch();
@@ -238,38 +245,40 @@ public class DBModel extends DB{
      * This is the schema of other_triples:
      * 
      * 		01- wikid text
-     * 		02- phrase_original text
-     * 		03- phrase_placeholder text
-     *      	04- phrase_pre text
-     * 		05- phrase_post text
-     * 		06- subject text
-     * 		07- wiki_subject text
-     * 		08- type_subject text
-     * 		09- object text
-     * 		10- wiki_object text
-     * 		11- type_object text
-     * 		12- type text
+     * 		02- section text
+     * 		03- phrase_original text
+     * 		04- phrase_placeholder text
+     *      	05- phrase_pre text
+     * 		06- phrase_post text
+     * 		07- subject text
+     * 		08- wiki_subject text
+     * 		09- type_subject text
+     * 		10- object text
+     * 		11- wiki_object text
+     * 		12- type_object text
+     * 		13- type text
      * 
      * @param triple
      */
     public void batchInsertOtherTriple(Queue<WikiTriple> other_triples){
-	String insert = "INSERT INTO other_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	String insert = "INSERT INTO other_triples VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	try {
 	    this.getConnection().setAutoCommit(false);
 	    PreparedStatement stmt = this.getConnection().prepareStatement(insert);
 	    for (WikiTriple triple : other_triples){
 		stmt.setString(1, triple.getWikid());
-		stmt.setString(2, triple.getPhraseOriginal());
-		stmt.setString(3, triple.getPhrasePlaceholders());
-		stmt.setString(4, triple.getPre());
-		stmt.setString(5, triple.getPost());
-		stmt.setString(6, triple.getSubject());
-		stmt.setString(7, triple.getWikiSubject());
-		stmt.setString(8, triple.getSubjectType());
-		stmt.setString(9, triple.getObject());
-		stmt.setString(10, triple.getWikiObject());
-		stmt.setString(11, triple.getObjectType());
-		stmt.setString(12, triple.getType().name());
+		stmt.setString(2, triple.getSection());
+		stmt.setString(3, triple.getPhraseOriginal());
+		stmt.setString(4, triple.getPhrasePlaceholders());
+		stmt.setString(5, triple.getPre());
+		stmt.setString(6, triple.getPost());
+		stmt.setString(7, triple.getSubject());
+		stmt.setString(8, triple.getWikiSubject());
+		stmt.setString(9, triple.getSubjectType());
+		stmt.setString(10, triple.getObject());
+		stmt.setString(11, triple.getWikiObject());
+		stmt.setString(12, triple.getObjectType());
+		stmt.setString(13, triple.getType().name());
 		stmt.addBatch();
 	    }	    
 	    stmt.executeBatch();
