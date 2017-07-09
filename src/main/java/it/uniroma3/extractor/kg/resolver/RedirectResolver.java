@@ -31,7 +31,7 @@ public class RedirectResolver {
 	    this.indexRedirect = new KeyValueIndex(Configuration.getRedirectIndex());
 
     }
-    
+
     /**
      * Returns a KeyValueIndex given the path. If the exists does not exist it create it and then return.
      * 
@@ -43,12 +43,12 @@ public class RedirectResolver {
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
 	    System.out.printf("\t\t%-20s %-20s %s", "--> Read & Index:", new File(indexPath).getName(), "");
-	    
+
 	    long start_time = System.currentTimeMillis();
 	    List<Pair<String, String>> keyvalues = TSVReader.getLines2Pairs(sourcePath);
 	    index = new KeyValueIndex(keyvalues, indexPath);
 	    long end_time = System.currentTimeMillis();
-	    
+
 	    System.out.printf("%-20s %s\n", "lines: " + index.getIndexedLines(), "indexed in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
 	}
 	else // we already have the index
@@ -66,7 +66,8 @@ public class RedirectResolver {
 	String targetPage = possibleRedirect;
 	Optional<String> target = indexRedirect.retrieveKeys(possibleRedirect).stream().findFirst();
 	if (target.isPresent())
-	    targetPage = target.get();
+	    if (!target.get().contains("WikiProjekt") && !target.get().contains("WikiProject") && !target.get().contains("Wikiportal:"))
+		targetPage = target.get();
 	return targetPage;
     }
 
@@ -76,15 +77,15 @@ public class RedirectResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Configuration.updateParameter("language", "es");
+	Configuration.updateParameter("language", "en");
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
-	
+
 	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
 		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-	
+
 	RedirectResolver t = new RedirectResolver();
 
-	String entity = "Thomas_Hyde";
+	String entity = "Poland";
 
 	System.out.println("\nRedirect of: ");
 	System.out.println(t.resolveRedirect(entity));
