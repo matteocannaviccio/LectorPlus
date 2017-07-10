@@ -14,7 +14,7 @@ import it.uniroma3.extractor._triplesextractor.placeholders.PlaceholderFilter;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiMVL;
 import it.uniroma3.extractor.bean.WikiTriple;
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.Pair;
 
 /**
  * This module extracts triples from the articles and write them in DB.
@@ -148,6 +148,8 @@ public class Triplifier {
 	int subjectEndPos = 0;
 	int objectStartPos = 0;
 	int objectEndPos = 0;
+	
+	sentence = sentence.trim().replace("\t", " ").replaceAll("\n", " ");
 
 	while(m.find()){
 	    if (!foundSubject) {
@@ -162,10 +164,10 @@ public class Triplifier {
 
 		pre = getWindow(replaceEntities(sentence.substring(Math.max(subjectStartPos-200, 0), subjectStartPos).trim()), 3, "pre");
 		post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
-		phrase = sentence.substring(subjectEndPos, objectStartPos).trim();
+		phrase = sentence.substring(subjectEndPos, objectStartPos).trim().replace("\t", " ").replaceAll("\n", " ");
 
 		String phrase_placeholders = placeholderFilter.replace(phrase);
-
+		
 		if (!phrase_placeholders.equals("")){
 		    WikiTriple t = new WikiTriple(article.getWikid(), section, sentence, pre, subject, phrase, phrase_placeholders, object, post);
 		    triples.add(t);

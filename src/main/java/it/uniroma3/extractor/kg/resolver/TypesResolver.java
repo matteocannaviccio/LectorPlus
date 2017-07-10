@@ -15,8 +15,8 @@ import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.normalizer.Normalizer;
 import it.uniroma3.extractor.kg.ontology.OntPath;
 import it.uniroma3.extractor.kg.ontology.Ontology;
-import it.uniroma3.extractor.util.KeyValueIndex;
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.KeyValueIndex;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo

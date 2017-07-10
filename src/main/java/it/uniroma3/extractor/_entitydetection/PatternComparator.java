@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo

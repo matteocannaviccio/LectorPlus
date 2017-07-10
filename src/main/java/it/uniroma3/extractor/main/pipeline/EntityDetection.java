@@ -1,4 +1,4 @@
-package it.uniroma3.main.pipeline;
+package it.uniroma3.extractor.main.pipeline;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
-import it.uniroma3.extractor.util.io.JSONReader;
+import it.uniroma3.util.io.JSONReader;
 /**
  * 
  * @author matteo

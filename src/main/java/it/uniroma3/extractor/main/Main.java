@@ -1,13 +1,13 @@
-package it.uniroma3.main;
+package it.uniroma3.extractor.main;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.main.pipeline.ArticleParser;
-import it.uniroma3.main.pipeline.Complete;
-import it.uniroma3.main.pipeline.EntityDetection;
-import it.uniroma3.main.pipeline.FactsExtractor;
-import it.uniroma3.main.pipeline.TriplesExtractor;
+import it.uniroma3.extractor.main.pipeline.ArticleParser;
+import it.uniroma3.extractor.main.pipeline.Complete;
+import it.uniroma3.extractor.main.pipeline.EntityDetection;
+import it.uniroma3.extractor.main.pipeline.FactsExtractor;
+import it.uniroma3.extractor.main.pipeline.TriplesExtractor;
 import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
 /**

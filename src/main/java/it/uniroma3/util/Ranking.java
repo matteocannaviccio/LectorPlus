@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util;
+package it.uniroma3.util;
 
 import java.util.Collections;
 import java.util.Comparator;

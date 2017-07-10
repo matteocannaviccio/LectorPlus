@@ -1,4 +1,4 @@
-package it.uniroma3.main.pipeline;
+package it.uniroma3.extractor.main.pipeline;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -9,12 +9,12 @@ import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.bean.WikiTriple.TType;
-import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.io.ResultsWriterWrapper;
-import it.uniroma3.extractor.util.io.ntriples.NTriplesWriter;
 import it.uniroma3.model.model.Model;
 import it.uniroma3.model.model.Model.ModelType;
 import it.uniroma3.model.model.Model.PhraseType;
+import it.uniroma3.util.Pair;
+import it.uniroma3.util.io.ResultsWriterWrapper;
+import it.uniroma3.util.io.ntriples.NTriplesWriter;
 import it.uniroma3.model.model.ModelBM25;
 import it.uniroma3.model.model.ModelNB;
 import it.uniroma3.model.model.ModelNBFilter;

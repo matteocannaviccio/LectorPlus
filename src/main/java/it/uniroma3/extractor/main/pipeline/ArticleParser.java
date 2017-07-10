@@ -1,4 +1,4 @@
-package it.uniroma3.main.pipeline;
+package it.uniroma3.extractor.main.pipeline;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,8 +14,7 @@ import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiArticle;
 import it.uniroma3.extractor.bean.WikiArticle.ArticleType;
-import it.uniroma3.extractor.util.io.XMLReader;
-import it.uniroma3.main.Statistics;
+import it.uniroma3.util.io.XMLReader;
 
 /**
  * This is the main entry point of the parser.

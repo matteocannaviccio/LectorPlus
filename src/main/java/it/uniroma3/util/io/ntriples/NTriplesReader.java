@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.io.ntriples;
+package it.uniroma3.util.io.ntriples;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import it.uniroma3.extractor.util.io.Compressed;
+import it.uniroma3.util.io.Compressed;
 /**
  * It takes a columnns-stye file (e.g. tsv, ttl, nt, etc.), read it, and put it in memory.
  * We read file entirely to avoid malformatted crashes of jena-like streaming parser.

@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import it.uniroma3.extractor.bean.WikiMVL;
 import it.uniroma3.extractor.bean.WikiTriple;
-import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.model.DB;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo

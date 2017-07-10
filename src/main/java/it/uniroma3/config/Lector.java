@@ -21,9 +21,9 @@ import it.uniroma3.extractor._entitydetection.dbsp.DBPediaSpotlight;
 import it.uniroma3.extractor._triplesextractor.Triplifier;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.DBPedia;
-import it.uniroma3.extractor.util.nlp.OpenNLP;
-import it.uniroma3.extractor.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
+import it.uniroma3.util.nlp.OpenNLP;
+import it.uniroma3.util.nlp.StanfordNLP;
 /**
  * This static class declares and initializes all the components needed in the system.
  * Some components are declared ThreadLocal, to ensure the existance of a copy for each thread.

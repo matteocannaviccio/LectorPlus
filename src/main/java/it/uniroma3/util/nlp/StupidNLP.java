@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.nlp;
+package it.uniroma3.util.nlp;
 
 import java.text.BreakIterator;
 import java.util.ArrayList;

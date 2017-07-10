@@ -14,8 +14,8 @@ import it.uniroma3.config.Lector;
 import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.kg.normalizer.InverseDBPediaRelations;
 import it.uniroma3.extractor.kg.normalizer.Normalizer;
-import it.uniroma3.extractor.util.KeyValueIndex;
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.KeyValueIndex;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo
@@ -44,7 +44,7 @@ public class RelationsResolver {
     private KeyValueIndex getIndexOrCreate(String indexPath, String sourcePath){
 	KeyValueIndex index = null;
 	if (!new File(indexPath).exists()){
-	    System.out.printf("\t\t%-20s %-20s %s", "--> Read & Norm. & Index:", "DBpedia", "");
+	    System.out.printf("\t\t%-20s %-20s %s", "--> Read & Index:", "DBpedia", "");
 
 	    long start_time = System.currentTimeMillis();
 	    List<Pair<String, String>> dbpedia_dump = Normalizer.normalizeMappingBasedDBPediaDump(Configuration.getDBPediaDumpFile());

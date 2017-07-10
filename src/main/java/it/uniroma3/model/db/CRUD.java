@@ -11,9 +11,9 @@ import java.util.Set;
 
 import it.uniroma3.extractor.bean.WikiTriple;
 import it.uniroma3.extractor.bean.WikiTriple.TType;
-import it.uniroma3.extractor.util.CounterMap;
-import it.uniroma3.extractor.util.Pair;
 import it.uniroma3.model.DB;
+import it.uniroma3.util.CounterMap;
+import it.uniroma3.util.Pair;
 /**
  * This class is an interface between the model and the db. 
  * It performs CRUD operations necessary for the model creation.
@@ -53,9 +53,7 @@ public class CRUD {
     /**********************************************************************************
 
     /***************************************** 
-     * 
      * 		SELECT ALL labeled_triples
-     * 
      ******************************************/
     public List<Pair<WikiTriple, String>> selectAllLabeled(){
 	List<Pair<WikiTriple, String>> triples = new LinkedList<Pair<WikiTriple, String>>();
@@ -64,7 +62,6 @@ public class CRUD {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
 		    String phrase_original = rs.getString(3);
 		    String phrase_placeholder = rs.getString(4);
 		    String pre = rs.getString(5);
@@ -74,7 +71,7 @@ public class CRUD {
 		    String object = rs.getString(10);
 		    String type_object = rs.getString(12);
 		    String relation = rs.getString(13);
-		    triples.add(Pair.make(new WikiTriple(wikid, section, "", phrase_original,
+		    triples.add(Pair.make(new WikiTriple(wikid, "", "", phrase_original,
 			    phrase_placeholder, pre, post, subject, object, 
 			    type_subject, type_object, TType.JOINABLE.name()), relation));
 		}
@@ -85,10 +82,89 @@ public class CRUD {
 	return triples;
     }
 
+    /***************************************** 
+     * 		SELECT ALL unlabeled_triples
+     ******************************************/
+    public List<WikiTriple> selectAllUnlabeled(){
+	List<WikiTriple> triples = new LinkedList<WikiTriple>();
+	String query = "SELECT * FROM " + unlabeled_facts;
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String wikid = rs.getString(1);
+		    String sentence = rs.getString(3);
+		    String phrase_original = rs.getString(4);
+		    String phrase_placeholder = rs.getString(5);
+		    String pre = rs.getString(6);
+		    String post = rs.getString(7);
+		    String subject = rs.getString(8);
+		    String type_subject = rs.getString(10);
+		    String object = rs.getString(11);
+		    String type_object = rs.getString(13);
+		    triples.add(new WikiTriple(wikid, "", sentence, phrase_original,
+			    phrase_placeholder, pre, post, subject, object, 
+			    type_subject, type_object, TType.JOINABLE.name()));
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+	return triples;
+    }
+
+    /***************************************** 
+     * 		SELECT ALL other_triples
+     ******************************************/
+    public List<WikiTriple> selectAllOther(){
+	List<WikiTriple> triples = new LinkedList<WikiTriple>();
+	String query = "SELECT * FROM other_triples";
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String wikid = rs.getString(1);
+		    String phrase_original = rs.getString(3);
+		    String phrase_placeholder = rs.getString(4);
+		    String pre = rs.getString(5);
+		    String post = rs.getString(6);
+		    String subject = rs.getString(7);
+		    String type_subject = rs.getString(9);
+		    String object = rs.getString(10);
+		    String type_object = rs.getString(12);
+		    String type = rs.getString(13);
+		    triples.add(new WikiTriple(wikid, "", "", phrase_original,
+			    phrase_placeholder, pre, post, subject, object, 
+			    type_subject, type_object, type));
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+	return triples;
+    }
+    
+    /***************************************** 
+     * 		SELECT ALL MVL lists
+     ******************************************/
+    public List<String> selectAllMVL(){
+	List<String> mvl = new LinkedList<String>();
+	String query = "SELECT * FROM mvl_collection";
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String wikid = rs.getString(2);
+		    String section = rs.getString(3);
+		    String list = rs.getString(4);
+		    mvl.add(wikid+"\t"+section+"\t"+list);
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+	return mvl;
+    }
+
     /*********************************************** 
-     * 
      *       SELECT ALL labeled PAIRS of Entities
-     * 
      ***********************************************/
     public Map<String, List<Pair<WikiTriple, String>>> selectAllLabeledPairs(){
 	Map<String, List<Pair<WikiTriple, String>>> triples = new HashMap<String, List<Pair<WikiTriple, String>>>();
@@ -97,18 +173,18 @@ public class CRUD {
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
 		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
-		    String phrase_original = rs.getString(3);
-		    String phrase_placeholder = rs.getString(4);
-		    String pre = rs.getString(5);
-		    String post = rs.getString(6);
-		    String subject = rs.getString(7);
-		    String wiki_subject = rs.getString(8);
-		    String type_subject = rs.getString(9);
-		    String object = rs.getString(10);
-		    String wiki_object = rs.getString(11);
-		    String type_object = rs.getString(12);
-		    String relation = rs.getString(13);
+		    String section = rs.getString(3);
+		    String phrase_original = rs.getString(4);
+		    String phrase_placeholder = rs.getString(5);
+		    String pre = rs.getString(6);
+		    String post = rs.getString(7);
+		    String subject = rs.getString(8);
+		    String wiki_subject = rs.getString(9);
+		    String type_subject = rs.getString(10);
+		    String object = rs.getString(11);
+		    String wiki_object = rs.getString(12);
+		    String type_object = rs.getString(13);
+		    String relation = rs.getString(14);
 
 		    String key = wiki_subject + "\t" + phrase_placeholder + "\t" + wiki_object;
 		    WikiTriple t = new WikiTriple(wikid, section, "", phrase_original,
@@ -122,40 +198,6 @@ public class CRUD {
 			list.add(Pair.make(t, relation));
 			triples.put(key, list);
 		    }
-		}
-	    }
-	}catch(SQLException e){
-	    e.printStackTrace();
-	}
-	return triples;
-    }
-
-
-    /***************************************** 
-     * 
-     * 		SELECT ALL unlabeled_triples
-     * 
-     ******************************************/
-    public List<WikiTriple> selectAllUnabeled(){
-	List<WikiTriple> triples = new LinkedList<WikiTriple>();
-	String query = "SELECT * FROM " + unlabeled_facts;
-	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
-	    try (ResultSet rs = stmt.executeQuery()){
-		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
-		    String sentence = rs.getString(3);
-		    String phrase_original = rs.getString(4);
-		    String phrase_placeholder = rs.getString(5);
-		    String pre = rs.getString(6);
-		    String post = rs.getString(7);
-		    String subject = rs.getString(8);
-		    String type_subject = rs.getString(10);
-		    String object = rs.getString(11);
-		    String type_object = rs.getString(13);
-		    triples.add(new WikiTriple(wikid, section, sentence, phrase_original,
-			    phrase_placeholder, pre, post, subject, object, 
-			    type_subject, type_object, TType.JOINABLE.name()));
 		}
 	    }
 	}catch(SQLException e){
@@ -796,11 +838,11 @@ public class CRUD {
 	}catch(SQLException e){
 	    e.printStackTrace();
 	}
-	
+
 	if (includeNone)
 	    relation2phrasesCount.put("NONE", this.getPT_UT_counts(availablePhrases));
 
-	
+
 	return relation2phrasesCount;
     }
 
@@ -840,7 +882,7 @@ public class CRUD {
 	}catch(SQLException e){
 	    e.printStackTrace();
 	}
-	
+
 	if (includeNone){
 	    CounterMap<String> unlabeled = getPT_UT_counts(availablePhrases);
 	    for (Map.Entry<String, CounterMap<String>> entry : phrases2relationsCount.entrySet()){

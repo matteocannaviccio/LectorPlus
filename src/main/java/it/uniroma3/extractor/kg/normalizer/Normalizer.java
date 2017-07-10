@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import it.uniroma3.extractor.kg.DBPedia;
-import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.io.ntriples.NTriplesReader;
-import it.uniroma3.extractor.util.io.ntriples.NTriplesReader.Encoding;
+import it.uniroma3.util.Pair;
+import it.uniroma3.util.io.ntriples.NTriplesReader;
+import it.uniroma3.util.io.ntriples.NTriplesReader.Encoding;
 /**
  * 
  * @author matteo

@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.io;
+package it.uniroma3.util.io;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.Pair;
 
 public class TSVReader {
 

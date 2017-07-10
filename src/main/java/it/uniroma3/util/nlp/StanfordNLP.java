@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.nlp;
+package it.uniroma3.util.nlp;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -16,7 +16,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import it.uniroma3.config.Lector;
 import it.uniroma3.extractor._entitydetection.PatternComparator;
-import it.uniroma3.extractor.util.Pair;
+import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo

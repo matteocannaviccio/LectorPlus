@@ -31,9 +31,9 @@ import com.google.gson.JsonSyntaxException;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.extractor._entitydetection.PatternComparator;
-import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.io.TSVReader;
-import it.uniroma3.extractor.util.nlp.StupidNLP;
+import it.uniroma3.util.Pair;
+import it.uniroma3.util.io.TSVReader;
+import it.uniroma3.util.nlp.StupidNLP;
 
 /**
  * @author matteo

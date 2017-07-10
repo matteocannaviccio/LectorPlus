@@ -1,4 +1,4 @@
-package it.uniroma3.main;
+package it.uniroma3.extractor.main.pipeline;
 
 import java.io.BufferedWriter;
 import java.io.File;

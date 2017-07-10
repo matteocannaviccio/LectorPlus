@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.io;
+package it.uniroma3.util.io;
 
 import java.io.BufferedReader;
 import java.io.File;

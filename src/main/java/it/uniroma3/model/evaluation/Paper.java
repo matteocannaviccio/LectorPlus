@@ -1,136 +1,221 @@
 package it.uniroma3.model.evaluation;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import it.uniroma3.config.Configuration;
+import it.uniroma3.config.Lector;
+import it.uniroma3.extractor.bean.WikiLanguage;
 import it.uniroma3.extractor.bean.WikiTriple;
-import it.uniroma3.extractor.bean.WikiTriple.TType;
-import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.model.DB;
+import it.uniroma3.extractor.kg.DBPedia;
+import it.uniroma3.model.db.CRUD;
 import it.uniroma3.model.db.DBModel;
+import it.uniroma3.util.CounterMap;
+import it.uniroma3.util.Pair;
+import it.uniroma3.util.Ranking;
+import it.uniroma3.util.io.Compressed;
 
 public class Paper {
-    
-    private DB db;
-    private String labeled_facts = "labeled_triples";
-    private String unlabeled_facts = "unlabeled_triples";
 
+    private CRUD crud;
+
+    /**
+     * 
+     * @param db
+     */
     public Paper(DBModel db){
-	this.db = db;
-	db.createNecessaryIndexes();
+	this.crud = new CRUD(db);
+    }
+
+    /**
+     * 
+     */
+    private void printLabeledInfo(){
+	List<Pair<WikiTriple, String>> allLabeled = crud.selectAllLabeled();
+
+	// get all the triples by relation
+	CounterMap<String> relation2counts = new CounterMap<String>();
+	for (Pair<WikiTriple, String> pair : allLabeled){
+	    String label = pair.value.replace("(-1)", "");
+	    relation2counts.add(label);
+	}
+
+	// get all the entities by pattern method detection
+	CounterMap<String> metEntDet = new CounterMap<String>();
+	for (Pair<WikiTriple, String> pair : allLabeled){
+	    String subjectEntity = pair.key.getSubject();
+	    String objectEntity = pair.key.getObject();
+	    metEntDet.add(extractMethodFromEntity(subjectEntity));
+	    metEntDet.add(extractMethodFromEntity(objectEntity));
+	}
+
+	System.out.printf("\t%-35s %s\n", "Total Labeled: ", allLabeled.size());
+	System.out.printf("\t%-35s %s\n", "Top-10 Relations labeled: ", Ranking.getTopKRanking(relation2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+
+    }
+
+    /**
+     * 
+     */
+    private void printUnlabeledInfo(){
+	List<WikiTriple> allUnlabeled = crud.selectAllUnlabeled();
+
+	// get all the entities by pattern method detection
+	CounterMap<String> metEntDet = new CounterMap<String>();
+	for (WikiTriple t : allUnlabeled){
+	    String subjectEntity = t.getSubject();
+	    String objectEntity = t.getObject();
+	    metEntDet.add(extractMethodFromEntity(subjectEntity));
+	    metEntDet.add(extractMethodFromEntity(objectEntity));
+	}
+	System.out.printf("\t%-35s %s\n", "Total Unlabeled: ", allUnlabeled.size());
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+    }
+
+    /**
+     * 
+     */
+    private void printMVLInfo(){
+	List<String> allMVL = crud.selectAllMVL();
+	/*
+	for (String mvl : allMVL){
+	    String[] fields = mvl.split("\t");
+	    String wikid = fields[0];
+	    String section = fields[1];
+	    String list = fields[2];
+	    String wikidType = t.getType(wikid);
+
+	    System.out.print(wikid + "\t" + wikidType + "\t" + section + "\t");
+	    for (String en : list.split("(?<=\\>),(?=\\<)")){
+		en = extractNameFromEntity(en);
+		System.out.print(en + t.getType(en)  + "\t");
+	    }
+	    System.out.print("\n");
+	}
+	*/
+	System.out.printf("\t%-35s %s\n", "Total MVL: ", allMVL.size());
+    }
+
+    /**
+     * 
+     */
+    private void printOtherInfo(){
+	List<WikiTriple> allOther = crud.selectAllOther();
+
+	// get all the entities by pattern method detection
+	CounterMap<String> metEntDet = new CounterMap<String>();
+	for (WikiTriple t : allOther){
+	    String subjectEntity = t.getSubject();
+	    String objectEntity = t.getObject();
+	    metEntDet.add(extractMethodFromEntity(subjectEntity));
+	    metEntDet.add(extractMethodFromEntity(objectEntity));
+	}
+	System.out.printf("\t%-35s %s\n", "Total Other: ", allOther.size());
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+    }
+
+    /**
+     * 
+     * @param entity
+     * @return
+     */
+    private String extractMethodFromEntity(String entity){
+	Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
+	Matcher m = ENMETDET.matcher(entity);
+	String method = null;
+	if(m.find()){
+	    method = m.group(1);
+	}
+	return method;
     }
     
-    /***************************************** 
+    /**
      * 
-     * 		SELECT ALL labeled_triples
+     * @param entity
+     * @return
+     */
+    private String extractNameFromEntity(String entity){
+	Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
+	Matcher m = ENMETDET.matcher(entity);
+	String method = null;
+	if(m.find()){
+	    method = m.group(2);
+	}
+	return method;
+    }
+
+    /**
      * 
-     ******************************************/
-    public List<Pair<WikiTriple, String>> selectAllLabeled(){
-	List<Pair<WikiTriple, String>> triples = new LinkedList<Pair<WikiTriple, String>>();
-	String query = "SELECT * FROM " + this.labeled_facts;
-	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
-	    try (ResultSet rs = stmt.executeQuery()){
-		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
-		    String phrase_original = rs.getString(3);
-		    String phrase_placeholder = rs.getString(4);
-		    String pre = rs.getString(5);
-		    String post = rs.getString(6);
-		    String subject = rs.getString(7);
-		    String type_subject = rs.getString(9);
-		    String object = rs.getString(10);
-		    String type_object = rs.getString(12);
-		    String relation = rs.getString(13);
-		    triples.add(Pair.make(new WikiTriple(wikid, section, "", phrase_original,
-			    phrase_placeholder, pre, post, subject, object, 
-			    type_subject, type_object, TType.JOINABLE.name()), relation));
-		}
+     * @param entity
+     * @return
+     */
+    private String extractPESEFromEntity(String entity){
+	Pattern ENMETDET = Pattern.compile("^<(PE|SE)-([^<]*?)<([^>]*?)>>$");
+	Matcher m = ENMETDET.matcher(entity);
+	String method = null;
+	if(m.find()){
+	    method = m.group(1);
+	}
+	return method;
+    }
+
+    /**
+     * 
+     */
+    private void printExtractedFactsInfo(){
+	CounterMap<String> wikidWithFacts = new CounterMap<String>();
+	int abstractSection = 0;
+	int otherSection = 0;
+	CounterMap<String> relation2counts = new CounterMap<String>();
+	CounterMap<String> metEntDet = new CounterMap<String>();
+	CounterMap<String> kindPairs = new CounterMap<String>();
+
+	try {
+	    BufferedReader reader = Compressed.getBufferedReaderForCompressedFile(Configuration.getProvenanceFile());
+	    String line;
+	    while((line = reader.readLine())!= null){
+		String[] fields = line.split("\t");
+		String wikid = fields[0];
+		String section = fields[1];
+		String relation = fields[2];
+		String kindsubject = extractPESEFromEntity(fields[3]);
+		String kindobject = extractPESEFromEntity(fields[5]);
+		String subjectEntityMethod = extractMethodFromEntity(fields[3]);
+		String objectEntityMethod = extractMethodFromEntity(fields[5]);
+		//String sentence = fields[7];
+
+		if (section.equals("#Abstract"))
+		    abstractSection +=1;
+		else
+		    otherSection +=1;
+		wikidWithFacts.add(wikid);
+		relation2counts.add(relation);
+		metEntDet.add(subjectEntityMethod);
+		metEntDet.add(objectEntityMethod);
+		kindPairs.add(kindsubject+"-"+kindobject);
 	    }
-	}catch(SQLException e){
+	    reader.close();
+	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-	return triples;
+
+	System.out.printf("\t%-35s %s\n", "-------", "");
+	System.out.printf("\t%-35s %s\n", "Total Facts: ", abstractSection + otherSection);
+	System.out.printf("\t%-35s %s\n", "in #Abstract: ", abstractSection);
+	System.out.printf("\t%-35s %s\n", "elsewhere: ", otherSection);
+	System.out.printf("\t%-35s %s\n", "Top-10 Relations with Facts: ", Ranking.getTopKRanking(relation2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+	System.out.printf("\t%-35s %s\n", "Kind of Pairs: ", kindPairs);
     }
-    
-    /***************************************** 
-     * 
-     * 		SELECT ALL unlabeled_triples
-     * 
-     ******************************************/
-    public List<WikiTriple> selectAllUnabeled(){
-	List<WikiTriple> triples = new LinkedList<WikiTriple>();
-	String query = "SELECT * FROM " + unlabeled_facts;
-	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
-	    try (ResultSet rs = stmt.executeQuery()){
-		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
-		    String sentence = rs.getString(3);
-		    String phrase_original = rs.getString(4);
-		    String phrase_placeholder = rs.getString(5);
-		    String pre = rs.getString(6);
-		    String post = rs.getString(7);
-		    String subject = rs.getString(8);
-		    String type_subject = rs.getString(10);
-		    String object = rs.getString(11);
-		    String type_object = rs.getString(13);
-		    triples.add(new WikiTriple(wikid, section, sentence, phrase_original,
-			    phrase_placeholder, pre, post, subject, object, 
-			    type_subject, type_object, TType.JOINABLE.name()));
-		}
-	    }
-	}catch(SQLException e){
-	    e.printStackTrace();
-	}
-	return triples;
-    }
-    
-    /***************************************** 
-     * 
-     * 		SELECT ALL unlabeled_triples
-     * 
-     ******************************************/
-    public List<WikiTriple> selectAllOther(){
-	List<WikiTriple> triples = new LinkedList<WikiTriple>();
-	String query = "SELECT * FROM other_triples";
-	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
-	    try (ResultSet rs = stmt.executeQuery()){
-		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String section = rs.getString(2);
-		    String sentence = rs.getString(3);
-		    String phrase_original = rs.getString(4);
-		    String phrase_placeholder = rs.getString(5);
-		    String pre = rs.getString(6);
-		    String post = rs.getString(7);
-		    String subject = rs.getString(8);
-		    String type_subject = rs.getString(10);
-		    String object = rs.getString(11);
-		    String type_object = rs.getString(13);
-		    String type = rs.getString(14);
-		    triples.add(new WikiTriple(wikid, section, sentence, phrase_original,
-			    phrase_placeholder, pre, post, subject, object, 
-			    type_subject, type_object, type));
-		}
-	    }
-	}catch(SQLException e){
-	    e.printStackTrace();
-	}
-	return triples;
-    }
-    
-    public void run(){
-	List<Pair<WikiTriple, String>> allLabeled = selectAllLabeled();
-	
-    }
-    
-    
+
+
+
     /**
      * 
      * @param args
@@ -138,13 +223,22 @@ public class Paper {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
+	    Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
+		    new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 	    Paper paper = new Paper(new DBModel(Configuration.getDBModel()));
-
-	    System.out.println("\nEvaluation in " + Configuration.getLanguageCode());
+	    System.out.println(Configuration.getDBModel());
+	    System.out.println("Stats for language : " + Configuration.getLanguageCode());
+	    System.out.println("------------------");
+	    paper.printLabeledInfo();
+	    paper.printUnlabeledInfo();
+	    paper.printOtherInfo();
+	    paper.printMVLInfo();
+	    paper.printExtractedFactsInfo();
 	    System.out.println("----------");
-	    paper.run();
+	    Lector.close();
 	}
 
     }

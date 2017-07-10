@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.io.ntriples;
+package it.uniroma3.util.io.ntriples;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

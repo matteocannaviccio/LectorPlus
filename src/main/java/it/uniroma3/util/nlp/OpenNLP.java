@@ -1,4 +1,4 @@
-package it.uniroma3.extractor.util.nlp;
+package it.uniroma3.util.nlp;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.util.Token;
+import it.uniroma3.util.Token;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;

@@ -10,10 +10,10 @@ import java.util.Set;
 import com.opencsv.CSVWriter;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.extractor.util.CounterMap;
-import it.uniroma3.extractor.util.Pair;
-import it.uniroma3.extractor.util.Ranking;
 import it.uniroma3.model.DB;
+import it.uniroma3.util.CounterMap;
+import it.uniroma3.util.Pair;
+import it.uniroma3.util.Ranking;
 
 public class ModelBM25 extends Model{
     /*
