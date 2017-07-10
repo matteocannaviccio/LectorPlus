@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -371,6 +372,9 @@ public class Lector {
 	        }
 	        maxChecks -=1;
 	    }
+	    
+	    pb.redirectError(Redirect.INHERIT);
+	    
 	    
 	} catch (IOException | InterruptedException e ) {
 	    e.printStackTrace();
