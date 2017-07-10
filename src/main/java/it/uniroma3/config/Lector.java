@@ -8,6 +8,8 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.io.Files;
+
 import it.uniroma3.extractor._articleparser.ArticleTyper;
 import it.uniroma3.extractor._articleparser.BlockParser;
 import it.uniroma3.extractor._articleparser.MarkupParser;
@@ -130,15 +132,15 @@ public class Lector {
 	};
 
 	if(Configuration.useDBpediaSpotlight()){
-	    
+
 	    try {
 		localServerSideProcess = runSpotlight();
-		
+
 	    } catch (IOException e) {
 		System.out.println("Problems with running local DBPedia Spotlight process!");
 		e.printStackTrace();
 	    }
-	    
+
 	    dbspot = new ThreadLocal<DBPediaSpotlight>() {
 		@Override protected DBPediaSpotlight initialValue() {
 		    return new DBPediaSpotlight(0.5, 0);
@@ -344,7 +346,7 @@ public class Lector {
 		Configuration.getSpotlightLocalURL()
 		);
 	pb.redirectError(new File(Configuration.getSpotlightLocalERR(2222)));
-	
+
 	/*
 	 * Start a new separate process but keep an hook shutdown process
 	 * for its termination based on the parent process.
@@ -357,25 +359,28 @@ public class Lector {
 	    }
 	});
 
-	
+
 	try {
 	    // wait untill the server started
 	    BufferedReader logBR;
 	    String last = "";
 	    int maxChecks = 50;
 	    while(!last.startsWith("Server started") && maxChecks>0){
-	        p.waitFor(5, TimeUnit.SECONDS);
-	        logBR = new BufferedReader(new FileReader(Configuration.getSpotlightLocalERR(2222)));
-	        String line = null;
-	        while ((line = logBR.readLine()) != null) {
-	    	last = line;
-	        }
-	        maxChecks -=1;
+		p.waitFor(5, TimeUnit.SECONDS);
+		logBR = new BufferedReader(new FileReader(Configuration.getSpotlightLocalERR(2222)));
+		String line = null;
+		while ((line = logBR.readLine()) != null) {
+		    last = line;
+		}
+		maxChecks -=1;
 	    }
-	    
-	    pb.redirectError(Redirect.INHERIT);
-	    
-	    
+
+	    File log = new File(Configuration.getSpotlightLocalERR(2222));
+	    if (log.exists()) {
+		log.delete();     
+	    }
+
+
 	} catch (IOException | InterruptedException e ) {
 	    e.printStackTrace();
 	} 
