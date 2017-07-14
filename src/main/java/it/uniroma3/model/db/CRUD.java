@@ -928,4 +928,70 @@ public class CRUD {
 	return availablePhrases;
     }
 
+    /**
+     * 
+     * @param availablePhrases
+     * @param b
+     * @return
+     */
+    public Map<String, CounterMap<String>> getPTtoTypes_LT(Set<String> availablePhrases, boolean b) {
+	Map<String, CounterMap<String>> phrases2typesCount = new HashMap<String, CounterMap<String>>();
+	String query = "SELECT relation, phrase_placeholder, type_subject, type_object FROM " + this.labeled_facts;
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String relation = rs.getString(1);
+		    String phrase_placeholder = rs.getString(2);
+		    String ts = rs.getString(3);
+		    String to = rs.getString(4);
+		    String typedPhrase = ts+"\t"+relation+"\t"+to;
+
+		    // filter only the phrases we are considering...
+		    if (availablePhrases.contains(phrase_placeholder) && !phrase_placeholder.equals("")){
+			if (!phrases2typesCount.containsKey(phrase_placeholder))
+			    phrases2typesCount.put(phrase_placeholder, new CounterMap<String>());
+			phrases2typesCount.get(phrase_placeholder).add(typedPhrase);
+		    }
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+
+	return phrases2typesCount;
+    }
+    
+    /**
+     * 
+     * @param availablePhrases
+     * @param b
+     * @return
+     */
+    public Map<String, CounterMap<String>> getPTtoTypes_UT(Set<String> availablePhrases, boolean b) {
+	Map<String, CounterMap<String>> phrases2typesCount = new HashMap<String, CounterMap<String>>();
+	String query = "SELECT phrase_placeholder, type_subject, type_object FROM " + this.unlabeled_facts;
+	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
+	    try (ResultSet rs = stmt.executeQuery()){
+		while(rs.next()){
+		    String phrase_placeholder = rs.getString(1);
+		    String ts = rs.getString(2);
+		    String to = rs.getString(3);
+		    String typedPhrase = ts+"\t"+to;
+
+		    // filter only the phrases we are considering...
+		    if (availablePhrases.contains(phrase_placeholder) && !phrase_placeholder.equals("")){
+			if (!phrases2typesCount.containsKey(phrase_placeholder))
+			    phrases2typesCount.put(phrase_placeholder, new CounterMap<String>());
+			phrases2typesCount.get(phrase_placeholder).add(typedPhrase);
+		    }
+		}
+	    }
+	}catch(SQLException e){
+	    e.printStackTrace();
+	}
+
+	return phrases2typesCount;
+    }
+
+
 }

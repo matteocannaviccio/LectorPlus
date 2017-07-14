@@ -30,7 +30,7 @@ import it.uniroma3.util.Pair;
 public abstract class Model{
 
     // print the computation
-    protected static boolean verbose = false;
+    protected static boolean verbose = true;
     protected CRUD crud;
 
     // those are the possible variations of the model.
