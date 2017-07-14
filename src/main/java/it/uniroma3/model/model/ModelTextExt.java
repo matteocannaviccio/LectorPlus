@@ -170,7 +170,7 @@ public class ModelTextExt extends Model{
 		 * 
 		 */
 		if (!phrase2prob.containsKey(phrase) || phrase2prob.get(phrase) < probLab){
-		    if (probSeedLabUnlab > generality_cutoff){
+		    if (probSeedLabUnlab > generality_cutoff && probLab >= 0.1){
 			phrase2prob.put(phrase, probLab);
 			model.put(phrase, relation);
 		    }
