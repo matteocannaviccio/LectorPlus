@@ -10,23 +10,23 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.io.Files;
 
-import it.uniroma3.extractor._articleparser.ArticleTyper;
-import it.uniroma3.extractor._articleparser.BlockParser;
-import it.uniroma3.extractor._articleparser.MarkupParser;
-import it.uniroma3.extractor._articleparser.TextParser;
-import it.uniroma3.extractor._articleparser.WikiParser;
-import it.uniroma3.extractor._articleparser.XMLParser;
-import it.uniroma3.extractor._entitydetection.FSMNationality;
-import it.uniroma3.extractor._entitydetection.FSMSeed;
-import it.uniroma3.extractor._entitydetection.ReplAttacher;
-import it.uniroma3.extractor._entitydetection.ReplFinder;
-import it.uniroma3.extractor._entitydetection.dbsp.DBPediaSpotlight;
-import it.uniroma3.extractor._triplesextractor.Triplifier;
-import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.kg.DBPedia;
+import it.uniroma3.main.bean.WikiLanguage;
+import it.uniroma3.main.kg.DBPedia;
+import it.uniroma3.main.util.nlp.OpenNLP;
+import it.uniroma3.main.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.util.nlp.OpenNLP;
-import it.uniroma3.util.nlp.StanfordNLP;
+import it.uniroma3.pipeline.articleparser.ArticleTyper;
+import it.uniroma3.pipeline.articleparser.BlockParser;
+import it.uniroma3.pipeline.articleparser.MarkupParser;
+import it.uniroma3.pipeline.articleparser.TextParser;
+import it.uniroma3.pipeline.articleparser.WikiParser;
+import it.uniroma3.pipeline.articleparser.XMLParser;
+import it.uniroma3.pipeline.entitydetection.FSMNationality;
+import it.uniroma3.pipeline.entitydetection.FSMSeed;
+import it.uniroma3.pipeline.entitydetection.ReplAttacher;
+import it.uniroma3.pipeline.entitydetection.ReplFinder;
+import it.uniroma3.pipeline.entitydetection.dbsp.DBPediaSpotlight;
+import it.uniroma3.pipeline.triplesextractor.Triplifier;
 /**
  * This static class declares and initializes all the components needed in the system.
  * Some components are declared ThreadLocal, to ensure the existance of a copy for each thread.

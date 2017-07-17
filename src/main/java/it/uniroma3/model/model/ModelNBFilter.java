@@ -7,12 +7,12 @@ import java.util.Map;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.main.bean.WikiLanguage;
+import it.uniroma3.main.util.CounterMap;
+import it.uniroma3.main.util.Pair;
+import it.uniroma3.main.util.Ranking;
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.util.CounterMap;
-import it.uniroma3.util.Pair;
-import it.uniroma3.util.Ranking;
 /**
  * This is the implementation of a Naive Bayes Classifier.
  * @author matteo

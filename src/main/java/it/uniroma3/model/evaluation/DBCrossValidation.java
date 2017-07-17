@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.uniroma3.extractor.bean.WikiTriple;
+import it.uniroma3.main.bean.WikiTriple;
+import it.uniroma3.main.util.Pair;
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.CRUD;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.util.Pair;
 /**
  * 
  * @author matteo

@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import it.uniroma3.main.util.CounterMap;
+import it.uniroma3.main.util.Pair;
 import it.uniroma3.model.DB;
 import it.uniroma3.model.db.CRUD;
-import it.uniroma3.util.CounterMap;
-import it.uniroma3.util.Pair;
 /**
  * This is an abstract model. Each possible implementation of a model extends it.
  * In order to create a new model, we always need to filter out noisy phrases,

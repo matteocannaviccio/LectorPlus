@@ -8,12 +8,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import it.uniroma3.extractor.bean.WikiTriple;
-import it.uniroma3.extractor.bean.WikiTriple.TType;
+import it.uniroma3.main.bean.WikiTriple;
+import it.uniroma3.main.bean.WikiTriple.TType;
+import it.uniroma3.main.util.CounterMap;
+import it.uniroma3.main.util.Pair;
 import it.uniroma3.model.DB;
-import it.uniroma3.util.CounterMap;
-import it.uniroma3.util.Pair;
 /**
  * This class is an interface between the model and the db. 
  * It performs CRUD operations necessary for the model creation.
@@ -83,33 +85,39 @@ public class CRUD {
     }
 
     /***************************************** 
-     * 		SELECT ALL unlabeled_triples
+     * 		SELECT ALL entities detection methods in unlabeled_triples
      ******************************************/
-    public List<WikiTriple> selectAllUnlabeled(){
-	List<WikiTriple> triples = new LinkedList<WikiTriple>();
+    /**
+     * 
+     * @param entity
+     * @return
+     */
+    private String extractMethodFromEntity(String entity){
+	Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
+	Matcher m = ENMETDET.matcher(entity);
+	String method = null;
+	if(m.find()){
+	    method = m.group(1);
+	}
+	return method;
+    }
+    
+    public CounterMap<String> selectAllUnlabeled(){
+	CounterMap<String> methods = new CounterMap<String>();
 	String query = "SELECT * FROM " + unlabeled_facts;
 	try (PreparedStatement stmt = db.getConnection().prepareStatement(query)){
 	    try (ResultSet rs = stmt.executeQuery()){
 		while(rs.next()){
-		    String wikid = rs.getString(1);
-		    String sentence = rs.getString(3);
-		    String phrase_original = rs.getString(4);
-		    String phrase_placeholder = rs.getString(5);
-		    String pre = rs.getString(6);
-		    String post = rs.getString(7);
-		    String subject = rs.getString(8);
-		    String type_subject = rs.getString(10);
-		    String object = rs.getString(11);
-		    String type_object = rs.getString(13);
-		    triples.add(new WikiTriple(wikid, "", sentence, phrase_original,
-			    phrase_placeholder, pre, post, subject, object, 
-			    type_subject, type_object, TType.JOINABLE.name()));
+		    String subjectMethod = extractMethodFromEntity(rs.getString(8));
+		    String objectMethod = extractMethodFromEntity(rs.getString(11));
+		    methods.add(subjectMethod);
+		    methods.add(objectMethod);
 		}
 	    }
 	}catch(SQLException e){
 	    e.printStackTrace();
 	}
-	return triples;
+	return methods;
     }
 
     /***************************************** 

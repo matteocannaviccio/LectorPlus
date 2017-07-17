@@ -10,15 +10,15 @@ import java.util.regex.Pattern;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage;
-import it.uniroma3.extractor.bean.WikiTriple;
-import it.uniroma3.extractor.kg.DBPedia;
+import it.uniroma3.main.bean.WikiLanguage;
+import it.uniroma3.main.bean.WikiTriple;
+import it.uniroma3.main.kg.DBPedia;
+import it.uniroma3.main.util.CounterMap;
+import it.uniroma3.main.util.Pair;
+import it.uniroma3.main.util.Ranking;
+import it.uniroma3.main.util.io.Compressed;
 import it.uniroma3.model.db.CRUD;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.util.CounterMap;
-import it.uniroma3.util.Pair;
-import it.uniroma3.util.Ranking;
-import it.uniroma3.util.io.Compressed;
 
 public class Paper {
 
@@ -64,18 +64,9 @@ public class Paper {
      * 
      */
     private void printUnlabeledInfo(){
-	List<WikiTriple> allUnlabeled = crud.selectAllUnlabeled();
-
-	// get all the entities by pattern method detection
-	CounterMap<String> metEntDet = new CounterMap<String>();
-	for (WikiTriple t : allUnlabeled){
-	    String subjectEntity = t.getSubject();
-	    String objectEntity = t.getObject();
-	    metEntDet.add(extractMethodFromEntity(subjectEntity));
-	    metEntDet.add(extractMethodFromEntity(objectEntity));
-	}
-	System.out.printf("\t%-35s %s\n", "Total Unlabeled: ", allUnlabeled.size());
-	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+	CounterMap<String> allUnlabeled = crud.selectAllUnlabeled();
+	System.out.printf("\t%-35s %s\n", "Total Unlabeled: ", calculateSum(allUnlabeled)/2);
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(allUnlabeled));
     }
 
     /**
@@ -98,7 +89,7 @@ public class Paper {
 	    }
 	    System.out.print("\n");
 	}
-	*/
+	 */
 	System.out.printf("\t%-35s %s\n", "Total MVL: ", allMVL.size());
     }
 
@@ -134,7 +125,7 @@ public class Paper {
 	}
 	return method;
     }
-    
+
     /**
      * 
      * @param entity
@@ -148,6 +139,19 @@ public class Paper {
 	    method = m.group(2);
 	}
 	return method;
+    }
+
+    /**
+     * 
+     * @param marks
+     * @return
+     */
+    protected int calculateSum(CounterMap<String> marks) {
+	int sum = 0;
+	for (String entry : marks.keySet()){
+	    sum += marks.get(entry);
+	}
+	return sum;
     }
 
     /**
@@ -180,25 +184,28 @@ public class Paper {
 	    BufferedReader reader = Compressed.getBufferedReaderForCompressedFile(Configuration.getProvenanceFile());
 	    String line;
 	    while((line = reader.readLine())!= null){
-		String[] fields = line.split("\t");
-		String wikid = fields[0];
-		String section = fields[1];
-		String relation = fields[2];
-		String kindsubject = extractPESEFromEntity(fields[3]);
-		String kindobject = extractPESEFromEntity(fields[5]);
-		String subjectEntityMethod = extractMethodFromEntity(fields[3]);
-		String objectEntityMethod = extractMethodFromEntity(fields[5]);
-		//String sentence = fields[7];
-
-		if (section.equals("#Abstract"))
-		    abstractSection +=1;
-		else
-		    otherSection +=1;
-		wikidWithFacts.add(wikid);
-		relation2counts.add(relation);
-		metEntDet.add(subjectEntityMethod);
-		metEntDet.add(objectEntityMethod);
-		kindPairs.add(kindsubject+"-"+kindobject);
+		try{
+		    String[] fields = line.split("\t");
+		    String wikid = fields[0];
+		    String section = fields[1];
+		    String relation = fields[2];
+		    String kindsubject = extractPESEFromEntity(fields[3]);
+		    String kindobject = extractPESEFromEntity(fields[5]);
+		    String subjectEntityMethod = extractMethodFromEntity(fields[3]);
+		    String objectEntityMethod = extractMethodFromEntity(fields[5]);
+		    //String sentence = fields[7];
+		    if (section.equals("#Abstract"))
+			abstractSection +=1;
+		    else
+			otherSection +=1;
+		    wikidWithFacts.add(wikid);
+		    relation2counts.add(relation);
+		    metEntDet.add(subjectEntityMethod);
+		    metEntDet.add(objectEntityMethod);
+		    kindPairs.add(kindsubject+"-"+kindobject);
+		}catch(Exception e){
+		    continue;
+		}
 	    }
 	    reader.close();
 	} catch (IOException e) {
@@ -209,6 +216,7 @@ public class Paper {
 	System.out.printf("\t%-35s %s\n", "Total Facts: ", abstractSection + otherSection);
 	System.out.printf("\t%-35s %s\n", "in #Abstract: ", abstractSection);
 	System.out.printf("\t%-35s %s\n", "elsewhere: ", otherSection);
+	System.out.printf("\t%-35s %s\n", "Different relations: ", relation2counts.size());
 	System.out.printf("\t%-35s %s\n", "Top-10 Relations with Facts: ", Ranking.getTopKRanking(relation2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
 	System.out.printf("\t%-35s %s\n", "Kind of Pairs: ", kindPairs);
@@ -223,7 +231,7 @@ public class Paper {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+	//Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
 	    Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
@@ -234,7 +242,7 @@ public class Paper {
 	    System.out.println("------------------");
 	    paper.printLabeledInfo();
 	    paper.printUnlabeledInfo();
-	    paper.printOtherInfo();
+	    //paper.printOtherInfo();
 	    paper.printMVLInfo();
 	    paper.printExtractedFactsInfo();
 	    System.out.println("----------");

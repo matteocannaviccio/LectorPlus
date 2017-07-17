@@ -14,11 +14,11 @@ import java.util.Set;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.extractor.bean.WikiLanguage;
+import it.uniroma3.main.bean.WikiLanguage;
+import it.uniroma3.main.util.CounterMap;
+import it.uniroma3.main.util.Ranking;
 import it.uniroma3.model.db.CRUD;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.util.CounterMap;
-import it.uniroma3.util.Ranking;
 
 public class Console{
     // commands
