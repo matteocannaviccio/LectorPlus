@@ -95,13 +95,13 @@ public class FactsExtractor {
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
 		if (!Lector.getDBPedia().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getWholeSentence(), t.getInvertedLectorSubject(), 
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getPhrasePlaceholders(), t.getWholeSentence(), t.getInvertedLectorSubject(), 
 			    t.getInvertedSubject(), relation, t.getInvertedLectorObject(), t.getInvertedObject());
 		    writer_facts.write(t.getInvertedSubject(), relation, t.getInvertedObject());
 		}
 	    }else{
 		if (!Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getWholeSentence(), t.getSubject(), t.getWikiSubject(), relation, t.getObject(), t.getWikiObject());
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getPhrasePlaceholders(), t.getWholeSentence(), t.getSubject(), t.getWikiSubject(), relation, t.getObject(), t.getWikiObject());
 		    writer_facts.write(t.getWikiSubject(), relation, t.getWikiObject());
 		}
 	    }
@@ -167,7 +167,7 @@ public class FactsExtractor {
 	// if there is ...
 	if (relation != null){
 	    if (!Lector.getDBPedia().getRelations(wikid, object).equals(relation)){
-		writer_provenance_ontological.provenance(wikid, "#Abstract", sentence, "TITLE", wikid, relation, "NAT", object);
+		writer_provenance_ontological.provenance(wikid, "#Abstract", "-", sentence, "TITLE", wikid, relation, "NAT", object);
 		writer_ontological_facts.write(wikid, relation, object);
 	    }
 	    //Lector.getDbfacts(false).insertNovelFact(t, relation);

@@ -49,9 +49,9 @@ public class ResultsWriterWrapper {
      * @param object
      * @param literal
      */
-    public void provenance(String wikid, String section, String sentence, String lectorSubect, String subject, String predicate, String lectorObject, String object) {
+    public void provenance(String wikid, String section, String phrase, String sentence, String lectorSubect, String subject, String predicate, String lectorObject, String object) {
 	try {
-	    String line = WIKIPEDIA_URL + wikid + "\t" + section + "\t" + predicate + "\t" + lectorSubect + "\t" + subject + "\t" + lectorObject + "\t" + object + "\t" + sentence;
+	    String line = WIKIPEDIA_URL + wikid + "\t" + section + "\t" + predicate + "\t" + lectorSubect + "\t" + subject + "\t" + lectorObject + "\t" + object + "\t" + phrase + "\t" + sentence;
 	    out.write(line.replace("\n", " ") + "\n");
 	} catch (IOException e) {
 	    throw new RuntimeException(e);
