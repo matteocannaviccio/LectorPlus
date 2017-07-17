@@ -20,7 +20,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>it.uniroma3.extractor.main.Main</mainClass>
+							<mainClass>it.uniroma3.main.start.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
