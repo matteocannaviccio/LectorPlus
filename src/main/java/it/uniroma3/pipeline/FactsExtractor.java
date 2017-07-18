@@ -95,13 +95,15 @@ public class FactsExtractor {
 	    if (relation.contains("(-1)")){
 		relation = relation.replace("(-1)", "");
 		if (!Lector.getDBPedia().getRelations(t.getInvertedSubject(), t.getInvertedObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getPhrasePlaceholders(), t.getWholeSentence(), t.getInvertedLectorSubject(), 
+		    String typedphrase = t.getObjectType() +" "+ t.getPhrasePlaceholders() +" "+ t.getSubjectType();
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), typedphrase, t.getWholeSentence(), t.getInvertedLectorSubject(), 
 			    t.getInvertedSubject(), relation, t.getInvertedLectorObject(), t.getInvertedObject());
 		    writer_facts.write(t.getInvertedSubject(), relation, t.getInvertedObject());
 		}
 	    }else{
 		if (!Lector.getDBPedia().getRelations(t.getWikiSubject(), t.getWikiObject()).equals(relation)){
-		    writer_provenance.provenance(t.getWikid(), t.getSection(), t.getPhrasePlaceholders(), t.getWholeSentence(), t.getSubject(), t.getWikiSubject(), relation, t.getObject(), t.getWikiObject());
+		    String typedphrase = t.getSubjectType() +" "+ t.getPhrasePlaceholders() +" "+ t.getObjectType();
+		    writer_provenance.provenance(t.getWikid(), t.getSection(), typedphrase, t.getWholeSentence(), t.getSubject(), t.getWikiSubject(), relation, t.getObject(), t.getWikiObject());
 		    writer_facts.write(t.getWikiSubject(), relation, t.getWikiObject());
 		}
 	    }
