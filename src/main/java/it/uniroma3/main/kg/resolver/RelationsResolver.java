@@ -2,7 +2,6 @@ package it.uniroma3.main.kg.resolver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +9,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.config.Lector;
-import it.uniroma3.main.bean.WikiLanguage;
-import it.uniroma3.main.kg.normalizer.InverseDBPediaRelations;
+import it.uniroma3.main.kg.DBPedia;
+import it.uniroma3.main.kg.normalizer.CleanDBPediaRelations;
 import it.uniroma3.main.kg.normalizer.Normalizer;
 import it.uniroma3.main.util.KeyValueIndex;
 import it.uniroma3.main.util.Pair;
+import it.uniroma3.main.util.Ranking;
 /**
  * 
  * @author matteo
@@ -24,13 +23,13 @@ import it.uniroma3.main.util.Pair;
 public class RelationsResolver {
 
     private KeyValueIndex indexKG;
-    private Map<String, String> inverse;
+    private CleanDBPediaRelations cleaner;
 
     /**
      * 
      */
     public RelationsResolver(){
-	inverse = InverseDBPediaRelations.inverse();
+	this.cleaner = new CleanDBPediaRelations();
 	this.indexKG = getIndexOrCreate(Configuration.getDBPediaIndex(), Configuration.getDBPediaDumpFile());
     }
 
@@ -50,15 +49,18 @@ public class RelationsResolver {
 	    List<Pair<String, String>> dbpedia_dump = Normalizer.normalizeMappingBasedDBPediaDump(Configuration.getDBPediaDumpFile());
 	    index = new KeyValueIndex(dbpedia_dump, indexPath);
 	    long end_time = System.currentTimeMillis();
-	    
+
 	    System.out.printf("%-20s %s\n", "lines: " + index.getIndexedLines(), "indexed in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.");
 	}
 	else // we already have the index
 	    index = new KeyValueIndex(indexPath);
+
 	return index;
     }
 
     /**
+     * It queries the KG index looking for a pair of entities that match the input subject and object.
+     * If none pairs match, it looks for the inverse order (adding -1 to the label of the relation).
      * 
      * @param wikidSubject
      * @param wikidObject
@@ -66,14 +68,15 @@ public class RelationsResolver {
      */
     public Set<String> getRelations(String wikidSubject, String wikidObject) {
 	Set<String> relations = new HashSet<String>();
-	for (String relation : indexKG.retrieveValues(wikidSubject + "###" + wikidObject))
-	    relations.add(relation);
+	for (String relation : indexKG.retrieveValues(wikidSubject + "###" + wikidObject)){
+	    String candidate = cleaner.cleanRelation(relation);
+	    if (!candidate.equals("notValid"))
+		relations.add(candidate);
+	}
 	for (String relation : indexKG.retrieveValues(wikidObject + "###" + wikidSubject)){
-	    if(!relations.contains(relation))
-		relation = relation + "(-1)";
-	    if(inverse.containsKey(relation))
-		relation = inverse.get(relation);
-	    relations.add(relation);
+	    String candidate = cleaner.cleanRelation(relation + "(-1)");
+	    if (!relations.contains(relation) && !candidate.equals("notValid"))
+		relations.add(candidate);
 	}
 	return relations;
     }
@@ -83,9 +86,13 @@ public class RelationsResolver {
      * @param relation
      * @return
      */
-    void getInstances(String relation){
+    public void getInstances(String relation){
+	int tot = 0;
 	for (String instance : indexKG.retrieveKeys(relation))
-	    System.out.println(instance);
+	    if (tot < 200 ){
+		System.out.printf("\t%-50s %s\n", instance.split("###")[0], instance.split("###")[1]);
+		tot +=1;
+	    }
     }
 
     /**
@@ -96,7 +103,16 @@ public class RelationsResolver {
     void findRelations(String subject, String object){
 	System.out.println("Relations in DBPedia between <" + subject + "> and <" + object + ">:");
 	for (String relation : getRelations(subject, object))
-	    System.out.println("\t" + relation);
+	    System.out.println("\t" + cleaner.cleanRelation(relation));
+    }
+
+    /**
+     * 
+     */
+    private void getAllRelations(){
+	for (Map.Entry<String, Integer> relation : Ranking.getRanking(indexKG.matchAll()).entrySet()){
+	    System.out.println(relation.getKey() + "\t" + relation.getValue());
+	}
     }
 
 
@@ -107,19 +123,21 @@ public class RelationsResolver {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	Configuration.updateParameter("language", "es");
+	Configuration.updateParameter("language", "en");
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");	
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
 	RelationsResolver res = new RelationsResolver();
 
-	String subject = "Barbara_Pierce_Bush";
-	String object = "George_W._Bush";
+	String subject = "Michelle_Obama";
+	String object = "Barack_Obama";
+
 	res.findRelations(object, subject);
 
-	//String relation = "nationality";
-	//res.getInstances(relation);
+	//res.getAllRelations();
+	String relation = "board";
+	res.getInstances(relation);
+	
+	
 
     }
 

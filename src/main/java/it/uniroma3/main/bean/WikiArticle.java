@@ -9,7 +9,7 @@ import java.util.Set;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import it.uniroma3.main.bean.WikiLanguage.Lang;
+import it.uniroma3.config.WikiLanguage.Lang;
 /**
  * This class contains everything that is contained in a Wikipedia article.
  * It also expresses the annotations that are created/inferred during the entity
@@ -19,6 +19,11 @@ import it.uniroma3.main.bean.WikiLanguage.Lang;
  *
  */
 public class WikiArticle {
+    
+    public enum ArticleType {
+	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, 
+	DATE, OUTLINE, LIST, PROJECT, PORTAL, FILE, HELP, ERROR, DRAFT
+    };
 
     // Info about the article (maybe a bit redundant)
     private String wikid;
@@ -60,11 +65,6 @@ public class WikiArticle {
     private static transient Gson gson = new GsonBuilder()
 	    .disableHtmlEscaping()
 	    .create();
-
-    public enum ArticleType {
-	TEMPLATE, ARTICLE, CATEGORY, DISCUSSION, REDIRECT, DISAMBIGUATION, 
-	DATE, OUTLINE, LIST, PROJECT, PORTAL, FILE, HELP, ERROR, DRAFT
-    };
 
     /**
      * 

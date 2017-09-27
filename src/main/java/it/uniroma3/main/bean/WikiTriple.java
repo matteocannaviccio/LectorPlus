@@ -11,6 +11,18 @@ import it.uniroma3.config.Lector;
  *
  */
 public class WikiTriple {
+    
+    public enum TType {
+   	MVL,
+   	JOINABLE,
+   	JOINABLE_NOTYPE_BOTH,
+   	JOINABLE_NOTYPE_SBJ,
+   	JOINABLE_NOTYPE_OBJ,
+   	NER_BOTH,
+   	NER_SBJ,
+   	NER_OBJ,
+   	DROP
+       }
 
     private String wikid;
     private String section;
@@ -26,18 +38,6 @@ public class WikiTriple {
     private String post;
     private String wholeSentence;
     private TType type;
-
-    public enum TType {
-	MVL,
-	JOINABLE,
-	JOINABLE_NOTYPE_BOTH,
-	JOINABLE_NOTYPE_SBJ,
-	JOINABLE_NOTYPE_OBJ,
-	NER_BOTH,
-	NER_SBJ,
-	NER_OBJ,
-	DROP
-    }
 
     /**
      * This constructor is used when we retrieve the triple from the DB.
@@ -103,6 +103,7 @@ public class WikiTriple {
 	this.post = post;
 	assignType();
     }
+    
 
     /**
      * Assign the type based on the entities involved.

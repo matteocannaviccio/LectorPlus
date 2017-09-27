@@ -1,13 +1,10 @@
 package it.uniroma3.main.kg;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.main.bean.WikiLanguage;
-import it.uniroma3.main.bean.WikiLanguage.Lang;
+import it.uniroma3.config.WikiLanguage.Lang;
 import it.uniroma3.main.kg.resolver.RedirectResolver;
 import it.uniroma3.main.kg.resolver.RelationsResolver;
 import it.uniroma3.main.kg.resolver.TypesResolver;
@@ -26,7 +23,7 @@ public class DBPedia {
      */
     public DBPedia(){
 	this.redirectResolver = new RedirectResolver();
-	this.typesResolver = new TypesResolver();
+	this.typesResolver = new TypesResolver(Lang.valueOf(Configuration.getLanguageCode()));
 	this.relationResolver = new RelationsResolver();
     }
 
@@ -166,14 +163,12 @@ public class DBPedia {
 	Configuration.init(new String[0]);
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 	Configuration.updateParameter("language", "en");
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
 
 	DBPedia t = new DBPedia();
 
-	String entity = "Sergei_Zubov";
+	String entity = "Barack_Obama";
 	
-	System.out.println(Lector.getDBPedia().isChildOf("Person", "[Writer]"));
+	System.out.println(t.isChildOf("Person", "[Writer]"));
 	
 	System.out.println("\nTypes in orginal mapping: ");
 	t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexOriginal()).forEach(System.out::println);

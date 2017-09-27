@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.main.util.io.ntriples.NTriplesReader;
-import it.uniroma3.main.util.io.ntriples.NTriplesReader.Encoding;
+import it.uniroma3.main.util.inout.ntriples.NTriplesReader;
+import it.uniroma3.main.util.inout.ntriples.NTriplesReader.Encoding;
 
 /**
  * 

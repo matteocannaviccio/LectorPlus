@@ -1,4 +1,7 @@
 package it.uniroma3.main.util;
+
+import java.util.Map;
+
 /**
  * 
  * @author matteo
@@ -31,6 +34,15 @@ public final class Pair<A, B> {
      */
     public static <A, B> Pair<A, B> make(A a, B b) { 
 	return new Pair<A, B>(a, b); 
+    }
+    
+    /**
+     * 
+     * @param entry
+     * @return
+     */
+    public static <A, B> Pair<A, B> make(Map.Entry<A, B> entry) { 
+	return new Pair<A, B>(entry.getKey(), entry.getValue()); 
     }
 
     /**

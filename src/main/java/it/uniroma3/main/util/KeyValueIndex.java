@@ -19,6 +19,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
@@ -187,6 +188,26 @@ public class KeyValueIndex {
 	    e.printStackTrace();
 	}
 	return values;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public CounterMap<String> matchAll(){
+	CounterMap<String> results = new CounterMap<String>();
+	Query query = new MatchAllDocsQuery();
+	try {
+	    TopDocs hits = this.indexSearcher.search(query, Integer.MAX_VALUE);
+	    for (ScoreDoc sd : hits.scoreDocs) {
+		Document d = this.indexSearcher.doc(sd.doc);
+		String decodedValue = this.decodeBase64(d.getField("value").stringValue());
+		results.add(decodedValue);
+	    }
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return results;
     }
 
 

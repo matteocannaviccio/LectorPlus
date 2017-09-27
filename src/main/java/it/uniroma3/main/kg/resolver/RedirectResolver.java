@@ -1,8 +1,6 @@
 package it.uniroma3.main.kg.resolver;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -10,11 +8,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 
 import it.uniroma3.config.Configuration;
-import it.uniroma3.config.Lector;
-import it.uniroma3.main.bean.WikiLanguage;
 import it.uniroma3.main.util.KeyValueIndex;
 import it.uniroma3.main.util.Pair;
-import it.uniroma3.main.util.io.TSVReader;
+import it.uniroma3.main.util.inout.TSVReader;
 
 public class RedirectResolver {
 
@@ -80,12 +76,9 @@ public class RedirectResolver {
 	Configuration.updateParameter("language", "en");
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-
 	RedirectResolver t = new RedirectResolver();
 
-	String entity = "Poland";
+	String entity = "Barack_Obama";
 
 	System.out.println("\nRedirect of: ");
 	System.out.println(t.resolveRedirect(entity));

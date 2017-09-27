@@ -29,26 +29,28 @@ public class Configuration {
 
     /* a map contains everything */
     public static Map<String, String> keyValue = new TreeMap<String, String>();
-    
+
     /**
      * Print the (interesting) details of the config file.
      */
     public static void printFullyDetails(){
 	System.out.println("\nConfiguration");
 	System.out.println("-------------");
-	System.out.printf("\t%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
 	System.out.printf("\t%-30s %s\n", "Language:", Configuration.getLanguageCode());
+	System.out.printf("\t%-30s %s\n", "---","");
+	System.out.printf("\t%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
 	System.out.printf("\t%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
 	System.out.printf("\t%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
+	System.out.printf("\t%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
+	System.out.printf("\t%-30s %s\n", "---","");
 	System.out.printf("\t%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
 	System.out.printf("\t%-30s %s\n", "Tot. Articles:", (Configuration.getNumArticlesToProcess() == -1) ? "ALL" : Configuration.getNumArticlesToProcess());
 	System.out.printf("\t%-30s %s\n", "by:", Configuration.getChunkSize());
 	System.out.printf("\t%-30s %s\n", "In memory:", (Configuration.inMemoryProcess()) ? "YES" : "NO");
 	System.out.printf("\t%-30s %s\n", "Solve Redirect:", (Configuration.solveRedirect()) ? "YES" : "NO");
 	System.out.printf("\t%-30s %s\n", "All wikilinks of page:", (Configuration.getOnlyTextWikilinks()) ? "NO" : "YES");
+	System.out.printf("\t%-30s %s\n", "---","");
 	System.out.printf("\t%-30s %s\n", "Extraction model:", Configuration.getLectorModelName());
-	System.out.printf("\t%-30s %s\n", "minF-topK-cutoff:", Configuration.getMinF() +"-"+ ((Configuration.getTopK() == -1) ? "ALL" : Configuration.getTopK()) +"-"+ Configuration.getCutOff());
-	System.out.printf("\t%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
     }
 
     /**
@@ -141,10 +143,13 @@ public class Configuration {
 	}
     }
 
-
     /***********************************************************************/
-    /*************************    LANGUAGES        *************************/
+    /*************************    LANGUAGE   *******************************/
     /***********************************************************************/
+    public static Set<String> getLanguages(){
+	return new HashSet<String>(Arrays.asList(keyValue.get("languages").split(",")));
+    }
+    
     public static String getLanguageCode(){
 	return keyValue.get("language");
     }
@@ -152,19 +157,27 @@ public class Configuration {
     public static String getLanguageProperties(){
 	return getDataFolder() + "/languages/" + getLanguageCode() + ".properties";
     }
-
-    public static Set<String> getPipelineSteps(){
-	return new HashSet<String>(Arrays.asList(keyValue.get("pipeline").split(",")));
-    }
     
-    public static Set<String> getLanguages(){
-	return new HashSet<String>(Arrays.asList(keyValue.get("languages").split(",")));
+    public static WikiLanguage getLanguage(){
+	return new WikiLanguage(getLanguageCode(), getLanguageProperties());
     }
+
+    public static String getPipelineSteps(){
+	return keyValue.get("pipeline");
+    }
+
     /***********************************************************************/
-    /*************************    MAIN FOLDERS        **********************/
+    /*************************    MAIN FOLDERS  ****************************/
     /***********************************************************************/
-    private static String getDataFolder(){
-	return keyValue.get("dataFile");
+    public static String getDataFolder(){
+	String dataFolder = null;
+	if (keyValue.get("dataFile") == null){
+	    System.out.println("Data Folder not selected. System exit.");
+	    System.exit(1);
+	}else{
+	    dataFolder = keyValue.get("dataFile");
+	}
+	return dataFolder;
     }
 
     private static String getInputFolder(){
@@ -215,7 +228,6 @@ public class Configuration {
 	return folder.getAbsolutePath();
     }
 
-
     private static String getOntologyFolder(){
 	String folderPath = getDataFolder() + "/" + keyValue.get("sourceFolder")+ "/" + keyValue.get("ontologyFolder");
 	File folder = new File(folderPath);
@@ -249,9 +261,8 @@ public class Configuration {
     }
 
     /***********************************************************************/
-    /*************************    DBPEDIA STUFFS        ********************/
+    /*************************    DBPEDIA STUFFS    ************************/
     /***********************************************************************/
-
     private static String getDBPediaPath(){
 	return getInputFolder() + "/" + keyValue.get("dbpediaPath") + "/" + getLanguageCode();
     }
@@ -269,9 +280,8 @@ public class Configuration {
     }
 
     /***********************************************************************/
-    /**********************    WIKIPEDIA STUFFS        *********************/
+    /**********************    WIKIPEDIA STUFFS  ***************************/
     /***********************************************************************/
-
     private static String getWikipediaPath(){
 	return getInputFolder() + "/" + keyValue.get("wikipediaPath") +
 		"/" + getLanguageCode();
@@ -296,13 +306,12 @@ public class Configuration {
     /***********************************************************************/
     /**********************    OUTPUT & MODELS     *************************/
     /***********************************************************************/
-
     public static String getDBModel(){
 	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("dbmodel");
     }
 
-    public static String getDBFacts(){
-	return getLectorFolder() + "/" + getLanguageCode() + "_" + keyValue.get("dbfacts");
+    public static String getDBCrossValidation(){
+	return getDBModel().replace(".db", "_cross.db");
     }
 
     public static String getOutputFactsFile(){
@@ -316,15 +325,26 @@ public class Configuration {
     public static String getProvenanceFile() {
 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
     }
-    
+
     public static String getProvenanceOntologicalFile() {
- 	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceOntologicalFile");
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceOntologicalFile");
     }
-   
+
+    public static String getOutputTypedPhrasesStatsFile() {
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + "typedphrases_stats.tsv";
+    }
+
+    public static String getOutputPhrasesStatsFile() {
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + "phrases_stats.tsv";
+    }
+
+    public static String getOutputRelationsStatsFile() {
+	return getOutputFolder() + "/" + getLanguageCode() + "_" + "relations_stats.tsv";
+    }
+
     /***********************************************************************/
     /***********************    TYPES INDEXES    ***************************/
     /***********************************************************************/
-
     public static String getTypesIndex(){
 	return getIndexesFolder(getLanguageCode()) + "/" + keyValue.get("typesIndexName");
     } 
@@ -357,11 +377,9 @@ public class Configuration {
 	return getIndexesFolder("en") + "/" + keyValue.get("airpediaIndexName");
     }
 
-
     /***********************************************************************/
     /***********************    NORMALIZED TYPES     ***********************/
     /***********************************************************************/
-
     public static String getRedirectFile(){
 	return  getSourceFolder(getLanguageCode()) + "/" + keyValue.get("redirectFile");
     }
@@ -369,8 +387,6 @@ public class Configuration {
     /***********************************************************************/
     /***********************    SOURCE TYPES     ***************************/
     /***********************************************************************/
-
-
     public static String getSourceMainInstanceTypes(){
 	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("mainInstanceType");
     }
@@ -390,7 +406,7 @@ public class Configuration {
     public static String getSourceSDTypedInstanceTypes(){
 	return getTypesFolder(getLanguageCode()) + "/" + keyValue.get("sdtypedInstanceType");
     } 
-    
+
     public static String getSourceMainInstanceTypes_Ref(){
 	return getTypesFolder("en") + "/" + keyValue.get("mainInstanceType");
     }
@@ -406,7 +422,6 @@ public class Configuration {
     /***********************************************************************/
     /***********************    OPEN NLP MODELS     ************************/
     /***********************************************************************/
-
     public static String getTokenModel(){
 	return getModelsFolder() + "/" + keyValue.get("tokenModel");
     } 
@@ -437,10 +452,10 @@ public class Configuration {
     public static String getSpotlightLocalURL(){
 	return keyValue.get("pathDBSpotLocalUrl");
     }
+
     /***********************************************************************/
     /***********************    RESOURCES LIST     ************************/
     /***********************************************************************/
-
     public static String getCurrenciesList(){
 	return getListsFolder() + "/" + keyValue.get("currencies");
     }
@@ -460,7 +475,6 @@ public class Configuration {
     /***********************************************************************/
     /**************************    PARAMETERS     **************************/
     /***********************************************************************/
-
     public static int getNumArticlesToProcess(){
 	return Integer.parseInt(keyValue.get("totArticle"));
     }
@@ -468,22 +482,10 @@ public class Configuration {
     public static int getChunkSize(){
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
-    
+
     public static String getLectorModelName(){
 	return keyValue.get("lectorModel");
     } 
-
-    public static int getMinF(){
-	return Integer.parseInt(keyValue.get("minF"));
-    }
-
-    public static int getTopK(){
-	return Integer.parseInt(keyValue.get("topK"));
-    }
-    
-    public static double getCutOff(){
-	return Double.parseDouble(keyValue.get("cutoff"));
-    }
 
     public static boolean getOnlyTextWikilinks(){
 	return keyValue.get("onlyTextWikilinks").equalsIgnoreCase("true");	    
@@ -500,7 +502,7 @@ public class Configuration {
     public static boolean solveRedirect(){
 	return keyValue.get("solveRedirect").equalsIgnoreCase("true");	    
     }
-    
+
     public static boolean useDBpediaSpotlight(){
 	return keyValue.get("useSpotlight").equalsIgnoreCase("yes");
     }
@@ -516,7 +518,7 @@ public class Configuration {
     public static boolean inMemoryProcess(){
 	return keyValue.get("inMemory").equalsIgnoreCase("true");
     }
-   
+
     /***********************************************************************/
 
 }

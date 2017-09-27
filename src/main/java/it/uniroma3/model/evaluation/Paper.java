@@ -2,113 +2,131 @@ package it.uniroma3.model.evaluation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.main.bean.WikiLanguage;
 import it.uniroma3.main.bean.WikiTriple;
-import it.uniroma3.main.kg.DBPedia;
 import it.uniroma3.main.util.CounterMap;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.main.util.Ranking;
-import it.uniroma3.main.util.io.Compressed;
-import it.uniroma3.model.db.CRUD;
+import it.uniroma3.main.util.inout.Compressed;
 import it.uniroma3.model.db.DBModel;
 
 public class Paper {
 
-    private CRUD crud;
+    private DBModel db;
 
     /**
      * 
      * @param db
      */
     public Paper(DBModel db){
-	this.crud = new CRUD(db);
+	this.db = db;
+	db.deriveModelTable();
     }
 
     /**
      * 
      */
     private void printLabeledInfo(){
-	List<Pair<WikiTriple, String>> allLabeled = crud.selectAllLabeled();
-
-	// get all the triples by relation
-	CounterMap<String> relation2counts = new CounterMap<String>();
-	for (Pair<WikiTriple, String> pair : allLabeled){
-	    String label = pair.value.replace("(-1)", "");
-	    relation2counts.add(label);
-	}
+	List<Pair<WikiTriple, String>> allLabeled = this.db.retrieveLabeledTriples(DBModel.labeled_table);
 
 	// get all the entities by pattern method detection
 	CounterMap<String> metEntDet = new CounterMap<String>();
-	for (Pair<WikiTriple, String> pair : allLabeled){
-	    String subjectEntity = pair.key.getSubject();
-	    String objectEntity = pair.key.getObject();
-	    metEntDet.add(extractMethodFromEntity(subjectEntity));
-	    metEntDet.add(extractMethodFromEntity(objectEntity));
+	CounterMap<String> metPair = new CounterMap<String>();
+	// get all the triples by relation
+	CounterMap<String> docs2counts = new CounterMap<String>();
+	CounterMap<String> relation2counts = new CounterMap<String>();
+	// get all the triples by phrase
+	CounterMap<String> phrase2counts = new CounterMap<String>();
+	// get all the triples by typedphrase
+	CounterMap<String> typedphrase2counts = new CounterMap<String>();
+	// get all the triples by types
+	CounterMap<String> types2counts = new CounterMap<String>();
+
+	/**
+	 * 
+	 */
+	for (Pair<WikiTriple, String> pair : allLabeled){		
+	    String entityDetectionSubject = extractMethodFromEntity(pair.key.getSubject());
+	    String entityDetectionObject = extractMethodFromEntity(pair.key.getObject());
+	    metEntDet.add(entityDetectionSubject);
+	    metEntDet.add(entityDetectionObject);
+	    metPair.add(entityDetectionSubject + "/" + entityDetectionObject);
+	    //
+	    docs2counts.add(pair.value);
+	    String relation = pair.value.replace("(-1)", "");
+	    relation2counts.add(relation);
+	    //
+	    phrase2counts.add(pair.key.getPhrasePlaceholders());
+	    //
+	    String typedphrase = pair.key.getSubjectType() + " " + pair.key.getPhrasePlaceholders() + " " + pair.key.getObjectType();
+	    typedphrase2counts.add(typedphrase);
+	    //
+	    types2counts.add(pair.key.getSubjectType() + "/" + pair.key.getObjectType());
 	}
+
+
 
 	System.out.printf("\t%-35s %s\n", "Total Labeled: ", allLabeled.size());
+	System.out.printf("\t%-35s %s\n", "Total Labeled Phrases: ", phrase2counts.size());
+	System.out.printf("\t%-35s %s\n", "Total Labeled Typed-Phrases: ", typedphrase2counts.size());
+	System.out.printf("\t%-35s %s\n", "Total Labeled Relations (docs): ", docs2counts.size());
+	System.out.printf("\t%-35s %s\n", "Total Labeled Relations (rels): ", relation2counts.size());
+	System.out.println();
+	System.out.printf("\t%-35s %s\n", "Top-10 Phrases labeled: ", Ranking.getTopKRanking(phrase2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Top-10 Typed-Phrases labeled: ", Ranking.getTopKRanking(typedphrase2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Top-10 Relations labeled: ", Ranking.getTopKRanking(relation2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Top-10 Types labeled: ", Ranking.getTopKRanking(types2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Pairs: ", Ranking.getRanking(metPair));
+
 
     }
 
     /**
      * 
      */
+
     private void printUnlabeledInfo(){
-	CounterMap<String> allUnlabeled = crud.selectAllUnlabeled();
-	System.out.printf("\t%-35s %s\n", "Total Unlabeled: ", calculateSum(allUnlabeled)/2);
-	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(allUnlabeled));
-    }
-
-    /**
-     * 
-     */
-    private void printMVLInfo(){
-	List<String> allMVL = crud.selectAllMVL();
-	/*
-	for (String mvl : allMVL){
-	    String[] fields = mvl.split("\t");
-	    String wikid = fields[0];
-	    String section = fields[1];
-	    String list = fields[2];
-	    String wikidType = t.getType(wikid);
-
-	    System.out.print(wikid + "\t" + wikidType + "\t" + section + "\t");
-	    for (String en : list.split("(?<=\\>),(?=\\<)")){
-		en = extractNameFromEntity(en);
-		System.out.print(en + t.getType(en)  + "\t");
-	    }
-	    System.out.print("\n");
-	}
-	 */
-	System.out.printf("\t%-35s %s\n", "Total MVL: ", allMVL.size());
-    }
-
-    /**
-     * 
-     */
-    private void printOtherInfo(){
-	List<WikiTriple> allOther = crud.selectAllOther();
+	List<WikiTriple> allUnlabeled = this.db.retrieveUnlabeledTriples(DBModel.unlabeled_table);
 
 	// get all the entities by pattern method detection
 	CounterMap<String> metEntDet = new CounterMap<String>();
-	for (WikiTriple t : allOther){
-	    String subjectEntity = t.getSubject();
-	    String objectEntity = t.getObject();
-	    metEntDet.add(extractMethodFromEntity(subjectEntity));
-	    metEntDet.add(extractMethodFromEntity(objectEntity));
+	CounterMap<String> metPair = new CounterMap<String>();
+
+	// get all the triples by phrase
+	CounterMap<String> phrase2counts = new CounterMap<String>();
+	// get all the triples by typedphrase
+	CounterMap<String> typedphrase2counts = new CounterMap<String>();
+	// get all the triples by types
+	CounterMap<String> types2counts = new CounterMap<String>();
+
+	for (WikiTriple t : allUnlabeled){		
+	    String entityDetectionSubject = extractMethodFromEntity(t.getSubject());
+	    String entityDetectionObject = extractMethodFromEntity(t.getObject());
+	    metEntDet.add(entityDetectionSubject);
+	    metEntDet.add(entityDetectionObject);
+	    metPair.add(entityDetectionSubject + "/" + entityDetectionObject);
+	    //
+	    types2counts.add(t.getSubjectType() + "/" + t.getObjectType());
+	    //
+	    phrase2counts.add(t.getPhrasePlaceholders());
+	    //
+	    String typedphrase = t.getSubjectType() + " " + t.getPhrasePlaceholders() + " " + t.getObjectType();
+	    typedphrase2counts.add(typedphrase);
 	}
-	System.out.printf("\t%-35s %s\n", "Total Other: ", allOther.size());
+
+
+	System.out.printf("\t%-35s %s\n", "Total Unlabeled: ", allUnlabeled.size());
+	System.out.printf("\t%-35s %s\n", "Top-10 Phrases labeled: ", Ranking.getTopKRanking(phrase2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Top-10 Typed-Phrases labeled: ", Ranking.getTopKRanking(typedphrase2counts, 10));
+	System.out.printf("\t%-35s %s\n", "Top-10 Types unlabeled: ", Ranking.getTopKRanking(types2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
+	System.out.printf("\t%-35s %s\n", "Count Entity Detection Pairs: ", Ranking.getRanking(metPair));
     }
 
     /**
@@ -131,7 +149,7 @@ public class Paper {
      * @param entity
      * @return
      */
-    private String extractNameFromEntity(String entity){
+    protected String extractNameFromEntity(String entity){
 	Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
 	Matcher m = ENMETDET.matcher(entity);
 	String method = null;
@@ -139,19 +157,6 @@ public class Paper {
 	    method = m.group(2);
 	}
 	return method;
-    }
-
-    /**
-     * 
-     * @param marks
-     * @return
-     */
-    protected int calculateSum(CounterMap<String> marks) {
-	int sum = 0;
-	for (String entry : marks.keySet()){
-	    sum += marks.get(entry);
-	}
-	return sum;
     }
 
     /**
@@ -173,12 +178,17 @@ public class Paper {
      * 
      */
     private void printExtractedFactsInfo(){
+	Configuration.updateParameter("outputFolder", "extractor/NaiveBayes-25-0.4");
+
 	CounterMap<String> wikidWithFacts = new CounterMap<String>();
 	int abstractSection = 0;
 	int otherSection = 0;
 	CounterMap<String> relation2counts = new CounterMap<String>();
 	CounterMap<String> metEntDet = new CounterMap<String>();
 	CounterMap<String> kindPairs = new CounterMap<String>();
+
+	// get all the triples by typedphrase
+	CounterMap<String> typedphrase2counts = new CounterMap<String>();
 
 	try {
 	    BufferedReader reader = Compressed.getBufferedReaderForCompressedFile(Configuration.getProvenanceFile());
@@ -193,7 +203,8 @@ public class Paper {
 		    String kindobject = extractPESEFromEntity(fields[5]);
 		    String subjectEntityMethod = extractMethodFromEntity(fields[3]);
 		    String objectEntityMethod = extractMethodFromEntity(fields[5]);
-		    //String sentence = fields[7];
+		    String typedPhrase = fields[7];
+		    //String sentence = fields[8];
 		    if (section.equals("#Abstract"))
 			abstractSection +=1;
 		    else
@@ -202,7 +213,8 @@ public class Paper {
 		    relation2counts.add(relation);
 		    metEntDet.add(subjectEntityMethod);
 		    metEntDet.add(objectEntityMethod);
-		    kindPairs.add(kindsubject+"-"+kindobject);
+		    kindPairs.add(kindsubject+"/"+kindobject);
+		    typedphrase2counts.add(typedPhrase);
 		}catch(Exception e){
 		    continue;
 		}
@@ -217,6 +229,8 @@ public class Paper {
 	System.out.printf("\t%-35s %s\n", "in #Abstract: ", abstractSection);
 	System.out.printf("\t%-35s %s\n", "elsewhere: ", otherSection);
 	System.out.printf("\t%-35s %s\n", "Different relations: ", relation2counts.size());
+	System.out.printf("\t%-35s %s\n", "Different typed-phrases: ", typedphrase2counts.size());
+	System.out.printf("\t%-35s %s\n", "Top-10 typed-phrases: ", Ranking.getTopKRanking(typedphrase2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Top-10 Relations with Facts: ", Ranking.getTopKRanking(relation2counts, 10));
 	System.out.printf("\t%-35s %s\n", "Count Entity Detection Methods: ", Ranking.getRanking(metEntDet));
 	System.out.printf("\t%-35s %s\n", "Kind of Pairs: ", kindPairs);
@@ -231,22 +245,19 @@ public class Paper {
      */
     public static void main(String[] args) throws IOException{
 	Configuration.init(args);
-	//Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
-	    Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		    new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-	    Paper paper = new Paper(new DBModel(Configuration.getDBModel()));
-	    System.out.println(Configuration.getDBModel());
+
+	    Paper paper = new Paper(Lector.getDbmodel(false));
+
 	    System.out.println("Stats for language : " + Configuration.getLanguageCode());
 	    System.out.println("------------------");
 	    paper.printLabeledInfo();
+	    System.out.println("----------");
 	    paper.printUnlabeledInfo();
-	    //paper.printOtherInfo();
-	    paper.printMVLInfo();
 	    paper.printExtractedFactsInfo();
 	    System.out.println("----------");
-	    Lector.close();
 	}
 
     }

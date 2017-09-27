@@ -1,9 +1,7 @@
 package it.uniroma3.main.kg.resolver;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +9,7 @@ import java.util.stream.Collectors;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.main.bean.WikiLanguage;
+import it.uniroma3.config.WikiLanguage.Lang;
 import it.uniroma3.main.kg.normalizer.Normalizer;
 import it.uniroma3.main.kg.ontology.OntPath;
 import it.uniroma3.main.kg.ontology.Ontology;
@@ -45,7 +43,7 @@ public class TypesResolver {
     /**
      * 
      */
-    public TypesResolver(){
+    public TypesResolver(Lang language){
 	// we need the ontology to find subTypes and solve situations regarind parent-child types
 	ontology = new Ontology();
 
@@ -53,7 +51,7 @@ public class TypesResolver {
 	 * we use different dictionary of types based on the language. ie. for English we have three more dictionaries.
 	 * the "ref" index are always the english ones.
 	 */
-	switch(Lector.getWikiLang().getLang()){
+	switch(language){
 	case en:
 	    indexOriginal = getIndexOrCreate(Configuration.getTypesIndex(), Configuration.getSourceMainInstanceTypes());
 	    indexAirpedia = getIndexOrCreate(Configuration.getAirpediaIndex(), Configuration.getSourceAirpediaTypes());
@@ -257,13 +255,10 @@ public class TypesResolver {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Configuration.updateParameter("language", "de");
+	Configuration.updateParameter("language", "en");
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 
-	Lector.init(new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties()), 
-		new HashSet<String>(Arrays.asList(new String[]{"FE"})));
-
-	TypesResolver t = new TypesResolver();
+	TypesResolver t = new TypesResolver(Lang.valueOf(Configuration.getLanguageCode()));
 
 	String entity = "Thomas_Hyde";
 	System.out.println("USED --> " + t.assignTypes(entity));
@@ -274,16 +269,6 @@ public class TypesResolver {
 	System.out.println("\nTypes in Airpedia: ");
 	t.getTypes(entity, t.getIndexAirpedia()).forEach(System.out::println);
 
-	/*
-	System.out.println("\nTypes in DBTax: ");
-	t.getTypes(entity, t.getIndexDBTax()).forEach(System.out::println);
-
-	System.out.println("\nTypes in LHD: ");
-	t.getTypes(entity, t.getIndexLHD()).forEach(System.out::println);
-
-	System.out.println("\nTypes in SDTyped: ");
-	t.getTypes(entity, t.getIndexSDTyped()).forEach(System.out::println);
-	 */
     }
 
 }

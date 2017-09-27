@@ -7,8 +7,8 @@ import java.util.Map;
 
 import it.uniroma3.main.kg.DBPedia;
 import it.uniroma3.main.util.Pair;
-import it.uniroma3.main.util.io.ntriples.NTriplesReader;
-import it.uniroma3.main.util.io.ntriples.NTriplesReader.Encoding;
+import it.uniroma3.main.util.inout.ntriples.NTriplesReader;
+import it.uniroma3.main.util.inout.ntriples.NTriplesReader.Encoding;
 /**
  * 
  * @author matteo

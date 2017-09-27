@@ -15,8 +15,8 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import it.uniroma3.config.Lector;
+import it.uniroma3.main.pipeline.entitydetection.PatternComparator;
 import it.uniroma3.main.util.Pair;
-import it.uniroma3.pipeline.entitydetection.PatternComparator;
 /**
  * 
  * @author matteo

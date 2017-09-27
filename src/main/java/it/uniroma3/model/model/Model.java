@@ -1,210 +1,286 @@
 package it.uniroma3.model.model;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import it.uniroma3.config.Lector;
 import it.uniroma3.main.util.CounterMap;
 import it.uniroma3.main.util.Pair;
-import it.uniroma3.model.DB;
-import it.uniroma3.model.db.CRUD;
+import it.uniroma3.model.db.DBLector;
 /**
- * This is an abstract model. Each possible implementation of a model extends it.
- * In order to create a new model, we always need to filter out noisy phrases,
- * either if we use TYPED_PHRASES or NO_TYPES_PHRASES kind of phrases: 
- * we filter out them using minF parameter retrieving the available_phrases list.
+ * A Model is able to predict a DBpedia relation given an input typed phrase.
+ * It reads the typed phrases stored in the DB and count the associations among them.
  * 
- * Then, using such available_phrases we are able to retrieve:
- *  - p_LT_counts: phrases that are labeled with a relation and their counts
- *  - p_UT_counts: phrases that are not labeled with a relation and their counts
- *  - r_counts: counts of relations that are involved in the model
+ * A Model can be:
+ *  - Naive Bayes (based on a naive bayes classifier)
+ *  - TextExt 	(based on a bag-of-patterns that are assigned for each relation)
  *  
- *  We also build two mappings that are useful for some implementations, such as:
- *   - relation2phrasesCount: map the relations to the relative counted phrases
- *   - phrases2relationsCount: map the phrases to the relative counted relations
- * 
- * 
+ *  It is also built consiering two paramenters:
+ *  - minFrequency	 	a threshold on the minimum occurrences of a typed phrase
+ *  - percentageUnlabeled	the percentage of all unlabeled triples to consider
+ *  
+ *  
  * @author matteo
  *
  */
-public abstract class Model{
+public abstract class Model {
 
-    // print the computation
-    protected static boolean verbose = true;
-    protected CRUD crud;
+    protected DBLector db_model;		// the DB that contains typed phrases and the rest
+    protected String evidence_table;		// the specific table that contains associations (useful to distinguish for cross-validation)
+    protected int minFrequency;			// a threshold on the minimum occurrences of a typed phrase
+    protected int percentageUnlabeled;		// a weight for the unlabeled triples
 
-    // those are the possible variations of the model.
-    // It can uses typed phrases (e.g. [Person] was born in [Settlement]) or not (e.g. was born in).
-    public enum PhraseType {TYPED_PHRASES, NO_TYPES_PHRASES};
-    public enum ModelType {BM25, NB, NBind, TextExtChallenge, NBfilter};
+    /* Those are the parameters */    
+    public enum ModelType {NaiveBayes, NaiveBayesFilterSpy, ModelTextExt};
+    protected ModelType model;
+    
+    /* Those are needed for the NAIVE BAYES calculation*/
+    protected Map<String, CounterMap<String>> typedPhrases2relations;
+    protected CounterMap<String> typedPhrasesLabeled;
+    protected CounterMap<String> typedPhrasesUnlabeled;
+    protected CounterMap<String> relations;
+    protected int totTypedPhrasesLabeled;
+    protected int totTypedPhrasesUnlabeled;
+    
+    /* Those are possible negative predictions types by the model */
+    public enum NegativePredictions {MAJRULE, UNKNOWN, SPY, NONE};
 
+
+    /**
+     * 
+     * @param db_model
+     * @param evidence_table
+     * @param minF
+     * @param modelType
+     */
+    public Model(DBLector db_model, String evidence_table, int minF, int percUnl, ModelType modelType){
+	/* new parameters */
+	this.db_model = db_model;
+	this.evidence_table = evidence_table;
+	this.minFrequency = minF;
+	this.percentageUnlabeled = percUnl;
+	this.model = modelType;
+	initModel(evidence_table);
+    }
+
+    /**
+     * 
+     * @param evidenceTableName
+     */
+    protected void initModel(String model_triples){
+	typedPhrases2relations = new HashMap<String, CounterMap<String>>();
+	typedPhrasesLabeled = new CounterMap<String>();
+	typedPhrasesUnlabeled = new CounterMap<String>();
+	relations = new CounterMap<String>();
+	
+	// retrieve all the evidences: typed phrases - relation - occ
+	for (Map.Entry<String, Integer> entry_model : this.db_model.retrieveEvidence(model_triples,  minFrequency, percentageUnlabeled).entrySet()){
+	    String sbj_type = entry_model.getKey().split("\t")[0];
+	    String phrase = entry_model.getKey().split("\t")[1];
+	    String obj_type = entry_model.getKey().split("\t")[2];
+	    String relation = entry_model.getKey().split("\t")[3];
+	    String typed_phrase = sbj_type + "\t" + phrase + "\t" + obj_type; 
+	    int occurrences = entry_model.getValue();
+
+	    if (!typedPhrases2relations.containsKey(typed_phrase))
+		typedPhrases2relations.put(typed_phrase, new CounterMap<String>());
+	    typedPhrases2relations.get(typed_phrase).add(relation, occurrences);
+
+	    if (relation.equals("NONE"))
+		typedPhrasesUnlabeled.add(typed_phrase, occurrences);
+	    else
+		typedPhrasesLabeled.add(typed_phrase, occurrences);
+
+	    relations.add(relation, occurrences);
+	}
+	totTypedPhrasesUnlabeled = typedPhrasesUnlabeled.calculateSum();
+	totTypedPhrasesLabeled = typedPhrasesLabeled.calculateSum();
+    }
+
+    /**
+     * 
+     */
+    public void printStats(){
+	System.out.printf("\t%-35s %s\n", "model: ", model);
+	System.out.printf("\t%-35s %s\n", "minFrequency: ", minFrequency);
+	System.out.printf("\t%-35s %s\n", "percentageUnlabeled: ", percentageUnlabeled + "%");
+	
+	System.out.printf("\t%-35s %s\n", "relations (docs):", this.relations.size());
+	System.out.printf("\t%-35s %s\n", "relations (real):", countEffectiveRelations(this.relations));
+	
+	System.out.printf("\t%-35s %s\n", "labeled t-phrases:", totTypedPhrasesLabeled);
+	System.out.printf("\t%-35s %s\n", "unlabeled t-phrases:", totTypedPhrasesUnlabeled);
+	System.out.printf("\t%-35s %s\n", "all t-phrases:", totTypedPhrasesUnlabeled + totTypedPhrasesLabeled);
+
+    }
+
+    /**
+     * 
+     * @param relations
+     */
+    private int countEffectiveRelations(CounterMap<String> relations){
+	Set<String> effectiveRelations = new HashSet<String>();
+	for (String relation : relations.keySet()){
+	    relation = relation.replace("(-1)", "");
+	    effectiveRelations.add(relation); 
+	}
+	return effectiveRelations.size();
+    }
+
+    /**
+     * 
+     * @param db_model
+     * @param evidenceTable
+     * @param minF
+     * @param modelType
+     * @return
+     */
+    public static Model getNewModel(DBLector db_model, String evidenceTable, int minF, int percUnl, ModelType modelType, double majorityThreshold){
+	Lector.getDbmodel(false).deriveModelTable();
+	Model model = null;
+	
+	switch(modelType){
+	case NaiveBayesFilterSpy:
+	    model = new ModelNaiveBayesFilterSpy(db_model, evidenceTable, minF, modelType, majorityThreshold);
+	    break;
+
+	case NaiveBayes:
+	    model = new ModelNaiveBayes(db_model, evidenceTable, minF, percUnl, modelType, majorityThreshold);
+	    break;
+
+	case ModelTextExt:
+	    model = new ModelTextExt(db_model, evidenceTable, minF, modelType);
+	    break;
+	}
+	
+	return model;
+    }
+
+
+    /**
+     * @return the db_model
+     */
+    public DBLector getDb_model() {
+	return db_model;
+    }
+
+    /**
+     * @return the evidence_table
+     */
+    public String getEvidence_table() {
+	return evidence_table;
+    }
+
+    /**
+     * @return the minF
+     */
+    public int getMinF() {
+	return minFrequency;
+    }
+
+    /**
+     * @return the typedPhrases2relations
+     */
+    public Map<String, CounterMap<String>> getTypedPhrases2relations() {
+	return typedPhrases2relations;
+    }
+
+    /**
+     * @return the typedPhrasesLabeled
+     */
+    public CounterMap<String> getTypedPhrasesLabeled() {
+	return typedPhrasesLabeled;
+    }
+
+    /**
+     * @return the typedPhrasesUnlabeled
+     */
+    public CounterMap<String> getTypedPhrasesUnlabeled() {
+	return typedPhrasesUnlabeled;
+    }
+
+    /**
+     * @return the relations
+     */
+    public CounterMap<String> getRelations() {
+	return relations;
+    }
+
+    /**
+     * @return the totTypedPhrasesLabeled
+     */
+    public int getTotTypedPhrasesLabeled() {
+	return totTypedPhrasesLabeled;
+    }
+
+    /**
+     * @return the totTypedPhrasesUnlabeled
+     */
+    public int getTotTypedPhrasesUnlabeled() {
+	return totTypedPhrasesUnlabeled;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getName() {
+	return this.model.name();
+    }
+
+    /**
+     * @return the model
+     */
+    public ModelType getModel() {
+	return model;
+    }
+
+    /**
+     * 
+     * @param typedPhrase
+     * @return
+     */
     /*
-     * these are the phrases that are contained in the model which are present at least minFreq
-     * times in the whole Wikipedia.
-     */
-    protected PhraseType type;
-    protected int minF;
-    protected CounterMap<String> p_available;
-    protected CounterMap<String> pt_LT_counts;
-    protected CounterMap<String> pt_UT_counts;
-
-    /**
-     * A model takes a db (that can be a DBModel or a DBCrossValidation), the name of the labeled table
-     * (note that it can change for the cross-validation) and the parameters for creating the model.
-     * 
-     * @param db
-     * @param type
-     * @param minFreq
-     * @param minFreqWithR
-     */
-    public Model(DB dbModel, String labeled, PhraseType type, int minF){
-	if (verbose){
-	    System.out.println("\nScoring model");
-	    System.out.println("-------------");
-	}
-	this.crud = new CRUD(dbModel, labeled);
-	this.type = type;
-	this.minF = minF;
-	initializeModel(minF);
+    public double getLabeledPercentage(String typedPhrase){
+	int totLab = 0;
+	if(this.typedPhrasesLabeled.containsKey(typedPhrase))
+	    totLab = this.typedPhrasesLabeled.get(typedPhrase);
+	int totUnl = 0;
+	if(this.typedPhrasesUnlabeled.containsKey(typedPhrase))
+	    totUnl = this.typedPhrasesUnlabeled.get(typedPhrase);
+	return (double) totLab/(totLab+totUnl);
     }
+    */
 
     /**
-     * Initializes all the phrases that are included in the model, considering
-     * the threshold that filter out rare phrases (i.e. minFreq).
      * 
-     * @param minFreq
-     */
-    private void initializeModel(int minFreq){
-	this.p_available = crud.getAvailablePhrases(minFreq);
-	this.pt_LT_counts = getAllLabeledPhrases(p_available.keySet());
-	this.pt_UT_counts = getAllUnlabeledPhrases(p_available.keySet());
-
-	if (verbose){
-	    System.out.printf("\t%-35s %s\n", "initializing model: ", type);
-	    System.out.printf("\t%-35s %s\n", "minFreq: ", minFreq);
-	    System.out.printf("\t%-35s %s\n", "n° different available phrases: ", this.p_available.size());
-	    System.out.printf("\t%-35s %s\n", "n° different labeled phrases: ", calculateSum(this.pt_LT_counts));
-	    System.out.printf("\t%-35s %s\n", "n° different un-labeled phrases: ", calculateSum(this.pt_UT_counts));
-	}
-    }
-
-    /**
-     * @return the type
-     */
-    public PhraseType getType() {
-	return type;
-    }
-
-    /**
-     * Obtain the vocabulary of labeled phrases.
-     * 
-     * @param available
+     * @param subject_type
+     * @param phrase_placeholder
+     * @param object_type
      * @return
      */
-    protected CounterMap<String> getAllLabeledPhrases(Set<String> available){
-	CounterMap<String> lab_phrases = null;
-	switch(type){
-	case TYPED_PHRASES:
-	    lab_phrases = crud.getPT_LT_counts(available);
-	    break;
-	case NO_TYPES_PHRASES:
-	    lab_phrases = p_available;
-	    break;
-	}
-	return lab_phrases;
-    } 
+    public abstract Pair<String, Double> predict(String subject_type, String phrase_placeholder, String object_type);
 
     /**
-     * Obtain the vocabulary of unlabeled phrases.
-     * 
-     * @param lab_phrases
-     * @return
+     * @return the percUnl
      */
-    protected CounterMap<String> getAllUnlabeledPhrases(Set<String> available){
-	CounterMap<String> unlab_phrases = null;
-	switch(type){
-	case TYPED_PHRASES:
-	    unlab_phrases = crud.getPT_UT_counts(available);
-	    break;
-	case NO_TYPES_PHRASES:
-	    unlab_phrases = crud.getP_UT_counts(available);
-	    break;
-	}
-	return unlab_phrases;
-    } 
-
-
-    /**
-     * 
-     * @param marks
-     * @return
-     */
-    protected CounterMap<String> calculateRelationsCount(Map<String, CounterMap<String>> relations2phrasesCount) {
-	CounterMap<String> relCounts = new CounterMap<String>();
-	for(Map.Entry<String, CounterMap<String>> entry : relations2phrasesCount.entrySet()){
-	    if (!entry.getKey().equals("NONE"))
-		relCounts.put(entry.getKey(), calculateSum(entry.getValue().values()));
-	}
-	return relCounts;
-    }
-
-
-    /**
-     * 
-     * @param marks
-     * @return
-     */
-    protected int calculateSum(Collection<Integer> marks) {
-	int sum = 0;
-	if(!marks.isEmpty()) {
-	    for (Integer mark : marks) {
-		sum += mark;
-	    }
-	}
-	return sum;
+    public int getPercUnl() {
+	return percentageUnlabeled;
     }
 
     /**
      * 
-     * @param marks
+     * @param prediction
      * @return
      */
-    protected int calculateSum(CounterMap<String> marks) {
-	int sum = 0;
-	for (String entry : marks.keySet()){
-	    sum += marks.get(entry);
-	}
-	return sum;
+    public static boolean isPositivePrediction(String prediction){
+	return prediction != null && !prediction.equals(NegativePredictions.NONE.name()) 
+		&& !prediction.equals(NegativePredictions.UNKNOWN.name()) 
+		&& !prediction.equals(NegativePredictions.MAJRULE.name())
+		&& !prediction.equals(NegativePredictions.SPY.name());
     }
 
-
-    /**
-     * 
-     * @param map
-     * @return
-     */
-    protected double calcAvgValue(Map<String, CounterMap<String>> map){
-	int countPhrases = 0;
-	for (Map.Entry<String, CounterMap<String>> entry : map.entrySet()){
-	    countPhrases += entry.getValue().size();
-	}
-	return (double)countPhrases/map.size();
-    }
-
-
-    /**
-     * This is the only method that can be used from the clients.
-     * 
-     * @param phrase
-     * @return
-     */
-    public abstract Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type);
-
-    /**
-     * 
-     * @param expectedRelation
-     * @return
-     */
-    public abstract boolean canPredict(String expectedRelation);
 
 }

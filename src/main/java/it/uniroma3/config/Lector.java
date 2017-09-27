@@ -4,29 +4,24 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.io.Files;
-
-import it.uniroma3.main.bean.WikiLanguage;
 import it.uniroma3.main.kg.DBPedia;
+import it.uniroma3.main.pipeline.articleparser.ArticleTyper;
+import it.uniroma3.main.pipeline.articleparser.BlockParser;
+import it.uniroma3.main.pipeline.articleparser.MarkupParser;
+import it.uniroma3.main.pipeline.articleparser.TextParser;
+import it.uniroma3.main.pipeline.articleparser.WikiParser;
+import it.uniroma3.main.pipeline.articleparser.XMLParser;
+import it.uniroma3.main.pipeline.entitydetection.FSMNationality;
+import it.uniroma3.main.pipeline.entitydetection.FSMSeed;
+import it.uniroma3.main.pipeline.entitydetection.ReplAttacher;
+import it.uniroma3.main.pipeline.entitydetection.ReplFinder;
+import it.uniroma3.main.pipeline.entitydetection.dbsp.DBPediaSpotlight;
+import it.uniroma3.main.pipeline.triplesextractor.Triplifier;
 import it.uniroma3.main.util.nlp.OpenNLP;
 import it.uniroma3.main.util.nlp.StanfordNLP;
 import it.uniroma3.model.db.DBModel;
-import it.uniroma3.pipeline.articleparser.ArticleTyper;
-import it.uniroma3.pipeline.articleparser.BlockParser;
-import it.uniroma3.pipeline.articleparser.MarkupParser;
-import it.uniroma3.pipeline.articleparser.TextParser;
-import it.uniroma3.pipeline.articleparser.WikiParser;
-import it.uniroma3.pipeline.articleparser.XMLParser;
-import it.uniroma3.pipeline.entitydetection.FSMNationality;
-import it.uniroma3.pipeline.entitydetection.FSMSeed;
-import it.uniroma3.pipeline.entitydetection.ReplAttacher;
-import it.uniroma3.pipeline.entitydetection.ReplFinder;
-import it.uniroma3.pipeline.entitydetection.dbsp.DBPediaSpotlight;
-import it.uniroma3.pipeline.triplesextractor.Triplifier;
 /**
  * This static class declares and initializes all the components needed in the system.
  * Some components are declared ThreadLocal, to ensure the existance of a copy for each thread.
@@ -39,7 +34,7 @@ public class Lector {
 
     private static WikiLanguage wikiLang;
 
-    /* Needed in Article Parsing */
+    /* Needed in Article Parsing (AP) */
     private static XMLParser xmlParser;
     private static WikiParser wikiParser;
     private static ArticleTyper articleTyper;
@@ -47,7 +42,7 @@ public class Lector {
     private static BlockParser blockParser;
     private static TextParser textParser;
 
-    /* Needed in Entity Detection */
+    /* Needed in Entity Detection (ED) */
     private static ThreadLocal<StanfordNLP> stanfordExpert;
     private static ThreadLocal<OpenNLP> openNLPExpert;
     private static ThreadLocal<FSMSeed> fsm;
@@ -59,10 +54,11 @@ public class Lector {
     private static ThreadLocal<DBPediaSpotlight> dbspot;
     private static Process localServerSideProcess;
 
-    /* Needed in Triple Extraction */
+    /* Needed in Triple Extraction (TE) */
     private static DBPedia dbpedia;
     private static Triplifier triplifier;
-    /* Keep the (open) connections here */
+    
+    /* Keep the (open) connection here */
     private static DBModel dbmodel;
 
 
@@ -72,10 +68,10 @@ public class Lector {
      * 
      * @param config
      */
-    public static void init(WikiLanguage lang, Set<String> pipeline) {
+    public static void init(String pipeline) {
 	System.out.println("\nInitializing");
 	System.out.println("------------");
-	wikiLang = lang;
+	wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	if (pipeline.contains("AP"))
 	    initAP();
 	initDBpedia();
@@ -134,6 +130,7 @@ public class Lector {
 	if(Configuration.useDBpediaSpotlight()){
 
 	    try {
+		
 		localServerSideProcess = runSpotlight();
 
 	    } catch (IOException e) {
@@ -301,8 +298,9 @@ public class Lector {
     public static DBModel getDbmodel(boolean create) {
 	if (dbmodel == null){
 	    dbmodel = new DBModel(Configuration.getDBModel());
-	    if (create)
-		dbmodel.createModelDB();
+	    if (create){
+		dbmodel.createDB();
+	    }
 	}
 	return dbmodel;
     }
