@@ -112,7 +112,7 @@ public abstract class PlaceholderFilter {
      * @return
      */
     public List<Pattern> fillNationalities() {
-	Set<String> nationalities = TSVReader.getLines2Set(Configuration.getNationalitiesList());
+	Set<String> nationalities = TSVReader.getFirstColumn2Set(Configuration.getNationalitiesList());
 	List<Pattern> natPat = new ArrayList<>();
 	for (String nat : nationalities) {
 	    Pattern NAT = Pattern.compile("\\b" + nat + "\\b", Pattern.CASE_INSENSITIVE);

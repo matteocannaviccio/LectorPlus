@@ -50,7 +50,7 @@ public class Configuration {
 	System.out.printf("\t%-30s %s\n", "Solve Redirect:", (Configuration.solveRedirect()) ? "YES" : "NO");
 	System.out.printf("\t%-30s %s\n", "All wikilinks of page:", (Configuration.getOnlyTextWikilinks()) ? "NO" : "YES");
 	System.out.printf("\t%-30s %s\n", "---","");
-	System.out.printf("\t%-30s %s\n", "Extraction model:", Configuration.getLectorModelName());
+	System.out.printf("\t%-30s %s\n", "Extraction model:", Configuration.getModelCode());
     }
 
     /**
@@ -236,8 +236,8 @@ public class Configuration {
 	return folder.getAbsolutePath();
     }
 
-    private static String getModelsFolder(){
-	String folderPath = getDataFolder() + "/" + keyValue.get("modelsFolder")+ "/" + getLanguageCode();
+    private static String getPosModelsFolder(){
+	String folderPath = getDataFolder() + "/" + keyValue.get("posModelsFolder")+ "/" + getLanguageCode();
 	File folder = new File(folderPath);
 	if(!folder.exists())
 	    folder.mkdirs();
@@ -315,31 +315,31 @@ public class Configuration {
     }
 
     public static String getOutputFactsFile(){
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputFile");
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "facts.bz2";
     }
 
     public static String getOutputOntologicalFactsFile(){
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("outputOntologicalFile");
+	return getModelFolder() + "/"+ getLanguageCode() + "_" + "facts_ont.bz2";
     }
 
     public static String getProvenanceFile() {
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceFile");
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "provenance.bz2";
     }
 
     public static String getProvenanceOntologicalFile() {
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + keyValue.get("provenanceOntologicalFile");
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "provenance_ont.bz2";
     }
 
     public static String getOutputTypedPhrasesStatsFile() {
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + "typedphrases_stats.tsv";
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "typedphrases_stats.tsv";
     }
 
     public static String getOutputPhrasesStatsFile() {
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + "phrases_stats.tsv";
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "phrases_stats.tsv";
     }
 
     public static String getOutputRelationsStatsFile() {
-	return getOutputFolder() + "/" + getLanguageCode() + "_" + "relations_stats.tsv";
+	return getModelFolder() + "/" + getLanguageCode() + "_" + "relations_stats.tsv";
     }
 
     /***********************************************************************/
@@ -423,15 +423,15 @@ public class Configuration {
     /***********************    OPEN NLP MODELS     ************************/
     /***********************************************************************/
     public static String getTokenModel(){
-	return getModelsFolder() + "/" + keyValue.get("tokenModel");
+	return getPosModelsFolder() + "/" + keyValue.get("tokenModel");
     } 
 
     public static String getLemmatizerModel(){
-	return getModelsFolder() + "/" + keyValue.get("lemmatizerDictonary");
+	return getPosModelsFolder() + "/" + keyValue.get("lemmatizerDictonary");
     } 
 
     public static String getPOSModel(){
-	return getModelsFolder() + "/" + keyValue.get("postaggerModel");
+	return getPosModelsFolder() + "/" + keyValue.get("postaggerModel");
     } 
 
     /***********************************************************************/
@@ -483,9 +483,6 @@ public class Configuration {
 	return Integer.parseInt(keyValue.get("chunckSize"));
     }
 
-    public static String getLectorModelName(){
-	return keyValue.get("lectorModel");
-    } 
 
     public static boolean getOnlyTextWikilinks(){
 	return keyValue.get("onlyTextWikilinks").equalsIgnoreCase("true");	    
@@ -518,6 +515,36 @@ public class Configuration {
     public static boolean inMemoryProcess(){
 	return keyValue.get("inMemory").equalsIgnoreCase("true");
     }
+    
+    /************************************/
+    
+    public static String getLectorModelName(){
+	return keyValue.get("lectorModel");
+    } 
+    
+    public static int getMinF(){
+	return Integer.parseInt(keyValue.get("minF"));
+    } 
+    
+    public static int getPercUnl(){
+	return Integer.parseInt(keyValue.get("percUnl"));
+    } 
+    
+    public static double getMajThr(){
+	return Double.parseDouble(keyValue.get("majorityThreshold"));
+    } 
+    
+    public static String getModelCode(){
+	return getLectorModelName() + "-" + getMinF() + "-" + getPercUnl() + "-" + getMajThr();
+    }
+    
+    private static String getModelFolder(){
+ 	String folderPath = getOutputFolder() + "/" + getModelCode();
+ 	File folder = new File(folderPath);
+ 	if(!folder.exists())
+ 	    folder.mkdirs();
+ 	return folder.getAbsolutePath();
+     }
 
     /***********************************************************************/
 

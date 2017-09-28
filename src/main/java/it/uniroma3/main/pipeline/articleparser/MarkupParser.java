@@ -1,6 +1,5 @@
 package it.uniroma3.main.pipeline.articleparser;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.regex.Pattern;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.config.WikiLanguage;
 import it.uniroma3.main.bean.WikiArticle;
 import it.uniroma3.main.util.inout.TSVReader;
 
@@ -35,10 +33,10 @@ public class MarkupParser {
      */
     public MarkupParser(){
 	this.blacklist_wikilinks = new HashSet<String>();
-	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
-	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
+	this.blacklist_wikilinks.addAll(TSVReader.getFirstColumn2Set(Configuration.getCurrenciesList()));
+	this.blacklist_wikilinks.addAll(TSVReader.getFirstColumn2Set(Configuration.getProfessionsList()));
 	this.blacklist_names = new HashSet<String>();
-	this.blacklist_names.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
+	this.blacklist_names.addAll(TSVReader.getFirstColumn2Set(Configuration.getNationalitiesList()));
     }
 
     /**

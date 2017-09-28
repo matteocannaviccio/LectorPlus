@@ -178,8 +178,6 @@ public class Paper {
      * 
      */
     private void printExtractedFactsInfo(){
-	Configuration.updateParameter("outputFolder", "extractor/NaiveBayes-25-0.4");
-
 	CounterMap<String> wikidWithFacts = new CounterMap<String>();
 	int abstractSection = 0;
 	int otherSection = 0;

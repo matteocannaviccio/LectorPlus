@@ -22,7 +22,7 @@ import it.uniroma3.model.model.Model.ModelType;
  *
  */
 public class Main {
-    
+
     /**
      * 
      * @param args
@@ -87,7 +87,7 @@ public class Main {
 	    System.out.println("-----------------");
 	    // here we derive model table
 	    Lector.getDbmodel(false).deriveModelTable();
-	    Model model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", 1, 25, ModelType.NaiveBayes, 0.4);
+	    Model model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", Configuration.getMinF(), Configuration.getPercUnl(), ModelType.NaiveBayes, Configuration.getMajThr());
 	    model.printStats();
 	    FactsExtractor extractor = new FactsExtractor(model);
 	    extractor.runExtractOnFile(Integer.MAX_VALUE);

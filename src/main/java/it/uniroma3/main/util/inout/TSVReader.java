@@ -21,7 +21,7 @@ public class TSVReader {
      * @param path
      * @return
      */
-    public static Set<String> getLines2Set(String path){
+    public static Set<String> getFirstColumn2Set(String path){
 	Set<String> entities = new HashSet<String>();
 	try {
 	    BufferedReader br = new BufferedReader(new FileReader(new File(path)));
@@ -29,6 +29,28 @@ public class TSVReader {
 	    while((line = br.readLine()) != null){
 		String[] fields = line.split("\t");
 		entities.add(fields[0]);
+	    }
+	    br.close();
+
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return entities;
+    }
+    
+    /**
+     * Reads an N-columns COMPRESSED (e.g. bz2) TSV file and put the whole lines in a set.
+     *
+     * @param path
+     * @return
+     */
+    public static Set<String> getLines2Set(String path){
+	Set<String> entities = new HashSet<String>();
+	try {
+	    BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
+	    String line;
+	    while((line = br.readLine()) != null){
+		entities.add(line);
 	    }
 	    br.close();
 

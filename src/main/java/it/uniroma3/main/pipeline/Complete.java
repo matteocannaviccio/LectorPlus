@@ -2,6 +2,7 @@ package it.uniroma3.main.pipeline;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.main.bean.WikiArticle.ArticleType;
 import it.uniroma3.main.pipeline.articleparser.Statistics;
@@ -85,7 +86,7 @@ public class Complete {
 	System.out.println("-----------------");
 	// here we derive model table
 	Lector.getDbmodel(false).deriveModelTable();
-	Model model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", 1, 25, ModelType.NaiveBayes, 0.4);
+	Model model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", Configuration.getMinF(), Configuration.getPercUnl(), ModelType.NaiveBayes, Configuration.getMajThr());
 	FactsExtractor extractor = new FactsExtractor(model);
 	extractor.runExtractOnFile(Integer.MAX_VALUE);
     }

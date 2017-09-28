@@ -46,7 +46,7 @@ public class FSMSeed {
     public FSMSeed(OpenNLP expert){
 	this.finiteStateMachine = createFSM();
 	this.expert = expert;
-	this.stopwords = TSVReader.getLines2Set(Configuration.getStopwordsList());
+	this.stopwords = TSVReader.getFirstColumn2Set(Configuration.getStopwordsList());
     }
 
 

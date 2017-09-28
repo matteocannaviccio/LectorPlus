@@ -58,10 +58,10 @@ public class DBPediaSpotlight {
 	client = new HttpClient(new MultiThreadedHttpConnectionManager());
 
 	this.blacklist_wikilinks = new HashSet<String>();
-	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getCurrenciesList()));
-	this.blacklist_wikilinks.addAll(TSVReader.getLines2Set(Configuration.getProfessionsList()));
+	this.blacklist_wikilinks.addAll(TSVReader.getFirstColumn2Set(Configuration.getCurrenciesList()));
+	this.blacklist_wikilinks.addAll(TSVReader.getFirstColumn2Set(Configuration.getProfessionsList()));
 	this.blacklist_names = new HashSet<String>();
-	this.blacklist_names.addAll(TSVReader.getLines2Set(Configuration.getNationalitiesList()));
+	this.blacklist_names.addAll(TSVReader.getFirstColumn2Set(Configuration.getNationalitiesList()));
     }
 
     /**

@@ -38,7 +38,6 @@ public class Extractor {
 	for (ModelType type : models){
 	    if (type.equals(ModelType.ModelTextExt)){
 		model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", 1, -1, type, -0.0);
-		Configuration.updateParameter("outputFolder", "extractor/" + model.getName());
 		FactsExtractor extractor = new FactsExtractor(model);
 		extractor.runExtractOnFile(limit);
 	    }else{
