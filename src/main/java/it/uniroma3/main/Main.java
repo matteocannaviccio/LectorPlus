@@ -31,7 +31,7 @@ public class Main {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+	//Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
 	    System.out.println("\n===================================");
