@@ -1,5 +1,7 @@
 package it.uniroma3.main;
 
+import java.util.concurrent.TimeUnit;
+
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.config.WikiLanguage;
@@ -29,7 +31,7 @@ public class Main {
      */
     public static void main(String[] args){
 	Configuration.init(args);
-	//Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
 	    System.out.println("\n===================================");
@@ -67,6 +69,9 @@ public class Main {
      * @param inputPath
      */
     protected static void singleStepProcess(WikiLanguage lang){
+	
+	long first_start_time = System.currentTimeMillis();
+
 	if (Configuration.getPipelineSteps().contains("AP")){
 	    ArticleParser ap = new ArticleParser(Configuration.getOriginalArticlesFile(), Configuration.getParsedArticlesFile());
 	    ap.pipelinedProcess();
@@ -81,6 +86,15 @@ public class Main {
 	    TriplesExtractor te = new TriplesExtractor(Configuration.getAugmentedArticlesFile());
 	    te.pipelinedProcess();
 	}
+	
+	long first_end_time = System.currentTimeMillis();
+	
+	System.out.println("\nExecution time");
+	System.out.println("---------------");
+	long duration = first_end_time - first_start_time;
+	System.out.println(TimeUnit.MILLISECONDS.toMinutes(duration) + " minutes --> " + TimeUnit.MILLISECONDS.toHours(duration) +" hours\n");
+	
+	Lector.getTriplifier().printStats();
 
 	if (Configuration.getPipelineSteps().contains("FE")){
 	    System.out.println("\nModel creation");

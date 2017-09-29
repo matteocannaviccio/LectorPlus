@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -44,8 +45,8 @@ public class TSVReader {
      * @param path
      * @return
      */
-    public static Set<String> getLines2Set(String path){
-	Set<String> entities = new HashSet<String>();
+    public static List<String> getLines2Set(String path){
+	List<String> entities = new ArrayList<String>();
 	try {
 	    BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
 	    String line;

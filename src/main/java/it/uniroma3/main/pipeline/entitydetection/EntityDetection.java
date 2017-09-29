@@ -62,8 +62,7 @@ public class EntityDetection {
 	    .forEach(s -> outputWriter.println(s.toJson()));
 
 	    long end_time = System.currentTimeMillis();
-	    System.out.print("Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.\t");
-	    System.out.println("Reading next batch.");
+	    System.out.printf("%-30s %s\n", "Done in: " + TimeUnit.MILLISECONDS.toSeconds(end_time - start_time) + " sec.", "Reading next batch.");
 	    articles.clear();
 	}
 	

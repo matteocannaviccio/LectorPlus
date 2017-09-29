@@ -14,6 +14,7 @@ import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.main.bean.WikiTriple;
 import it.uniroma3.main.bean.WikiTriple.TType;
+import it.uniroma3.main.pipeline.triplesextractor.placeholders.PlaceholderFilter;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.main.util.Ranking;
 import it.uniroma3.main.util.inout.ResultsWriterWrapper;
@@ -42,6 +43,8 @@ public class FactsExtractor {
     private Map<String, Integer> relations_stats;
     private Map<String, Integer> phrases_stats;
     private Map<String, Integer> typed_phrases_stats;
+    
+    private PlaceholderFilter placeholderFilter;
 
     /**
      * 
@@ -55,8 +58,10 @@ public class FactsExtractor {
 	this.phrases_stats = new ConcurrentHashMap<String, Integer>();
 	this.typed_phrases_stats = new ConcurrentHashMap<String, Integer>();
 
-	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile());
-	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile());
+	this.writer_facts = new NTriplesWriter(Configuration.getOutputFactsFile(model.getName()));
+	this.writer_provenance = new ResultsWriterWrapper(Configuration.getProvenanceFile(model.getName()));
+	
+	placeholderFilter = PlaceholderFilter.getPlaceholderFilter();
     }
 
 
@@ -137,7 +142,7 @@ public class FactsExtractor {
 
 		    WikiTriple t = new WikiTriple(wikid, section, sentence, phrase_original, phrase_placeholder, pre, post, 
 			    subject, object, subject_type, object_type, TType.JOINABLE.name());
-		    if (!t.getWikiSubject().equals(t.getWikiObject()))
+		    if (!t.getWikiSubject().equals(t.getWikiObject()) && !placeholderFilter.replace(phrase_original).equals("CONJUNCTION"))
 			processRecord(t);
 		}
 	    }
@@ -170,19 +175,18 @@ public class FactsExtractor {
      */
     public void runExtractOnFile(int limit){
 	runExtractionFacts(limit);
-
+	
+	// write stats ...
 	try {
-	    this.relations_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputRelationsStatsFile())));
-	    this.phrases_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputPhrasesStatsFile())));
-	    this.typed_phrases_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputTypedPhrasesStatsFile())));
+	    this.relations_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputRelationsStatsFile(model.getName()))));
+	    this.phrases_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputPhrasesStatsFile(model.getName()))));
+	    this.typed_phrases_stats_writer = new BufferedWriter(new FileWriter(new File(Configuration.getOutputTypedPhrasesStatsFile(model.getName()))));
 	    writeStats(relations_stats, relations_stats_writer);
 	    writeStats(phrases_stats, phrases_stats_writer);
 	    writeStats(typed_phrases_stats, typed_phrases_stats_writer);
-
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-
 
 	// close the output stream
 	try {
@@ -192,11 +196,9 @@ public class FactsExtractor {
 	    e.printStackTrace();
 	}
 
-	String nameModel = this.model.getName();
-
 	System.out.println("\nFacts extraction");
 	System.out.println("-----------------");
-	System.out.printf("\t%-20s %-20s %-20s %-20s %s\n", "MODEL: " + nameModel, " - FACTS: " + this.extracted_facts, " - RELATIONS: " + relations_stats.size(), " - PHRASES: " +phrases_stats.size(), " - TYPED-PHRASES: " +typed_phrases_stats.size());
+	System.out.printf("\t%-20s %-20s %-20s %-20s %s\n", "MODEL: " + model.getName(), " - FACTS: " + this.extracted_facts, " - RELATIONS: " + relations_stats.size(), " - PHRASES: " +phrases_stats.size(), " - TYPED-PHRASES: " +typed_phrases_stats.size());
     }
 
 

@@ -41,7 +41,7 @@ public class Configuration {
 	System.out.printf("\t%-30s %s\n", "Data Folder:", Configuration.getDataFolder());
 	System.out.printf("\t%-30s %s\n", "Input Wikipedia:", Configuration.getOriginalArticlesFile());
 	System.out.printf("\t%-30s %s\n", "Input DBPedia:", Configuration.getDBPediaDumpFile());
-	System.out.printf("\t%-30s %s\n", "Output file:", Configuration.getOutputFactsFile());
+	System.out.printf("\t%-30s %s\n", "Output Folder:", Configuration.getOutputFolder());
 	System.out.printf("\t%-30s %s\n", "---","");
 	System.out.printf("\t%-30s %s\n", "Pipeline:", Configuration.getPipelineSteps().toString());
 	System.out.printf("\t%-30s %s\n", "Tot. Articles:", (Configuration.getNumArticlesToProcess() == -1) ? "ALL" : Configuration.getNumArticlesToProcess());
@@ -314,32 +314,32 @@ public class Configuration {
 	return getDBModel().replace(".db", "_cross.db");
     }
 
-    public static String getOutputFactsFile(){
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "facts.bz2";
+    public static String getOutputFactsFile(String modelName){
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "facts.bz2";
     }
 
-    public static String getOutputOntologicalFactsFile(){
-	return getModelFolder() + "/"+ getLanguageCode() + "_" + "facts_ont.bz2";
+    public static String getOutputOntologicalFactsFile(String modelName){
+	return getModelFolder(modelName) + "/"+ getLanguageCode() + "_" + "facts_ont.bz2";
     }
 
-    public static String getProvenanceFile() {
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "provenance.bz2";
+    public static String getProvenanceFile(String modelName) {
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "provenance.bz2";
     }
 
-    public static String getProvenanceOntologicalFile() {
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "provenance_ont.bz2";
+    public static String getProvenanceOntologicalFile(String modelName) {
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "provenance_ont.bz2";
     }
 
-    public static String getOutputTypedPhrasesStatsFile() {
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "typedphrases_stats.tsv";
+    public static String getOutputTypedPhrasesStatsFile(String modelName) {
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "typedphrases_stats.tsv";
     }
 
-    public static String getOutputPhrasesStatsFile() {
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "phrases_stats.tsv";
+    public static String getOutputPhrasesStatsFile(String modelName) {
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "phrases_stats.tsv";
     }
 
-    public static String getOutputRelationsStatsFile() {
-	return getModelFolder() + "/" + getLanguageCode() + "_" + "relations_stats.tsv";
+    public static String getOutputRelationsStatsFile(String modelName) {
+	return getModelFolder(modelName) + "/" + getLanguageCode() + "_" + "relations_stats.tsv";
     }
 
     /***********************************************************************/
@@ -538,8 +538,8 @@ public class Configuration {
 	return getLectorModelName() + "-" + getMinF() + "-" + getPercUnl() + "-" + getMajThr();
     }
     
-    private static String getModelFolder(){
- 	String folderPath = getOutputFolder() + "/" + getModelCode();
+    private static String getModelFolder(String modelName){
+ 	String folderPath = getOutputFolder() + "/" + modelName;
  	File folder = new File(folderPath);
  	if(!folder.exists())
  	    folder.mkdirs();

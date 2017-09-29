@@ -23,10 +23,10 @@ public class Extractor {
 
 	List<ModelType> models = new ArrayList<ModelType>();
 	models.add(ModelType.NaiveBayes);
-	models.add(ModelType.ModelTextExt);
+	//models.add(ModelType.ModelTextExt);
 
 	List<Double> majorities = new ArrayList<Double>();
-	majorities.add(0.0);
+	//majorities.add(0.0);
 	majorities.add(0.4);
 
 	List<Integer> percentages = new ArrayList<Integer>();
@@ -43,8 +43,7 @@ public class Extractor {
 	    }else{
 		for (Double majThr : majorities){
 		    for (Integer t : percentages){
-			model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", 1, t.intValue(), type, majThr);
-			Configuration.updateParameter("outputFolder", "extractor/" + model.getName());
+			model = Model.getNewModel(Lector.getDbmodel(false), "model_triples", 1, t.intValue(), type, majThr.doubleValue());
 			FactsExtractor extractor = new FactsExtractor(model);
 			extractor.runExtractOnFile(limit);
 		    }
@@ -70,7 +69,7 @@ public class Extractor {
 	    System.out.println("-------------------------");
 
 	    //Extractor.run(Integer.MAX_VALUE);
-	    Extractor.run(100000);
+	    Extractor.run(500000);
 
 	    Lector.close();
 	}

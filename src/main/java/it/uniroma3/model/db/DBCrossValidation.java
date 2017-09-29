@@ -43,8 +43,9 @@ public class DBCrossValidation extends DBLector{
 	db_source.createNecessaryIndexes();
 	createSchema(nParts);
 
-	// retrieve all the labeled facts from the DB
-	List<String> all_facts = db_source.retrieveAllLabeled("labeled_triples");
+	// retrieve all the facts from the DB
+	List<String> all_facts = new ArrayList<String>();
+	all_facts.addAll(db_source.retrieveAllLabeled("labeled_triples"));
 	all_facts.addAll(db_source.retrieveAllUnlabeled("unlabeled_triples"));
 
 	System.out.println("\t-> retrieved all the triples " + all_facts.size() );

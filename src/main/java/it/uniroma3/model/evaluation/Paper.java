@@ -189,7 +189,7 @@ public class Paper {
 	CounterMap<String> typedphrase2counts = new CounterMap<String>();
 
 	try {
-	    BufferedReader reader = Compressed.getBufferedReaderForCompressedFile(Configuration.getProvenanceFile());
+	    BufferedReader reader = Compressed.getBufferedReaderForCompressedFile(Configuration.getProvenanceFile(Configuration.getModelCode()));
 	    String line;
 	    while((line = reader.readLine())!= null){
 		try{
