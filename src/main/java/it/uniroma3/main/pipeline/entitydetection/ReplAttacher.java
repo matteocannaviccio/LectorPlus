@@ -37,6 +37,27 @@ public class ReplAttacher {
     /**
      * To match a seed it has to be preceded by a determiner (the) and can not be followed by
      * a term with a capital letter or an other entity.
+     * TODO: english specific rule.
+     * 
+     * @param article
+     * @return
+     */
+    private List<Pair<String, String>> getSeedRegex(WikiArticle article){
+	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
+	if (article.getSeeds() != null){
+	    for(String seed : article.getSeeds()){
+		if (seed != null){
+		    regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "<<PE-SEED><" + article.getWikid() + "><the " + seed +">>"));
+		    regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "<<PE-SEED><" + article.getWikid() + "><The " + seed +">>"));
+		}
+	    }
+	}
+	return regexes;
+    }
+
+    /**
+     * To match a seed it has to be preceded by a determiner (the) and can not be followed by
+     * a term with a capital letter or an other entity.
      * 
      * @param name
      * @return
@@ -44,6 +65,7 @@ public class ReplAttacher {
     private String createRegexSeed(String name){
 	return "((?<!<[A-Z-]<)\\b)(" + Pattern.quote(name) + ")\\b(?![^<]*?>>|\\s[A-Z][a-z]++|-|<| <)";
     }
+
 
     /**
      * 
@@ -54,31 +76,14 @@ public class ReplAttacher {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	String pronoun = article.getPronoun();
 	if(pronoun != null){
-	    if (!pronoun.equals("It")){
-		regexes.add(Pair.make("((?<=\\s)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
-		regexes.add(Pair.make("((?<=\\. |\\n|^)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun) + ")\\b(?![^<]*?>>)", "<PE-PRON<" + article.getWikid() + ">>"));
+	    if (!pronoun.equals("It") && !pronoun.equals("They")){
+		regexes.add(Pair.make("((?<=\\s)(?<!<[A-Z-]<)\\b)(" + Pattern.quote(pronoun.toLowerCase()) + ")\\b(?![^<]*?>>)", "<<PE-PRON><" + article.getWikid() + "><" + pronoun.toLowerCase() +">>"));
+		regexes.add(Pair.make("(^|\\.\\s)(" + Pattern.quote(pronoun) + ")\\b(?![^<]*?>>)", "<<PE-PRON><" + article.getWikid() + "><" + pronoun +">>"));
 	    }
 	}
 	return regexes;
     }
 
-    /**
-     * 
-     * @param article
-     * @return
-     */
-    private List<Pair<String, String>> getSeedRegex(WikiArticle article){
-	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
-	if (article.getSeeds() != null){
-	    for(String seed : article.getSeeds()){
-		if (seed != null){
-		    regexes.add(Pair.make(createRegexSeed("the " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
-		    regexes.add(Pair.make(createRegexSeed("The " + seed.toLowerCase()), "<PE-SEED<" + article.getWikid() + ">>"));
-		}
-	    }
-	}
-	return regexes;
-    }
 
     /**
      * 
@@ -89,8 +94,8 @@ public class ReplAttacher {
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
 	String disamb = article.getDisambiguation();
 	if (disamb != null){
-	    regexes.add(Pair.make(createRegexSeed("the " + disamb.toLowerCase()), "<PE-DISAMB<" + article.getWikid() + ">>"));
-	    regexes.add(Pair.make(createRegexSeed("The " + disamb.toLowerCase()), "<PE-DISAMB<" + article.getWikid() + ">>"));
+	    regexes.add(Pair.make(createRegexSeed("the " + disamb.toLowerCase()), "<<PE-DISAMB><" + article.getWikid() + "><the " + disamb + ">>"));
+	    regexes.add(Pair.make(createRegexSeed("The " + disamb.toLowerCase()), "<<PE-DISAMB><" + article.getWikid() + "><The " + disamb + ">>"));
 	}
 	return regexes;
     }
@@ -102,11 +107,16 @@ public class ReplAttacher {
      */
     private List<Pair<String, String>> getNameRegex(WikiArticle article){
 	List<Pair<String, String>> regexes = new ArrayList<Pair<String, String>>();
-	regexes.add(Pair.make(createRegexName(article.getTitle()), "<PE-TITLE<" + article.getWikid() + ">>"));
+	
+	regexes.add(Pair.make(createRegexName(article.getTitle()), "<<PE-TITLE><" + article.getWikid() + "><" + article.getTitle() + ">>"));
+	
 	for(String alias : article.getAliases())
-	    regexes.add(Pair.make(createRegexName(alias), "<PE-ALIAS<" + article.getWikid() + ">>"));
-	if (article.getSubName() != null)
-	    regexes.add(Pair.make(createRegexName(article.getSubName()), "<PE-SUBTITLE<" + article.getWikid() + ">>"));
+	    if (!alias.equals(article.getTitle()))
+		regexes.add(Pair.make(createRegexName(alias), "<<PE-ALIAS><" + article.getWikid() + "><" + alias + ">>"));
+	
+	if (article.getSubName() != null && !article.getSubName().equals(article.getTitle()) )
+	    regexes.add(Pair.make(createRegexName(article.getSubName()), "<<PE-SUBTITLE><" + article.getWikid() + "><" + article.getSubName() + ">>"));
+	
 	return regexes;
     }
 
@@ -217,13 +227,14 @@ public class ReplAttacher {
 		}
 
 		/*
-		 * If we are using DBpedia Spotlight, detect all the missing entities and split the sentences with it.
-		 * Otherwise split the sentences only.
+		 * HERE WE SPLIT BLOCKS INTO SENTENCES!
+		 * If we are using DBpedia Spotlight, detect all the missing entities and split the 
+		 * sentences inside that method, otherwise split the sentences only.
 		 */
 		if (Configuration.useDBpediaSpotlight())
 		    article.getSentences().put(block.getKey(), Lector.getDBSpot().annotateText(block.getValue(), article.getWikid()));
 		else
-		    article.getSentences().put(block.getKey(), StupidNLP.splitSentence(block.getValue()));
+		    article.getSentences().put(block.getKey(), StupidNLP.splitInSentence(block.getValue()));
 		//article.getSentences().put(block.getKey(), Lector.getNLPExpert().processBlock(block.getValue()));
 
 

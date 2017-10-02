@@ -136,8 +136,9 @@ public class ReplFinder {
 	for(String subName : stats.elementSet()){
 	    total += stats.count(subName);
 	}
+
 	/*
-	 * calculate the stats for each pronouns and return the one that is over a THRESHOLD
+	 * calculate the stats for each entry and return the one that is over a THRESHOLD
 	 */
 	String subName = null;
 	if(!stats.isEmpty()){
@@ -267,15 +268,11 @@ public class ReplFinder {
 	     * we assign subnames only to articles that describe named entities.
 	     * we check it using the presence of an alias in the first sentence.
 	     */
-	    if (Lector.getWikiLang().getLang().equals(Lang.en)){
-		article.setDisambiguation(getDisambiguation(article.getWikid()));
-		if (!article.getAliases().isEmpty()){
-		    String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
-		    article.setSubName(candidateSubname);
-		}
-	    }else{
+	    article.setDisambiguation(getDisambiguation(article.getWikid()));
+	    if (!article.getAliases().isEmpty()){
 		String candidateSubname = findSubNames(article, Configuration.getSubnameThreshold());
-		article.setSubName(candidateSubname);
+		if (!article.getTitle().equals(candidateSubname))
+		    article.setSubName(candidateSubname);
 	    }
 
 	}catch(Exception e){

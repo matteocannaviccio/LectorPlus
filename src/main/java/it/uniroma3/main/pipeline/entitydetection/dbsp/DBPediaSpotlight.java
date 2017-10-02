@@ -230,7 +230,7 @@ public class DBPediaSpotlight {
 	if (!sentence.startsWith("<"))
 	    sentence = sentence.substring(1);
 
-	for (String span : sentence.split("<.*?>>")){
+	for (String span : sentence.split("<<.*?>>")){
 	    isWorth = span.matches("^(.*?[A-Z]).*$");
 	    if (isWorth)
 		return true;
@@ -246,7 +246,7 @@ public class DBPediaSpotlight {
     public List<String> annotateText(String block, String PE) {
 	List<String> sentences = new LinkedList<String>();
 
-	for (String sentence : StupidNLP.splitSentence(block)) {
+	for (String sentence : StupidNLP.splitInSentence(block)) {
 	    if (checkIsWorth(sentence)){
 		List<Pair<String, String>> annotations = getAnnotations(sentence, PE);
 		List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();

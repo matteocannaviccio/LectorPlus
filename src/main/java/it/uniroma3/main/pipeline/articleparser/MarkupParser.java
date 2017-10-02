@@ -21,12 +21,15 @@ import it.uniroma3.main.util.inout.TSVReader;
  *
  */
 public class MarkupParser {
+    
+    public static final String WIKID_REGEX = "<<" + "((?:PE|SE)\\-[A-Z-]+)>" + "<([^>]*?)>" + "<([^>]*?)" + ">>";
 
     // this is a list of all the wikid that we do not want to highlight as entities
     private Set<String> blacklist_wikilinks;	
 
     // this is a list of all the anchor texts that we do not want to highlight as entities
     private Set<String> blacklist_names;
+    
 
     /**
      * Initalize all the lists at the creation.ß
@@ -37,6 +40,18 @@ public class MarkupParser {
 	this.blacklist_wikilinks.addAll(TSVReader.getFirstColumn2Set(Configuration.getProfessionsList()));
 	this.blacklist_names = new HashSet<String>();
 	this.blacklist_names.addAll(TSVReader.getFirstColumn2Set(Configuration.getNationalitiesList()));
+    }
+    
+    /**
+     * 
+     * @param originalText
+     * @return
+     */
+    public String removeCommonSenseWikilinks(String originalText){
+	String noCommonSenseWikilink = removeListofWikilinks(originalText);
+	noCommonSenseWikilink = removeTemplateWikilinks(noCommonSenseWikilink);
+	noCommonSenseWikilink = removeLowerCaseWikilinks(noCommonSenseWikilink);
+	return noCommonSenseWikilink;
     }
 
     /**
@@ -90,6 +105,7 @@ public class MarkupParser {
      * @param originalText
      * @return
      */
+    /*
     public String cleanEmptyTemplateWikilinks(String originalText){
 	Pattern EMPTYWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]]+)\\|" + "\\]\\]+");
 	Matcher m = EMPTYWIKILINK.matcher(originalText);
@@ -101,6 +117,7 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
+    */
 
     /**
      * Remove any wikilink from the input markup text.
@@ -110,6 +127,7 @@ public class MarkupParser {
      * @param originalText
      * @return
      */
+    /*
     public String cleanAllWikilinks(String originalText) {
 	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
 	Matcher m = ENTITY.matcher(originalText);
@@ -128,18 +146,7 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
-
-    /**
-     * 
-     * @param originalText
-     * @return
      */
-    public String removeCommonSenseWikilinks(String originalText){
-	String noCommonSenseWikilink = removeListofWikilinks(originalText);
-	noCommonSenseWikilink = removeTemplateWikilinks(noCommonSenseWikilink);
-	noCommonSenseWikilink = removeLowerCaseWikilinks(noCommonSenseWikilink);
-	return noCommonSenseWikilink;
-    }
 
 
     /**
@@ -175,8 +182,6 @@ public class MarkupParser {
 	return cleanText.toString();
     }
 
-
-
     /**
      * 
      * @param originalText
@@ -211,10 +216,10 @@ public class MarkupParser {
      * 	    [[Byzantine Empire|Byzantines]]  -->   SE-ORG<Byzantines>
      * 
      * Note that:
-     *  - we eliminate paragraphs wikilinks. For example:
+     *  - we ELIMINATE paragraphs wikilinks. For example:
      * 	    [[Byzantine Empire#History|Byzantines]]  -->   SE-ORG<Byzantines>
      * 
-     * - we eliminate only numbers wikilinks. For example:
+     * - we ELIMINATE only numbers wikilinks. For example:
      * 	    [[Fifa Word Cup#2002 Korea Japan|2000]]  -->   2000
      * 
      * @param originalText
@@ -246,6 +251,7 @@ public class MarkupParser {
 	String wikid;
 	String rendered;
 	while(m.find()){
+	    // if there is a double information: wikilink + anchor text
 	    if (m.group(2) != null){
 		wikid = m.group(2).replaceAll(" ", "_").substring(0, m.group(2).length()-1).replaceAll("#[^|]+", "");
 		if ( m.group(3) != null && m.group(5) != null){
@@ -255,7 +261,7 @@ public class MarkupParser {
 		}else{
 		    rendered = m.group(4);
 		}
-	    }else{
+	    }else{ // if wikilink and anchor text are the same
 		rendered = m.group(4);
 		wikid = m.group(4).replaceAll(" ", "_").replaceAll("#[^\\]]+", "");
 	    }
@@ -266,8 +272,8 @@ public class MarkupParser {
 		    wikid = Lector.getDBPedia().getRedirect(wikid);
 
 		/*
-		 * eliminate blacklisted entities
-		 * nationalities, currencies, professions 
+		 * eliminate blacklisted entities:
+		 * 	nationalities, currencies, professions 
 		 */
 		if (blacklist_wikilinks.contains(wikid) || blacklist_names.contains(rendered)){
 		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
@@ -277,8 +283,8 @@ public class MarkupParser {
 			if (!wikilinks.containsKey(rendered))
 			    wikilinks.put(rendered, new HashSet<String>());
 			// we quote it, for later
-			wikilinks.get(rendered).add("<" + Matcher.quoteReplacement("SE-AUG<" + wikid +  ">") + ">");
-			m.appendReplacement(cleanText, "<" + Matcher.quoteReplacement("SE-ORG<" + wikid + ">") + ">");
+			wikilinks.get(rendered).add(Matcher.quoteReplacement("<<SE-AUG><" + wikid +  ">" + "<" + rendered + ">>"));
+			m.appendReplacement(cleanText, Matcher.quoteReplacement("<<SE-ORG><" + wikid + ">" + "<" + rendered + ">>"));
 		    }else{
 			m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 		    }
@@ -296,25 +302,28 @@ public class MarkupParser {
      * Detect all the wikilinks and normalize them in text.
      * 
      * E.g.:  .
-     * 		.. artist SE-ORG<Britney_Spears> by SE-ORG<JIVE_Records>.
+     * 		.. <<SE-ORG><ABC_islands_(Lesser_Antilles)><ABC>> and <<SE-ORG><JIVE><JIVE Records>>
      * became: 
-     * 		... artist Britney Spears by JIVE Records.
+     * 		... ABC and JIVE Records.
      * 
      * @param originalText
      * @return
      */
     public String removeAllWikilinks(String originalText) {
-	Pattern WIKILINK = Pattern.compile("<[A-Z-]+" + "<([^>]*?)>>");
+	Pattern WIKILINK = Pattern.compile(WIKID_REGEX);
 	Matcher m = WIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	while(m.find()){
-	    String renderedName = m.group(1).replaceAll("_", " ");
+	    String renderedName = m.group(3);
 	    m.appendReplacement(cleanText, Matcher.quoteReplacement(renderedName));
 	}
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
 
+    
+    
+    
     public static void main(String[] args){
 	Configuration.init(new String[0]);
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
@@ -335,6 +344,6 @@ public class MarkupParser {
 		+ "[[Kreiszahl|]], was zugleich auch eines der ältesten [[numerische Mathematik|numerischen Verfahren]] ist.";
 
 	System.out.println(mp.harvestAllWikilinks(text, WikiArticle.makeDummyArticle()));
-	
+
     }
 }

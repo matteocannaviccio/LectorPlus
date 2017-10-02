@@ -17,6 +17,7 @@ import it.uniroma3.config.Lector;
 import it.uniroma3.main.bean.WikiArticle;
 import it.uniroma3.main.bean.WikiMVL;
 import it.uniroma3.main.bean.WikiTriple;
+import it.uniroma3.main.pipeline.articleparser.MarkupParser;
 import it.uniroma3.main.pipeline.triplesextractor.placeholders.PlaceholderFilter;
 import it.uniroma3.main.util.Pair;
 
@@ -47,11 +48,15 @@ public class Triplifier {
     private AtomicInteger specialCharCount;
     
     private AtomicInteger allEntities;
+    private AtomicInteger allPE;
+    private AtomicInteger allSE;
+    
     private AtomicInteger allTriples;
     private AtomicInteger fromWhichLabeled;
     private AtomicInteger fromWhichLabeledExpanded;
     private AtomicInteger fromWhichUnlabeled;
 
+    private Map<String, LongAdder> entitiesCount;
     private Map<String, LongAdder> placeholdersCount;
 
 	/**
@@ -73,6 +78,10 @@ public class Triplifier {
 	placeholdersCount = new ConcurrentHashMap<>();
 	
 	allEntities = new AtomicInteger();
+	allPE = new AtomicInteger();
+	allSE = new AtomicInteger();
+	entitiesCount = new ConcurrentHashMap<>();
+	    
 	allTriples = new AtomicInteger();
 	fromWhichLabeled = new AtomicInteger();
 	fromWhichLabeledExpanded = new AtomicInteger();
@@ -139,9 +148,6 @@ public class Triplifier {
 	    }
 	    break;
 	case MVL:
-	case NER_BOTH:
-	case NER_OBJ:
-	case NER_SBJ:
 	case JOINABLE_NOTYPE_BOTH:
 	case JOINABLE_NOTYPE_SBJ:
 	case JOINABLE_NOTYPE_OBJ:
@@ -162,7 +168,7 @@ public class Triplifier {
 	List<WikiTriple> triples = new ArrayList<WikiTriple>();
 
 	// find entities
-	Pattern ENTITIES = Pattern.compile("<[A-Z-][^>]*?>>");
+	Pattern ENTITIES = Pattern.compile(MarkupParser.WIKID_REGEX);
 	Matcher m = ENTITIES.matcher(sentence);
 
 	// find placeholders
@@ -173,12 +179,15 @@ public class Triplifier {
 	boolean foundObject = false;
 
 	// entities
+	String method;
+	
+	//triple
 	String pre = ""; 
 	String subject = null;
 	String object = null;
 	String post = "";
 	String phrase = "";
-
+	
 	// delimiters
 	int subjectStartPos = 0;
 	int subjectEndPos = 0;
@@ -189,6 +198,12 @@ public class Triplifier {
 
 	while(m.find()){
 	    allEntities.incrementAndGet();
+	    method = m.group(1);
+	    if (method.contains("PE"))
+		allPE.incrementAndGet();
+	    else
+		allSE.incrementAndGet();
+	    entitiesCount.computeIfAbsent(method, k -> new LongAdder()).increment();
 	    
 	    if (!foundSubject) {
 		foundSubject = true;
@@ -265,7 +280,7 @@ public class Triplifier {
 	while(m.find()){
 	    WikiMVL mv = new WikiMVL(m.group(0), section, wikid);
 	    this.mvlists.add(mv);
-	    sentence = m.replaceAll(Matcher.quoteReplacement("<MVL<" + mv.getCode() + ">>"));
+	    sentence = m.replaceAll(Matcher.quoteReplacement("<<MVL><" + mv.getCode() + "><" + mv.getSpanOfText() + ">>"));
 	}
 	return sentence;
     }
@@ -330,7 +345,7 @@ public class Triplifier {
      * @return
      */
     private String replaceEntities(String spanNCharacters){
-	Pattern ENTITIES = Pattern.compile("<[A-Z-][^>]*?>>");	// find entities
+	Pattern ENTITIES = Pattern.compile("<<.*?>>");	// find entities
 	Matcher m = ENTITIES.matcher(spanNCharacters);
 	StringBuffer buf = new StringBuffer();
 	while(m.find()){
@@ -341,9 +356,18 @@ public class Triplifier {
     }
 
     public void printStats(){
-	System.out.println("\nStats of phrases and placeholders");
+	System.out.println("\nStats of entities");
 	System.out.println("----------------------------------");
 	System.out.println("\t # all entities: " + withSuffix(allEntities.intValue()));
+	System.out.println("\t # primary (PE): " + withSuffix(allPE.intValue()));
+	System.out.println("\t # secondary (SE): " + withSuffix(allSE.intValue()));
+	System.out.println("");
+	for (Map.Entry<String, LongAdder> methods : this.entitiesCount.entrySet()){
+	    System.out.println("\t" + methods.getKey() + " : " + methods.getValue().intValue());
+	}
+	
+	System.out.println("\nStats of phrases and placeholders");
+	System.out.println("----------------------------------");
 	System.out.println("\t # all triples: " + withSuffix(allTriples.intValue()));
 	System.out.println("\t # used: " + withSuffix(fromWhichLabeled.intValue() + fromWhichUnlabeled.intValue()));
 	System.out.println("\t # labeled triples: " + withSuffix(fromWhichLabeled.intValue()));

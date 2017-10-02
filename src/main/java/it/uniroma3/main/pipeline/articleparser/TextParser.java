@@ -351,7 +351,7 @@ public class TextParser {
 	    firstSentence = firstSentence.replaceAll("\n{2,}", "\n");			// remove double new lines
 	    firstSentence = firstSentence.replaceAll(" , ", ", ").trim();		// remove space before commma
 	    firstSentence = Lector.getMarkupParser().removeAllWikilinks(firstSentence);	// remove wikilinks: <SE-ORG<...>> become ...
-	    firstSentence = StupidNLP.splitSentence(firstSentence).get(0);	   	// here we use a "light" sentence splitter
+	    firstSentence = StupidNLP.splitInSentence(firstSentence).get(0);	   	// here we use a "light" sentence splitter
 	}catch(Exception e){}
 	return firstSentence;
     }

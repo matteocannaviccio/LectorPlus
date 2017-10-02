@@ -84,7 +84,7 @@ public class Annotation {
      * 
      */
     public String toString(String type){
-	return "<" + type + "-DBPS<" + this.wikid + ">>";
+	return "<<" + type + "-DBPS><" + this.wikid + "><" + this.surfaceForm + ">>";
 
     }
 

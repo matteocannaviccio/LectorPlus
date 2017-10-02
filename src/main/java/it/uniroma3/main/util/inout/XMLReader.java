@@ -113,7 +113,7 @@ public class XMLReader{
     /**
      * 
      */
-    public void closeBuffer(){
+    public void close(){
 	try {
 	    this.br.close();
 	} catch (IOException e) {

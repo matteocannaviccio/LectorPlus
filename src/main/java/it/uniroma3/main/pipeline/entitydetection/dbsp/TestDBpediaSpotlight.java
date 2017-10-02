@@ -10,7 +10,7 @@ public class TestDBpediaSpotlight {
     public static void main(String[] args){
 	Configuration.init(args);
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
-	Configuration.updateParameter("language", "en");
+	Configuration.updateParameter("language", "fr");
 	Configuration.updateParameter("useSpotlight", "yes");
 	Configuration.printFullyDetails();
 	System.out.println("\n------------------------------------");
@@ -23,7 +23,7 @@ public class TestDBpediaSpotlight {
 
     private static void testSpotlight(WikiLanguage wikiLang) {
 	Lector.init("AP,ED");
-	String text = "En 1937, <PE-SUBTITLE<Aldous_Huxley_Sweden>> s'installe à <SE-ORG<Hollywood>> en <SE-AUG<États-Unis>> avec sa femme et Son ami.";
+	String text = "En 1937, Aldous Huxley s'installe à <SE-ORG<Hollywood>> en <SE-AUG<États-Unis>> avec sa femme et Son ami.";
 	System.out.println(Lector.getDBSpot().annotateText(text, "Aldous_Huxley"));
 	Lector.close();
     }

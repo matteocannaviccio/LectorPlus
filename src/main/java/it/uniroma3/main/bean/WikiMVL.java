@@ -19,6 +19,7 @@ public class WikiMVL {
     private String wikid;
     private List<String> listWikid;
     private String type;
+    private String spanOfText;
 
     /**
      * 
@@ -27,6 +28,7 @@ public class WikiMVL {
     public WikiMVL(String spanOfText, String section, String wikid){
 	this.wikid = wikid;
 	this.section = section;
+	this.spanOfText = spanOfText;
 	this.listWikid = extractList(spanOfText);
 	this.code = getId();
 	this.type = mineType();
@@ -173,6 +175,13 @@ public class WikiMVL {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * @return the spanOfText
+     */
+    public String getSpanOfText() {
+        return spanOfText;
     }
 
 }

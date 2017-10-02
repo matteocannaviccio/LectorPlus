@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import it.uniroma3.config.Lector;
+import it.uniroma3.main.pipeline.articleparser.MarkupParser;
 /**
  * 
  * @author matteo
@@ -18,9 +19,6 @@ public class WikiTriple {
    	JOINABLE_NOTYPE_BOTH,
    	JOINABLE_NOTYPE_SBJ,
    	JOINABLE_NOTYPE_OBJ,
-   	NER_BOTH,
-   	NER_SBJ,
-   	NER_OBJ,
    	DROP
        }
 
@@ -113,35 +111,28 @@ public class WikiTriple {
 	    this.type = TType.MVL;
 	    return;
 	}
+	
 	if (isWikiEntity(this.subject) && isWikiEntity(this.object)){
 	    if (!getSubjectType().equals("[none]") && !getObjectType().equals("[none]")){
 		this.type = TType.JOINABLE;
 		return;
 	    }
+	    
 	    if (getSubjectType().equals("[none]") && getObjectType().equals("[none]")){
 		this.type = TType.JOINABLE_NOTYPE_BOTH;
 		return;
 	    }
+	    
 	    if (!getSubjectType().equals("[none]") && getObjectType().equals("[none]")){
 		this.type = TType.JOINABLE_NOTYPE_OBJ;
 		return;
 	    }
+	    
 	    if (getSubjectType().equals("[none]") && !getObjectType().equals("[none]")){
 		this.type = TType.JOINABLE_NOTYPE_SBJ;
 		return;
 	    }
-	}
-	if (isNEREntity(this.subject) && isNEREntity(this.object)){
-	    this.type = TType.NER_BOTH;
-	    return;
-	}
-	if (isNEREntity(this.subject) && isWikiEntity(this.object)){
-	    this.type = TType.NER_SBJ;
-	    return;
-	}
-	if (isWikiEntity(this.subject) && isNEREntity(this.object)){
-	    this.type = TType.NER_OBJ;
-	    return;
+	    
 	}
 	this.type = TType.DROP;
     }
@@ -157,27 +148,12 @@ public class WikiTriple {
      */
     private boolean isWikiEntity(String entity) {
 	boolean isJoinable = false;
-	Pattern joinableEntity = Pattern.compile("^<(PE|SE)-(AUG|ORG|SEED|TITLE|SUBTITLE|PRON|ALIAS|DBPS)<[^>]*?>>$");
+	Pattern joinableEntity = Pattern.compile("^" + MarkupParser.WIKID_REGEX + "$");
 	Matcher m = joinableEntity.matcher(entity);
 	if(m.matches()){
 	    isJoinable = true;
 	}
 	return isJoinable;    
-    }
-
-    /**
-     * Reg-ex that defines an NER entity.
-     * Those annotated entities are the ones that can be found using a NER tool.
-     * @return 
-     */
-    private boolean isNEREntity(String entity) {
-	boolean isNER = false;
-	Pattern NEREntity = Pattern.compile("^<(PERSON|LOCATION|ORGANIZATION)<[^>]*?>>$");
-	Matcher m = NEREntity.matcher(entity);
-	if(m.matches()){
-	    isNER = true;
-	}
-	return isNER;    
     }
 
     /**
@@ -187,7 +163,7 @@ public class WikiTriple {
      */
     private boolean isMVLEntity(String entity) {
 	boolean isMVL = false;
-	Pattern MVLEntity = Pattern.compile("^<(MVL)<[^>]*?>>$");
+	Pattern MVLEntity = Pattern.compile("^<<MVL>><([^>]*?)><([^>]*?)>>$");
 	Matcher m = MVLEntity.matcher(entity);
 	if(m.matches()){
 	    isMVL = true;
@@ -215,7 +191,7 @@ public class WikiTriple {
     public String getEntityType(String entity) {
 	String type = "[none]";
 	// make sure it makes sense to qyery the type
-	if (isWikiEntity(entity) && !isMVLEntity(entity) && !isNEREntity(entity)){
+	if (isWikiEntity(entity) && !isMVLEntity(entity)){
 	    type = Lector.getDBPedia().getType(getWikipediaName(entity));
 	}
 	return type;
@@ -229,10 +205,10 @@ public class WikiTriple {
      */
     private String getWikipediaName(String entity){
 	String dbpediaEntity = null;
-	Pattern ENTITY = Pattern.compile("<[A-Z-]+<([^>]*?)>>");
+	Pattern ENTITY = Pattern.compile(MarkupParser.WIKID_REGEX);
 	Matcher m = ENTITY.matcher(entity);
 	if(m.find()){
-	    dbpediaEntity = m.group(1);
+	    dbpediaEntity = m.group(2);
 	}
 	return dbpediaEntity;
     }
