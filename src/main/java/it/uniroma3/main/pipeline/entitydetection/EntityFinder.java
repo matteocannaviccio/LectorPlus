@@ -23,7 +23,7 @@ import it.uniroma3.main.bean.WikiArticle;
  * @author matteo
  *
  */
-public class ReplFinder {
+public class EntityFinder {
 
     /**
      * Run the FSM to detect the seeds in the articles.

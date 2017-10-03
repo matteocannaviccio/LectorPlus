@@ -19,19 +19,33 @@ import it.uniroma3.main.util.nlp.StupidNLP;
  * @author matteo
  *
  */
-public class ReplAttacher {
-
+public class EntityReplacement {
+    
     /**
-     * To match a name it has to be in a sentence sourrounded by two boarders (\\b) that are
-     * not square bracket, _ or pipe | (which are terms that are inside a wikilink).
+     * To match a name it has to be in a sentence surrounded by two boarders (\\b) that are
+     * not square bracket, _ or pipe | (which are terms that are inside a wiki-link).
+     * <p>
      * 
-     * https://regex101.com/r/qdZyYl/4
+     * https://regex101.com/r/afAe9X/1
      * 
+     * The reg-ex matches a WORD that:
+     * 
+     * follows:
+     *  - \\s[^\\sA-Z]++\\s			a space + a lower-case token (with or without numbers and special characters) + a space
+     *  	   OR
+     *  - (?:^|\\. |, |: |\\n)(?:\\w++\\s)?	a word (lower or upper case) that follows a period, a new-line, a column, or a comma + a space
+     * 
+     * is not followed by:
+     *  - \\s[A-Z][a-z]++			a space + upper-case word
+     *  - -					a dash
+     *  - <| < 					the direct start of an annotated entity
+     *  - [^>]*>> 				the direct end of the entity itself
+     *
      * @param name
      * @return
      */
-    private String createRegexName(String name){
-	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |, |: |\\n)(?:\\w++\\s)?)\\b(" + Pattern.quote(name) + ")\\b(?!\\s[A-Z][a-z]++|-|<| <)";
+    public static String createRegexName(String name) {
+	return "(" + "\\s[^\\sA-Z]++\\s" + "|" + "(?:^|\\. |, |: |\\n)(?:\\w++\\s)?"  + ")"    +   "\\b(" + Pattern.quote(name) + ")\\b"  +   "(?!\\s[A-Z][a-z]++|-|<| <|[^>]*>>)";
     }
 
     /**

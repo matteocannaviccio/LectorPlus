@@ -18,6 +18,25 @@ import it.uniroma3.main.util.nlp.StupidNLP;
 public class TextParser {
 
     private Cleaner cleaner;
+    private static Pattern INTER_WIKI_LINKS;
+    private static Pattern EXTERNAL_LINKS;
+    private static Pattern EXTERNAL_LINKS_WITH_TEXT;
+    private static Pattern BR;
+    private static Pattern REF1;
+    private static Pattern REF2;
+    private static Pattern MATH1;
+    private static Pattern MATH2;
+    private static Pattern GALLERY1;
+    private static Pattern GALLERY2;
+    private static Pattern HTML_COMMENT;
+    private static Pattern HTML_TAGS;
+    private static Pattern UNIT_CONVERSION1;
+    private static Pattern UNIT_CONVERSION2;
+    private static Pattern LANG1;
+    private static Pattern LANG2;
+    private static Pattern LANG3_JAP;
+    private static Pattern ALIASES;
+    private static Pattern PARENTHESIS;				// detect parenthesis and content
 
     /**
      * 
@@ -25,6 +44,25 @@ public class TextParser {
      */
     public TextParser(){
 	this.cleaner = new Cleaner();
+	INTER_WIKI_LINKS = Pattern.compile("\\[\\[[a-z\\-]+:[^|\\]]+\\]\\]");
+	EXTERNAL_LINKS = Pattern.compile("\\[http[^\\s]+\\]");
+	EXTERNAL_LINKS_WITH_TEXT = Pattern.compile("\\[http[^\\s]+((\\s)[^\\]]+)?\\]");
+	BR = Pattern.compile("(<|&lt;|&#60;)br */(>|&gt;|&#62;)");
+	REF1 = Pattern.compile("(<|&lt;|&#60;)ref[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
+	REF2 = Pattern.compile("(<|&lt;|&#60;)ref.*?(<|&lt;|&#60;)/ref(>|&gt;|&#62;)", Pattern.DOTALL);
+	MATH1 = Pattern.compile("(<|&lt;|&#60;)math[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
+	MATH2 = Pattern.compile("(<|&lt;|&#60;)math.*?(<|&lt;|&#60;)/math(>|&gt;|&#62;)", Pattern.DOTALL);
+	GALLERY1 = Pattern.compile("(<|&lt;|&#60;)gallery[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
+	GALLERY2 = Pattern.compile("(<|&lt;|&#60;)gallery.*?(<|&lt;|&#60;)/gallery(>|&gt;|&#62;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	HTML_COMMENT = Pattern.compile("(<|&lt;|&#60;)!--.*?--(>|&gt;|&#62;)", Pattern.DOTALL);
+	HTML_TAGS = Pattern.compile("<[^>]+>");
+	UNIT_CONVERSION1 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\}\\}");
+	UNIT_CONVERSION2 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\|[^}]+\\}\\}");
+	LANG1 = Pattern.compile("\\{\\{lang\\|[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+	LANG2 = Pattern.compile("\\{\\{lang-[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+	LANG3_JAP = Pattern.compile("\\{\\{Nihongo\\|([^\\|]+)\\|[^\\{\\}]+?\\}\\}", Pattern.CASE_INSENSITIVE);
+	ALIASES = Pattern.compile("'''('')?([^\\{\\}\\(\\)\\+\\*]*?)('')?'''");
+	PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*(?!>)");
     }
 
     /**
@@ -109,9 +147,6 @@ public class TextParser {
      * @return
      */
     private String removeInterWikiLinks(String s) {
-	Pattern INTER_WIKI_LINKS = Pattern.compile("\\[\\[[a-z\\-]+:[^|\\]]+\\]\\]");
-	Pattern EXTERNAL_LINKS = Pattern.compile("\\[http[^\\s]+\\]");
-	Pattern EXTERNAL_LINKS_WITH_TEXT = Pattern.compile("\\[http[^\\s]+((\\s)[^\\]]+)?\\]");
 	s = INTER_WIKI_LINKS.matcher(s).replaceAll(" ");
 	s = EXTERNAL_LINKS.matcher(s).replaceAll("");
 	s = EXTERNAL_LINKS_WITH_TEXT.matcher(s).replaceAll("$1");
@@ -128,13 +163,6 @@ public class TextParser {
      * @return
      */ 
     private String removeRefs(String s) {
-	Pattern BR = Pattern.compile("(<|&lt;|&#60;)br */(>|&gt;|&#62;)");
-	Pattern REF1 = Pattern.compile("(<|&lt;|&#60;)ref[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern REF2 = Pattern.compile("(<|&lt;|&#60;)ref.*?(<|&lt;|&#60;)/ref(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern MATH1 = Pattern.compile("(<|&lt;|&#60;)math[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern MATH2 = Pattern.compile("(<|&lt;|&#60;)math.*?(<|&lt;|&#60;)/math(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern GALLERY1 = Pattern.compile("(<|&lt;|&#60;)gallery[^/]+/(>|&gt;|&#62;)", Pattern.DOTALL);
-	Pattern GALLERY2 = Pattern.compile("(<|&lt;|&#60;)gallery.*?(<|&lt;|&#60;)/gallery(>|&gt;|&#62;)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	s = BR.matcher(s).replaceAll(""); 
 	s = REF1.matcher(s).replaceAll("");
 	s = REF2.matcher(s).replaceAll("");
@@ -167,7 +195,6 @@ public class TextParser {
      * @return
      */
     private String removeHtmlComments(String s) {
-	Pattern HTML_COMMENT = Pattern.compile("(<|&lt;|&#60;)!--.*?--(>|&gt;|&#62;)", Pattern.DOTALL);
 	s = HTML_COMMENT.matcher(s).replaceAll("");
 	return s;
     }
@@ -179,8 +206,6 @@ public class TextParser {
      * @return
      */
     private String fixUnitConversion(String s) {
-	Pattern UNIT_CONVERSION1 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\}\\}");
-	Pattern UNIT_CONVERSION2 = Pattern.compile("\\{\\{convert\\|(\\d+)\\|([^|]+)\\|[^}]+\\}\\}");
 	String t = UNIT_CONVERSION1.matcher(s).replaceAll("$1 $2");
 	return UNIT_CONVERSION2.matcher(t).replaceAll("$1 $2");
     }
@@ -195,9 +220,6 @@ public class TextParser {
      * @return
      */
     private String fixLangTemplate(String s) {
-	Pattern LANG1 = Pattern.compile("\\{\\{lang\\|[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
-	Pattern LANG2 = Pattern.compile("\\{\\{lang-[^\\|]+\\|([^\\{\\|]+)\\}\\}", Pattern.CASE_INSENSITIVE);
-	Pattern LANG3_JAP = Pattern.compile("\\{\\{Nihongo\\|([^\\|]+)\\|[^\\{\\}]+?\\}\\}", Pattern.CASE_INSENSITIVE);
 	String t = LANG1.matcher(s).replaceAll("$1");
 	t = LANG2.matcher(t).replaceAll("$1");
 	t = LANG3_JAP.matcher(t).replaceAll("$1");
@@ -211,7 +233,6 @@ public class TextParser {
      * @return
      */
     private String removeHtmlTags(String s) {
-	Pattern HTML_TAGS = Pattern.compile("<[^>]+>");
 	return HTML_TAGS.matcher(s).replaceAll("");
     }
 
@@ -259,7 +280,6 @@ public class TextParser {
     public List<String> getAlias(String block) {
 	List<String> aliases = new LinkedList<String>();
 	// we add the constraint of "{" and "}" because we remove {{template}} after this step
-	Pattern ALIASES = Pattern.compile("'''('')?([^\\{\\}\\(\\)\\+\\*]*?)('')?'''");
 	Matcher m = ALIASES.matcher(block);
 	while(m.find()){
 	    String name = m.group(2).replaceAll("(\\[|\\])*", "").trim();
@@ -298,7 +318,6 @@ public class TextParser {
      * @return
      */
     private String removeEmphasis(String block, boolean keepItalics) {
-	Pattern ALIASES = Pattern.compile("'''('')?([^\\{\\}\\(\\)\\+\\*]*?)('')?'''");
 	Matcher m = ALIASES.matcher(block);
 	while(m.find()){
 	    /*
@@ -324,7 +343,6 @@ public class TextParser {
      * @return
      */
     public String removeParenthesis(String block){
-	Pattern PARENTHESIS = Pattern.compile("(\\s|_)?'*(\\([^\\(]*?\\))'*(?!>)");	// detect parenthesis and content
 	Matcher m = PARENTHESIS.matcher(block);
 	while(m.find()){
 	    block = m.replaceAll("");

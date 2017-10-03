@@ -1,4 +1,4 @@
-package it.uniroma3.main.pipeline.entitydetection;
+package it.uniroma3.main.pipeline.entitydetection.fsm;
 
 import java.util.ArrayList;
 import java.util.Arrays;

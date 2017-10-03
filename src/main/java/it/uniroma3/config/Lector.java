@@ -13,11 +13,11 @@ import it.uniroma3.main.pipeline.articleparser.MarkupParser;
 import it.uniroma3.main.pipeline.articleparser.TextParser;
 import it.uniroma3.main.pipeline.articleparser.WikiParser;
 import it.uniroma3.main.pipeline.articleparser.XMLParser;
-import it.uniroma3.main.pipeline.entitydetection.FSMNationality;
-import it.uniroma3.main.pipeline.entitydetection.FSMSeed;
-import it.uniroma3.main.pipeline.entitydetection.ReplAttacher;
-import it.uniroma3.main.pipeline.entitydetection.ReplFinder;
+import it.uniroma3.main.pipeline.entitydetection.EntityReplacement;
+import it.uniroma3.main.pipeline.entitydetection.EntityFinder;
 import it.uniroma3.main.pipeline.entitydetection.dbsp.DBPediaSpotlight;
+import it.uniroma3.main.pipeline.entitydetection.fsm.FSMNationality;
+import it.uniroma3.main.pipeline.entitydetection.fsm.FSMSeed;
 import it.uniroma3.main.pipeline.triplesextractor.Triplifier;
 import it.uniroma3.main.util.nlp.OpenNLP;
 import it.uniroma3.main.util.nlp.StanfordNLP;
@@ -47,8 +47,8 @@ public class Lector {
     private static ThreadLocal<OpenNLP> openNLPExpert;
     private static ThreadLocal<FSMSeed> fsm;
     private static ThreadLocal<FSMNationality> fsm_nat;
-    private static ReplFinder entitiesFinder;
-    private static ReplAttacher entitiesTagger;
+    private static EntityFinder entitiesFinder;
+    private static EntityReplacement entitiesTagger;
 
     /* ** DBpedia Spotlight ** */
     private static ThreadLocal<DBPediaSpotlight> dbspot;
@@ -100,8 +100,8 @@ public class Lector {
     public static void initED(){
 	System.out.println("\t-> Init Entity Detector (ED)");
 
-	entitiesFinder = new ReplFinder();
-	entitiesTagger = new ReplAttacher();
+	entitiesFinder = new EntityFinder();
+	entitiesTagger = new EntityReplacement();
 
 	stanfordExpert = new ThreadLocal<StanfordNLP>() {
 	    @Override protected StanfordNLP initialValue() {
@@ -271,14 +271,14 @@ public class Lector {
     /**
      * @return the entitiesFinder
      */
-    public static ReplFinder getEntitiesFinder() {
+    public static EntityFinder getEntitiesFinder() {
 	return entitiesFinder;
     }
 
     /**
      * @return the entitiesTagger
      */
-    public static ReplAttacher getEntitiesTagger() {
+    public static EntityReplacement getEntitiesTagger() {
 	return entitiesTagger;
     }
 

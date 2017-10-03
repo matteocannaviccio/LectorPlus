@@ -21,15 +21,32 @@ import it.uniroma3.main.util.inout.TSVReader;
  *
  */
 public class MarkupParser {
-    
+
+    public static final String TEMPLATE_WIKILINK = "\\[\\[+" + "([^\\]|\\|]+)\\|" + "('')?([^\\{\\]]*\\{\\{[^\\}]*\\}\\}[^\\]]*)?('')?" + "\\]\\]+";
+    public static final String LOWERCASE_WIKILINK = "\\[\\[+" + "([^\\]]*\\|)?" + "('')?" + "([a-z][^A-Z].*?)" + "('')?" + "\\]\\]+";
+    /*
+     * We need to use some *strong* filtering here to avoid considering strange cases like
+     * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
+     * We adopt this heuristic: if the rendered entity has only special characters we skip it.
+     * We use the following regex to express special character that we do not want alone.
+     * We also skip wikiliks composed by only numbers.
+     */
+    public static final String SPECIAL_CHARS = "^[" + "0-9/@#!-*\\$%^'&._+={}()" + "]+$";
     public static final String WIKID_REGEX = "<<" + "((?:PE|SE)\\-[A-Z-]+)>" + "<([^>]*?)>" + "<([^>]*?)" + ">>";
+    public static final String LISTWIKILINK(String listIdentifier){return "\\[\\[+" + "(" + listIdentifier+ "[^|]*+\\|)" + "('')?" + "([^]]+?)" + "('')?" + "\\]\\]++";}
+
+    /*
+     * The following regex captures all the Wikilinks (after removed common-sense ones, see above)
+     * Named entities wikilinks can be sorrouned by '', which can stay inside square brackets or outside.
+     */
+    public static final String GENERAL_WIKILINK = "('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?";
 
     // this is a list of all the wikid that we do not want to highlight as entities
     private Set<String> blacklist_wikilinks;	
 
     // this is a list of all the anchor texts that we do not want to highlight as entities
     private Set<String> blacklist_names;
-    
+
 
     /**
      * Initalize all the lists at the creation.ß
@@ -41,7 +58,7 @@ public class MarkupParser {
 	this.blacklist_names = new HashSet<String>();
 	this.blacklist_names.addAll(TSVReader.getFirstColumn2Set(Configuration.getNationalitiesList()));
     }
-    
+
     /**
      * 
      * @param originalText
@@ -70,14 +87,12 @@ public class MarkupParser {
      * @return
      */
     private String removeTemplateWikilinks(String originalText){
-	String specialCharacters = "^[" + "0-9/@#!-*\\$%^'&._+={}()" + "]+$" ;
-
-	Pattern TEMPLATEWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]|\\|]+)\\|" + "('')?([^\\{\\]]*\\{\\{[^\\}]*\\}\\}[^\\]]*)?('')?" + "\\]\\]+");
+	Pattern TEMPLATEWIKILINK = Pattern.compile(MarkupParser.TEMPLATE_WIKILINK);
 	Matcher m = TEMPLATEWIKILINK.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
 	while(m.find()){
-	    if (m.group(3) != null && !m.group(3).matches(specialCharacters)){
+	    if (m.group(3) != null && !m.group(3).matches(MarkupParser.SPECIAL_CHARS)){
 		if (m.group(2) != null && m.group(4) != null){
 		    rendered = m.group(2) + m.group(3) + m.group(4);
 		}else{
@@ -91,62 +106,6 @@ public class MarkupParser {
 	m.appendTail(cleanText);
 	return cleanText.toString();
     }
-
-    /**
-     * Detect wrong marked wikilinks that were originally rendered with a template
-     * but we remove them in a previous step.
-     * 
-     * For example, wikilinks such as:
-     * 		[[Mount_Rushmore#Height|{{template}}]]
-     * 
-     * become, after the cleaning step:
-     * 		[[Mount_Rushmore#Height|]]
-     * 
-     * @param originalText
-     * @return
-     */
-    /*
-    public String cleanEmptyTemplateWikilinks(String originalText){
-	Pattern EMPTYWIKILINK = Pattern.compile("\\[\\[+" + "([^\\]]+)\\|" + "\\]\\]+");
-	Matcher m = EMPTYWIKILINK.matcher(originalText);
-	StringBuffer cleanText = new StringBuffer();
-	while(m.find()){
-	    String toRender = m.group(1).replaceAll("_", " ").replaceAll("#", " ");
-	    m.appendReplacement(cleanText, Matcher.quoteReplacement(toRender));
-	}
-	m.appendTail(cleanText);
-	return cleanText.toString();
-    }
-    */
-
-    /**
-     * Remove any wikilink from the input markup text.
-     * 
-     * e.g. [[any wikilink|wikilinkAnchorText]] -> wikilinkAnchorText
-     * 
-     * @param originalText
-     * @return
-     */
-    /*
-    public String cleanAllWikilinks(String originalText) {
-	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
-	Matcher m = ENTITY.matcher(originalText);
-	StringBuffer cleanText = new StringBuffer();
-	String rendered;
-	while(m.find()){
-	    if (m.group(3) != null && m.group(5) != null){
-		rendered = m.group(3) + m.group(4) + m.group(5);
-	    }else if ( m.group(1) != null && m.group(6) != null){
-		rendered = m.group(1) + m.group(4) + m.group(6);
-	    }else{
-		rendered = m.group(4);
-	    }
-	    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
-	}
-	m.appendTail(cleanText);
-	return cleanText.toString();
-    }
-     */
 
 
     /**
@@ -166,7 +125,7 @@ public class MarkupParser {
      * @return
      */
     private String removeLowerCaseWikilinks(String originalText){
-	Pattern COMMONSENSE = Pattern.compile("\\[\\[+" + "([^\\]]*\\|)?" + "('')?" + "([a-z][^A-Z].*?)" + "('')?" + "\\]\\]+");
+	Pattern COMMONSENSE = Pattern.compile(MarkupParser.LOWERCASE_WIKILINK);
 	Matcher m = COMMONSENSE.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
@@ -189,7 +148,7 @@ public class MarkupParser {
      */
     private String removeListofWikilinks(String originalText){
 	String listIdentifier = Lector.getWikiLang().getListIdentifiers().get(0).replaceAll("_",  "");
-	Pattern LISTOF = Pattern.compile("\\[\\[+" + "(" + listIdentifier+ "[^|]*+\\|)" + "('')?" + "([^]]+?)" + "('')?" + "\\]\\]++");
+	Pattern LISTOF = Pattern.compile(LISTWIKILINK(listIdentifier));
 	Matcher m = LISTOF.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 	String rendered;
@@ -228,20 +187,7 @@ public class MarkupParser {
      */
     public String harvestAllWikilinks(String originalText, WikiArticle article) {
 	Map<String, Set<String>> wikilinks = new HashMap<String, Set<String>>();
-	/*
-	 * We need to use some *strong* filtering here to avoid considering strange cases like
-	 * the wiki links between ")" and "Mahavira" in the article: en.wikipedia.org/wiki/Gautama_Buddha 
-	 * We adopt this heuristic: if the rendered entity has only special characters we skip it.
-	 * We use the following regex to express special character that we do not want alone.
-	 * We also skip wikiliks composed by only numbers.
-	 */
-	String specialCharacters = "^[" + "0-9/@#!-*\\$%^'&._+={}()" + "]+$" ;
-
-	/*
-	 * The following regex captures all the Wikilinks (after removed common-sense ones, see above)
-	 * Named entities wikilinks can be sorrouned by '', which can stay inside square brackets or outside.
-	 */
-	Pattern ENTITY = Pattern.compile("('')?" + "\\[\\[+" + "([^\\]\\|]*\\|)?" + "('')?([^\\]]*?)('')?" + "\\]\\]+" + "('')?");
+	Pattern ENTITY = Pattern.compile(MarkupParser.GENERAL_WIKILINK);
 	Matcher m = ENTITY.matcher(originalText);
 	StringBuffer cleanText = new StringBuffer();
 
@@ -279,7 +225,7 @@ public class MarkupParser {
 		    m.appendReplacement(cleanText, Matcher.quoteReplacement(rendered));
 
 		}else{
-		    if (!rendered.matches(specialCharacters) && !rendered.isEmpty()){
+		    if (!rendered.matches(MarkupParser.SPECIAL_CHARS) && !rendered.isEmpty()){
 			if (!wikilinks.containsKey(rendered))
 			    wikilinks.put(rendered, new HashSet<String>());
 			// we quote it, for later
@@ -321,9 +267,7 @@ public class MarkupParser {
 	return cleanText.toString();
     }
 
-    
-    
-    
+
     public static void main(String[] args){
 	Configuration.init(new String[0]);
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
@@ -343,7 +287,7 @@ public class MarkupParser {
 		+ "Algorithmus des Archimedes zur Kreiszahlberechnung|Algorithmus des Archimedes]] zur Approximation von "
 		+ "[[Kreiszahl|]], was zugleich auch eines der ältesten [[numerische Mathematik|numerischen Verfahren]] ist.";
 
-	System.out.println(mp.harvestAllWikilinks(text, WikiArticle.makeDummyArticle()));
+	System.out.println(mp.harvestAllWikilinks(mp.removeCommonSenseWikilinks(text), WikiArticle.makeDummyArticle()));
 
     }
 }

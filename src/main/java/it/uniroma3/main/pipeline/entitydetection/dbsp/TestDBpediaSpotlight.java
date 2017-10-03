@@ -10,7 +10,7 @@ public class TestDBpediaSpotlight {
     public static void main(String[] args){
 	Configuration.init(args);
 	Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
-	Configuration.updateParameter("language", "fr");
+	Configuration.updateParameter("language", "en");
 	Configuration.updateParameter("useSpotlight", "yes");
 	Configuration.printFullyDetails();
 	System.out.println("\n------------------------------------");
@@ -23,8 +23,11 @@ public class TestDBpediaSpotlight {
 
     private static void testSpotlight(WikiLanguage wikiLang) {
 	Lector.init("AP,ED");
-	String text = "En 1937, Aldous Huxley s'installe à <SE-ORG<Hollywood>> en <SE-AUG<États-Unis>> avec sa femme et Son ami.";
-	System.out.println(Lector.getDBSpot().annotateText(text, "Aldous_Huxley"));
+	String text = "<<PE-TITLE><Azerbaijan><Azerbaijan>> (; Azərbaycan), officially the <<PE-ALIAS><Azerbaijan><Republic of "
+		+ "<<PE-TITLE><Azerbaijan><Azerbaijan>>>> (Azərbaycan Respublikası), is a country in the <<SE-ORG><Transcaucasia><South Caucasus>> region, "
+		+ "situated at the crossroads of <<SE-DBPS><Western_Asia><Southwest Asia>>"
+		+ " and <<SE-ORG><Southeast_Europe><Southeastern Europe>> and <<SE-ORG><Barack_Obama><Barack Obama>> and Barack Obama and <<SE-ORG><Barack_Obama><Jonh and Barack Obama>>";
+	System.out.println(Lector.getDBSpot().annotateText(text, "Azerbaijan"));
 	Lector.close();
     }
 }

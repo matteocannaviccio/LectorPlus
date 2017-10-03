@@ -26,10 +26,10 @@ public class Main {
 	//Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
 	for (String lang : Configuration.getLanguages()){
 	    Configuration.updateParameter("language", lang);
-	    Configuration.printFullyDetails();
 	    System.out.println("\n===================================");
 	    System.out.println("Starting a new LectorPlus execution");
 	    System.out.println("===================================");
+	    Configuration.printFullyDetails();
 	    WikiLanguage wikiLang = new WikiLanguage(Configuration.getLanguageCode(), Configuration.getLanguageProperties());
 	    Lector.init(Configuration.getPipelineSteps());
 	    processComplete(wikiLang);

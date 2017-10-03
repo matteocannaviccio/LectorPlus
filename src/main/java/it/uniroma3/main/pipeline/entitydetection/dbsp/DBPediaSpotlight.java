@@ -31,6 +31,7 @@ import com.google.gson.JsonSyntaxException;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.main.pipeline.entitydetection.PatternComparator;
+import it.uniroma3.main.pipeline.entitydetection.EntityReplacement;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.main.util.inout.TSVReader;
 import it.uniroma3.main.util.nlp.StupidNLP;
@@ -177,18 +178,7 @@ public class DBPediaSpotlight {
 	return textualAnnotations;
     }
 
-    /**
-     * To match a name it has to be in a sentence sourrounded by two boarders (\\b) that are
-     * not square bracket, _ or pipe | (which are terms that are inside a wikilink).
-     * <p>
-     * https://regex101.com/r/qdZyYl/4
-     *
-     * @param name
-     * @return
-     */
-    private String createRegexName(String name) {
-	return "(\\s[^\\sA-Z]++\\s|(?:^|\\. |, |: |\\n)(?:\\w++\\s)?)\\b(" + Pattern.quote(name) + ")\\b(?!\\s[A-Z][a-z]++|-|<| <)";
-    }
+
 
     /**
      * @param sentence
@@ -251,7 +241,7 @@ public class DBPediaSpotlight {
 		List<Pair<String, String>> annotations = getAnnotations(sentence, PE);
 		List<Pair<String, String>> regex2entity = new ArrayList<Pair<String, String>>();
 		for (Pair<String, String> entity : annotations) {
-		    regex2entity.add(Pair.make(createRegexName(entity.key), entity.value));
+		    regex2entity.add(Pair.make(EntityReplacement.createRegexName(entity.key), entity.value));
 		}
 		Collections.sort(regex2entity, new PatternComparator());
 		for (Pair<String, String> regex : regex2entity) {
