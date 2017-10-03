@@ -73,15 +73,16 @@ public class Pipeline {
     public void runPipeline(int totArticle, int chunckSize, String pipelineSteps){
 	List<String> lines;
 	int cont = 0;
-
+	int contChunk = 0;
 	// change it, if we need to process the whole dump
 	if (totArticle == -1)
 	    totArticle = Integer.MAX_VALUE;
 
 	long total_start_time = System.currentTimeMillis();
 
-	while (!(lines = dumpFileReader.nextChunk(chunckSize)).isEmpty() && cont < totArticle) {	    
-	    System.out.print("\tRunning next: " + lines.size() + " articles.\t");
+	while (!(lines = dumpFileReader.nextChunk(chunckSize)).isEmpty() && cont < totArticle) {
+	    contChunk +=1;
+	    System.out.print("\t" + contChunk + ") Running next: " + lines.size() + " articles.");
 	    cont += lines.size();
 
 	    // article parser
@@ -93,7 +94,7 @@ public class Pipeline {
 		    .collect(Collectors.toList());
 	    long end_pars_time = System.currentTimeMillis();
 	    long pars_time = TimeUnit.MILLISECONDS.toSeconds(end_pars_time - start_pars_time);
-	    System.out.print("\tParsed in: " + pars_time + " sec.\t");
+	    System.out.print("\tParsed in: " + pars_time + " sec.");
 
 	    // write parsed articles
 	    /*
@@ -113,7 +114,7 @@ public class Pipeline {
 	    .collect(Collectors.toList());
 	    long end_aug_time = System.currentTimeMillis();
 	    long aug_time = TimeUnit.MILLISECONDS.toSeconds(end_aug_time - start_aug_time);
-	    System.out.print("\tAugmented in: " + aug_time + " sec.\t");
+	    System.out.print("\tAugmented in: " + aug_time + " sec.");
 
 	    // write articles with entities
 	    if (!Configuration.inMemoryProcess()){
@@ -123,7 +124,7 @@ public class Pipeline {
 		.forEach(s -> augmentedDumpWriter.println(s.toJson()));
 		long end_aug_wrt_time = System.currentTimeMillis();
 		long aug_wrt_time = TimeUnit.MILLISECONDS.toSeconds(end_aug_wrt_time - start_aug_wrt_time);
-		System.out.print("\tStored in: " + aug_wrt_time + " sec.\t");
+		System.out.print("\tStored in: " + aug_wrt_time + " sec.");
 	    }
 
 	    // extract triples from articles and write to db
