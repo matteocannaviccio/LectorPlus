@@ -11,102 +11,101 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import it.uniroma3.main.util.Pair;
 
 public class TSVReader {
 
-    /**
-     * Reads an N-columns TSV file and put the first column in a set.
-     *
-     * @param path
-     * @return
-     */
-    public static Set<String> getFirstColumn2Set(String path){
-	Set<String> entities = new HashSet<String>();
-	try {
-	    BufferedReader br = new BufferedReader(new FileReader(new File(path)));
-	    String line;
-	    while((line = br.readLine()) != null){
-		String[] fields = line.split("\t");
-		entities.add(fields[0]);
-	    }
-	    br.close();
+  /**
+   * Reads an N-columns TSV file and put the first column in a set.
+   *
+   * @param path
+   * @return
+   */
+  public static Set<String> getFirstColumn2Set(String path) {
+    Set<String> entities = new HashSet<String>();
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+      String line;
+      while ((line = br.readLine()) != null) {
+        String[] fields = line.split("\t");
+        entities.add(fields[0]);
+      }
+      br.close();
 
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return entities;
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    
-    /**
-     * Reads an N-columns COMPRESSED (e.g. bz2) TSV file and put the whole lines in a set.
-     *
-     * @param path
-     * @return
-     */
-    public static List<String> getLines2Set(String path){
-	List<String> entities = new ArrayList<String>();
-	try {
-	    BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
-	    String line;
-	    while((line = br.readLine()) != null){
-		entities.add(line);
-	    }
-	    br.close();
+    return entities;
+  }
 
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return entities;
+  /**
+   * Reads an N-columns COMPRESSED (e.g. bz2) TSV file and put the whole lines in a set.
+   *
+   * @param path
+   * @return
+   */
+  public static List<String> getLines2Set(String path) {
+    List<String> entities = new ArrayList<String>();
+    try {
+      BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
+      String line;
+      while ((line = br.readLine()) != null) {
+        entities.add(line);
+      }
+      br.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return entities;
+  }
 
-    /**
-     * Reads a two-columns TSV file and put it in a map.
-     * 
-     * @param path
-     * @return
-     */
-    public static Map<String, String> getLines2Map(String path){
-	Map<String, String> entities = new HashMap<String, String>();
-	try {
-	    BufferedReader br = new BufferedReader(new FileReader(new File(path)));
-	    String line;
-	    while((line = br.readLine()) != null){
-		String[] fields = line.split("\t");
-		entities.put(fields[0], fields[1]);
-	    }
-	    br.close();
+  /**
+   * Reads a two-columns TSV file and put it in a map.
+   * 
+   * @param path
+   * @return
+   */
+  public static Map<String, String> getLines2Map(String path) {
+    Map<String, String> entities = new HashMap<String, String>();
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+      String line;
+      while ((line = br.readLine()) != null) {
+        String[] fields = line.split("\t");
+        entities.put(fields[0], fields[1]);
+      }
+      br.close();
 
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return entities;
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return entities;
+  }
 
-    /**
-     * Reads a two-columns TSV file and put it in a list of pairs.
-     * 
-     * @param path
-     * @return
-     */
-    public static List<Pair<String, String>> getLines2Pairs(String path){
-	List<Pair<String, String>> pairs = new LinkedList<Pair<String, String>>();
-	try {
-	    BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
-	    String line;
-	    while((line = br.readLine()) != null){
-		String[] fields = line.split("\t");
-		if (fields.length == 2)
-		    pairs.add(Pair.make(fields[0], fields[1]));
-	    }
-	    br.close();
+  /**
+   * Reads a two-columns TSV file and put it in a list of pairs.
+   * 
+   * @param path
+   * @return
+   */
+  public static List<Pair<String, String>> getLines2Pairs(String path) {
+    List<Pair<String, String>> pairs = new LinkedList<Pair<String, String>>();
+    try {
+      BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
+      String line;
+      while ((line = br.readLine()) != null) {
+        String[] fields = line.split("\t");
+        if (fields.length == 2)
+          pairs.add(Pair.make(fields[0], fields[1]));
+      }
+      br.close();
 
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return pairs;
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return pairs;
+  }
 
 
 }

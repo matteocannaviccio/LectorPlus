@@ -12,3 +12,4 @@ export.jardesc
 .gitignore
 .idea
 lectorplus.iml
+config.properties
