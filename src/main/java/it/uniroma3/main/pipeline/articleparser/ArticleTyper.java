@@ -1,8 +1,10 @@
 package it.uniroma3.main.pipeline.articleparser;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.uniroma3.config.Lector;
+import it.uniroma3.config.WikiLanguage.Lang;
 import it.uniroma3.main.bean.WikiArticle;
 import it.uniroma3.main.bean.WikiArticle.ArticleType;
 
@@ -56,6 +58,9 @@ public class ArticleTyper {
    * @return
    */
   private boolean checkIsDisambiguation(WikiArticle article) {
+    List<String> dis_id = Lector.getWikiLang().getDisambiguationIdentifiers();
+    if (Lector.getWikiLang().getLang().equals(Lang.de))
+      dis_id.add("Begriffsklärung");
     for (String p : Lector.getWikiLang().getDisambiguationIdentifiers()) {
       Pattern DIS = Pattern.compile(
           "\\{\\{" + "[^\\(\\[]*?" + "\\b(" + p + ")\\b" + "([^\\)\\]]*?)" + "\\}\\}",

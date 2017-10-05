@@ -47,8 +47,10 @@ public class Main {
   private static void processComplete(WikiLanguage lang) {
     Pipeline cp = new Pipeline(Configuration.getOriginalArticlesFile(),
         Configuration.getParsedArticlesFile(), Configuration.getAugmentedArticlesFile());
+    
     cp.runPipeline(Configuration.getNumArticlesToProcess(), Configuration.getChunkSize(),
         Configuration.getPipelineSteps());
+    
     cp.extractNovelFacts();
   }
 

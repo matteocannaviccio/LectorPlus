@@ -27,7 +27,6 @@ public class Pipeline {
 
   private Statistics stats;
   private XMLReader dumpFileReader;
-  // private PrintStream parsedDumpWriter;
   private PrintStream augmentedDumpWriter;
 
 
@@ -40,13 +39,6 @@ public class Pipeline {
     System.out.println("-----------------------------------------------------");
     this.stats = new Statistics();
     this.dumpFileReader = new XMLReader(dumpFile);
-
-    /*
-     * if (parsedDump != null){ try { File outputParsed = new File(parsedDump);
-     * outputParsed.getParentFile().mkdirs(); this.parsedDumpWriter = new PrintStream(new
-     * FileOutputStream(outputParsed.getAbsolutePath()), false, "UTF-8"); } catch
-     * (UnsupportedEncodingException | FileNotFoundException e) { e.printStackTrace(); } }
-     */
 
     if (augmentedDump != null) {
       try {
@@ -91,14 +83,6 @@ public class Pipeline {
       long pars_time = TimeUnit.MILLISECONDS.toSeconds(end_pars_time - start_pars_time);
       System.out.print("\tParsed in: " + pars_time + " sec.");
 
-      // write parsed articles
-      /*
-       * long start_pars_wrt_time = System.currentTimeMillis(); chunk.parallelStream() .forEach(s ->
-       * parsedDumpWriter.println(s.toJson())); long end_pars_wrt_time = System.currentTimeMillis();
-       * long pars_wrt_time = TimeUnit.MILLISECONDS.toSeconds(end_pars_wrt_time -
-       * start_pars_wrt_time); System.out.print("\tStored in: " + pars_wrt_time + " sec.\t");
-       */
-
       // detect entities in articles
       long start_aug_time = System.currentTimeMillis();
       chunk.parallelStream().map(s -> Lector.getEntitiesFinder().increaseEvidence(s))
@@ -140,7 +124,6 @@ public class Pipeline {
     Lector.getTriplifier().printStats();
 
     dumpFileReader.close();
-    // parsedDumpWriter.close();
     augmentedDumpWriter.close();
 
   }
