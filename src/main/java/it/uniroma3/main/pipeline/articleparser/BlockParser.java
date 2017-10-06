@@ -114,19 +114,23 @@ public class BlockParser {
    * @param separator
    * @return
    */
-  private Map<String, String> getBlocksFromContent(String content, String regex, String nameFirst,
+private Map<String, String> getBlocksFromContent(String content, String regex, String nameFirst,
       String separator) {
     Map<String, String> subsections = new LinkedHashMap<String, String>();
 
     Pattern SECTIONS = Pattern.compile(regex);
     Matcher m_sec = SECTIONS.matcher(content);
-
+    int subsections_count = 0;
     // for sure there is at least one subsection
     String[] list_subsection = content.split(regex);
 
-    // insert the abstract
-    int subsections_count = 0;
-    subsections.put(nameFirst, list_subsection[subsections_count]);
+    try{
+      // insert the abstract
+      subsections.put(nameFirst, list_subsection[subsections_count]);
+    }catch(java.lang.ArrayIndexOutOfBoundsException e){
+      // no abstract, skip the article
+      return subsections;
+    }
 
     // if there is at least one (sub)section in the article...
     while (m_sec.find()) {
