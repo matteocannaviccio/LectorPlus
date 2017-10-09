@@ -15,6 +15,10 @@ import it.uniroma3.model.model.Model.ModelType;
  */
 public class Extractor {
 
+  public Extractor(){
+
+  }
+
   /**
    * 
    * @param limit
@@ -54,11 +58,11 @@ public class Extractor {
     }
   }
 
-
-  public static void main(String[] args) {
-    Configuration.init(args);
+  /**
+   * 
+   */
+  public static void extract(){
     for (String lang : Configuration.getLanguages()) {
-      //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
       Configuration.updateParameter("language", lang);
 
       System.out.println("\n===================================");
@@ -75,6 +79,16 @@ public class Extractor {
 
       Lector.close();
     }
+  }
+
+  /**
+   * 
+   * @param args
+   */
+  public static void main(String[] args) {
+    Configuration.init(args);
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
+    Extractor.extract();
   }
 
 

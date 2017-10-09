@@ -6,15 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.config.WikiLanguage;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.model.db.DBCrossValidation;
 import it.uniroma3.model.db.DBModel;
@@ -248,7 +245,7 @@ public class Evaluator {
    * 
    * @throws IOException
    */
-  private void run(int limit) throws IOException {
+  private void run(int limit)  {
     int nParts = 1;
 
     List<ModelType> models = new ArrayList<ModelType>();
@@ -271,16 +268,9 @@ public class Evaluator {
       }
     }
   }
-
-  /**
-   * 
-   * @param args
-   * @throws IOException
-   */
-  public static void main(String[] args) throws IOException {
-    Configuration.init(args);
+  
+  public static void evaluate() {
     for (String lang : Configuration.getLanguages()) {
-      Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
       Configuration.updateParameter("language", lang);
       System.out.println("\n======================================");
       System.out.println("Starting a new LectorPlus EVALUATION");
@@ -295,7 +285,17 @@ public class Evaluator {
       evaluator.run(500);
       Lector.close();
     }
+  }
 
+  /**
+   * 
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException {
+    Configuration.init(args);
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+    evaluate();
   }
 
 }

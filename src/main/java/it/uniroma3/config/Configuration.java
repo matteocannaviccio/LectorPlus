@@ -13,8 +13,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.varia.NullAppender;
 
 /**
  * Loads the configuration file and set all the parameters. This static class contains all the
@@ -106,7 +104,7 @@ public class Configuration {
      * remove the following instruction when we insert a logger we keep it for now to silence all
      * the loggers.
      */
-    BasicConfigurator.configure(new NullAppender());
+    //BasicConfigurator.configure(new NullAppender());
 
     /*
      * start here
@@ -143,7 +141,11 @@ public class Configuration {
       e.printStackTrace();
     }
   }
-
+  
+  public static String getTask() {
+    return keyValue.get("task");
+  }
+  
   /***********************************************************************/
   /************************* LANGUAGE *******************************/
   /***********************************************************************/

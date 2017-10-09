@@ -253,17 +253,11 @@ public class Paper {
         Ranking.getRanking(metEntDet));
     System.out.printf("\t%-35s %s\n", "Kind of Pairs: ", kindPairs);
   }
-
-
-
+  
   /**
    * 
-   * @param args
-   * @throws IOException
    */
-  public static void main(String[] args) throws IOException {
-    Configuration.init(args);
-    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
+  public static void calculateStats(){
     for (String lang : Configuration.getLanguages()) {
       Configuration.updateParameter("language", lang);
 
@@ -277,6 +271,18 @@ public class Paper {
       //paper.printExtractedFactsInfo();
       //System.out.println("----------");
     }
+  }
 
+
+
+  /**
+   * 
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException {
+    Configuration.init(args);
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
+    Paper.calculateStats();
   }
 }

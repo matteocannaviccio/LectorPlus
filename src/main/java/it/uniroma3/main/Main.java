@@ -4,6 +4,9 @@ import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.config.WikiLanguage;
 import it.uniroma3.main.pipeline.Pipeline;
+import it.uniroma3.model.evaluation.Evaluator;
+import it.uniroma3.model.evaluation.Extractor;
+import it.uniroma3.model.evaluation.Paper;
 
 /**
  * Welcome. This is the entry point of the LectorPlus tool.
@@ -16,6 +19,10 @@ import it.uniroma3.main.pipeline.Pipeline;
  *
  */
 public class Main {
+  
+  public enum Task {
+    fullpipeline, evaluation, extraction, paper
+  };
 
   /**
    * 
@@ -23,7 +30,31 @@ public class Main {
    */
   public static void main(String[] args) {
     Configuration.init(args);
-    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    Task t = Task.valueOf(Configuration.getTask());
+    switch(t){
+      case fullpipeline:
+        extractionPipeline();
+        break;
+        
+      case extraction:
+        Extractor.extract();
+        break;
+        
+      case evaluation:
+        Evaluator.evaluate();
+        break;
+        
+      case paper:
+        Paper.calculateStats();
+        break;
+    }
+  }
+  
+  /**
+   * 
+   */
+  public static void extractionPipeline(){
     for (String lang : Configuration.getLanguages()) {
       Configuration.updateParameter("language", lang);
       System.out.println("\n===================================");
