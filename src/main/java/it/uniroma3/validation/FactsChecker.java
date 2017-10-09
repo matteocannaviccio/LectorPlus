@@ -27,11 +27,11 @@ public class FactsChecker {
    * @param args
    */
   public static void main(String[] args) {
-    final int SIZE_SAMPLE = 5000;
+    final int SIZE_SAMPLE = 2000;
 
     Configuration.init(args);
     for (String lang : Configuration.getLanguages()) {
-      Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+      Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
       Configuration.updateParameter("language", lang);
 
       System.out.println("---------");
@@ -183,7 +183,11 @@ public class FactsChecker {
     }
   }
 
-
+  /**
+   * 
+   * @param folderName
+   * @return
+   */
   private static String getValidationFolder(String folderName) {
     String folderPath = Configuration.getDataFolder() + "/" + "validation" + "/"
         + Configuration.getLanguageCode() + "/" + folderName;

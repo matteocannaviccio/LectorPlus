@@ -52,12 +52,12 @@ public class Console {
    */
   public static void main(String[] args) {
     Configuration.init(new String[0]);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
     Configuration.updateParameter("language", "en");
 
-    final int PERCENTAGE = 100;
+    final int PERCENTAGE_UNL = 25;
     ModelIndexer model_indexes = new ModelIndexer(
-        Configuration.getLectorFolder() + "/model_indexer_" + PERCENTAGE + "/", PERCENTAGE);
+        Configuration.getLectorFolder() + "/model_indexer_" + PERCENTAGE_UNL + "/", PERCENTAGE_UNL);
 
     boolean running = true;
     String[] token = null;

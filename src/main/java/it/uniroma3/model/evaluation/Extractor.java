@@ -23,11 +23,12 @@ public class Extractor {
 
     List<ModelType> models = new ArrayList<ModelType>();
     models.add(ModelType.NaiveBayes);
-    // models.add(ModelType.ModelTextExt);
+    models.add(ModelType.ModelTextExt);
 
     List<Double> majorities = new ArrayList<Double>();
-    // majorities.add(0.0);
+    majorities.add(0.0);
     majorities.add(0.4);
+    majorities.add(0.5);
 
     List<Integer> percentages = new ArrayList<Integer>();
     percentages.add(0);
@@ -57,7 +58,7 @@ public class Extractor {
   public static void main(String[] args) {
     Configuration.init(args);
     for (String lang : Configuration.getLanguages()) {
-      Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+      //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
       Configuration.updateParameter("language", lang);
 
       System.out.println("\n===================================");
@@ -69,8 +70,8 @@ public class Extractor {
       System.out.println("\nRunning Extraction in: " + Configuration.getLanguageCode());
       System.out.println("-------------------------");
 
-      // Extractor.run(Integer.MAX_VALUE);
-      Extractor.run(500000);
+      Extractor.run(Integer.MAX_VALUE);
+      //Extractor.run(100000);
 
       Lector.close();
     }

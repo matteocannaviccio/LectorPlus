@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.main.bean.WikiTriple;
+import it.uniroma3.main.pipeline.articleparser.MarkupParser;
 import it.uniroma3.main.util.CounterMap;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.main.util.Ranking;
@@ -148,12 +149,13 @@ public class Paper {
    * @return
    */
   private String extractMethodFromEntity(String entity) {
-    Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
+    Pattern ENMETDET = Pattern.compile(MarkupParser.WIKID_REGEX);
     Matcher m = ENMETDET.matcher(entity);
     String method = null;
     if (m.find()) {
       method = m.group(1);
     }
+    //System.out.println("METHOD : " + entity + "\t" + method);
     return method;
   }
 
@@ -163,7 +165,7 @@ public class Paper {
    * @return
    */
   protected String extractNameFromEntity(String entity) {
-    Pattern ENMETDET = Pattern.compile("^<([^<]*?)<([^>]*?)>>$");
+    Pattern ENMETDET = Pattern.compile(MarkupParser.WIKID_REGEX);
     Matcher m = ENMETDET.matcher(entity);
     String method = null;
     if (m.find()) {
@@ -178,12 +180,13 @@ public class Paper {
    * @return
    */
   private String extractPESEFromEntity(String entity) {
-    Pattern ENMETDET = Pattern.compile("^<(PE|SE)-([^<]*?)<([^>]*?)>>$");
+    Pattern ENMETDET = Pattern.compile(MarkupParser.WIKID_REGEX);
     Matcher m = ENMETDET.matcher(entity);
     String method = null;
     if (m.find()) {
-      method = m.group(1);
+      method = m.group(1).split("-")[0];
     }
+    //System.out.println("PESE : " + entity + "\t" + method);
     return method;
   }
 
@@ -260,7 +263,7 @@ public class Paper {
    */
   public static void main(String[] args) throws IOException {
     Configuration.init(args);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
     for (String lang : Configuration.getLanguages()) {
       Configuration.updateParameter("language", lang);
 
@@ -271,8 +274,8 @@ public class Paper {
       paper.printLabeledInfo();
       System.out.println("----------");
       paper.printUnlabeledInfo();
-      paper.printExtractedFactsInfo();
-      System.out.println("----------");
+      //paper.printExtractedFactsInfo();
+      //System.out.println("----------");
     }
 
   }
