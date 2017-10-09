@@ -76,7 +76,6 @@ public class Extractor {
 
       Extractor.run(Integer.MAX_VALUE);
       //Extractor.run(100000);
-
       Lector.close();
     }
   }
