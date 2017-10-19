@@ -30,7 +30,7 @@ public class Main {
    */
   public static void main(String[] args) {
     Configuration.init(args);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
     Task t = Task.valueOf(Configuration.getTask());
     switch(t){
       case fullpipeline:
