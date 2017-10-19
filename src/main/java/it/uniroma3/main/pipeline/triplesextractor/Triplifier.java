@@ -212,16 +212,9 @@ public class Triplifier {
         objectStartPos = m.start(0);
         objectEndPos = m.end(0);
 
-        pre = getWindow(
-            replaceEntities(
-                sentence.substring(Math.max(subjectStartPos - 200, 0), subjectStartPos).trim()),
-            3, "pre");
-        post = getWindow(
-            replaceEntities(sentence
-                .substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()),
-            3, "post");
-        phrase = sentence.substring(subjectEndPos, objectStartPos).trim().replace("\t", " ")
-            .replaceAll("\n", " ");
+        pre = getWindow(replaceEntities(sentence.substring(Math.max(subjectStartPos - 200, 0), subjectStartPos).trim()), 3, "pre");
+        post = getWindow(replaceEntities(sentence.substring(objectEndPos, Math.min(sentence.length(), objectEndPos + 200)).trim()), 3, "post");
+        phrase = sentence.substring(subjectEndPos, objectStartPos).trim().replace("\t", " ").replaceAll("\n", " ");
 
         boolean acceptablePhrase = true;
         String phrase_placeholders = placeholderFilter.replace(phrase);
@@ -233,20 +226,17 @@ public class Triplifier {
         if (phrase_placeholders.equals("CONJUNCTION")) {
           conjuctionCount.incrementAndGet();
           acceptablePhrase = false;
-
         }
 
         // this is only for english
         if (post.startsWith("'s") && Configuration.getLanguageCode().equals("en")) {
           possessiveCount.incrementAndGet();
           acceptablePhrase = false;
-
         }
 
         if (phrase_placeholders.split(" ").length > 15) {
           largeSentencesCount.incrementAndGet();
           acceptablePhrase = false;
-
         }
 
         // if everything is correct, add the triple...
@@ -382,7 +372,7 @@ public class Triplifier {
     System.out.println();
     System.out.println(
         "\t # eliminated: " + withSuffix(conjuctionCount.intValue() + specialCharCount.intValue()
-            + possessiveCount.intValue() + largeSentencesCount.intValue()));
+        + possessiveCount.intValue() + largeSentencesCount.intValue()));
     System.out.println("\t # triples with conjuctions (and, commas, etc.): "
         + withSuffix(conjuctionCount.intValue()));
     System.out.println("\t # triples with special chars ((, ), ;, :, etc.):  "

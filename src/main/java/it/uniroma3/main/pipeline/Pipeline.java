@@ -138,7 +138,7 @@ public class Pipeline {
     Lector.getDbmodel(false).deriveModelTable();
     Model model =
         Model.getNewModel(Lector.getDbmodel(false), "model_triples", Configuration.getMinF(),
-            Configuration.getPercUnl(), ModelType.NaiveBayes, Configuration.getMajThr());
+            Configuration.getPercUnl(), ModelType.ModelNaiveBayes, Configuration.getMajThr());
     FactsExtractor extractor = new FactsExtractor(model);
     extractor.runExtractOnFile(Integer.MAX_VALUE);
   }

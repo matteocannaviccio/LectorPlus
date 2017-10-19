@@ -42,7 +42,7 @@ public class Ginger {
 
     ModelNaiveBayes model =
         (ModelNaiveBayes) Model.getNewModel(new DBModel(Configuration.getDBModel()),
-            "model_triples", 1, 25, ModelType.NaiveBayes, 0.4);
+            "model_triples", 1, 25, ModelType.ModelNaiveBayes, 0.4);
     for (String typedPhrase : model.getTypedPhrasesLabeled().keySet()) {
       String subject_type = typedPhrase.split("\t")[0];
       String phrase_placeholder = typedPhrase.split("\t")[1];

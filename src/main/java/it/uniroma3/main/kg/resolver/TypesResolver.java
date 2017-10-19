@@ -1,21 +1,15 @@
 package it.uniroma3.main.kg.resolver;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.io.output.FileWriterWithEncoding;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
 import it.uniroma3.config.WikiLanguage.Lang;
@@ -256,6 +250,27 @@ public class TypesResolver {
     if (type.equals("[none]") && indexAirpedia_ref != null)
       type = selectDeepest(getTypes(wikid, indexAirpedia_ref));
 
+    return type;
+  }
+  
+  /**
+   * 
+   * @param wikid
+   * @return
+   */
+  public String assignTypesSimple(String wikid) {
+    String type = selectDeepest(getTypes(wikid, indexOriginal));
+
+    if (type.equals("[none]"))
+      type = selectDeepest(getTypes(wikid, indexAirpedia));
+    
+    /*
+    if (type.equals("[none]"))
+      type = selectDeepest(getTypes(wikid, indexSDTyped));
+    
+    if (type.equals("[none]"))
+      type = selectDeepest(getTypes(wikid, indexLHD));
+    */
     return type;
   }
 

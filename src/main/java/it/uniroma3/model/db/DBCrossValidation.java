@@ -153,13 +153,17 @@ public class DBCrossValidation extends DBLector {
         String phrase_placeholder = fields[0];
         String type_subject = fields[1];
         String type_object = fields[2];
-        String relation = fields[3];
+        String wiki_subject = fields[3];
+        String wiki_object = fields[4];
+        String relation = fields[5];
 
         if (!relation.equals("NONE")) {
           inserted += 1;
           pstmt.setString(1, phrase_placeholder);
           pstmt.setString(2, type_subject);
           pstmt.setString(3, type_object);
+          pstmt.setString(4, wiki_subject);
+          pstmt.setString(5, wiki_object);
           pstmt.addBatch();
         }
       }
@@ -195,7 +199,9 @@ public class DBCrossValidation extends DBLector {
       String phrase_placeholder = fields[0];
       String type_subject = fields[1];
       String type_object = fields[2];
-      String relation = fields[3];
+      //String wiki_subject = fields[3];
+      //String wiki_object = fields[4];
+      String relation = fields[5];
       entries.add(phrase_placeholder + "\t" + type_subject + "\t" + type_object + "\t" + relation);
       if (entries.size() > size) {
         batchInsertModelEntry(table_name, entries);

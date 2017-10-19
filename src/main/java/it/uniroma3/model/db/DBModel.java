@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -506,8 +505,7 @@ public class DBModel extends DBLector {
     createIndexForAll(tableName, "indexAll_" + tableName);
     List<String> allEntries = new LinkedList<String>();
 
-    String query =
-        "SELECT phrase_placeholder, type_subject, type_object, relation FROM " + tableName;
+    String query = "SELECT phrase_placeholder, type_subject, type_object, wiki_subject, wiki_object, relation FROM " + tableName;
 
     try (PreparedStatement stmt = this.getConnection().prepareStatement(query)) {
       try (ResultSet rs = stmt.executeQuery()) {
@@ -515,11 +513,16 @@ public class DBModel extends DBLector {
           String phrase_placeholder = rs.getString(1);
           String type_subject = rs.getString(2);
           String type_object = rs.getString(3);
-          String relation = rs.getString(4);
+          String wiki_subject = rs.getString(4);
+          String wiki_object = rs.getString(5);
+          String relation = rs.getString(6);
 
           // create the key
-          String entry =
-              phrase_placeholder + "|||" + type_subject + "|||" + type_object + "|||" + relation;
+          String entry = phrase_placeholder + "|||" +
+          type_subject + "|||" + type_object + "|||" +
+              wiki_subject + "|||" + wiki_object +
+              "|||" + relation;
+          
           allEntries.add(entry);
         }
       }
@@ -539,7 +542,7 @@ public class DBModel extends DBLector {
     createIndexForAll(tableName, "indexAll_" + tableName);
     List<String> allEntries = new LinkedList<String>();
 
-    String query = "SELECT phrase_placeholder, type_subject, type_object FROM " + tableName;
+    String query = "SELECT phrase_placeholder, type_subject, type_object, wiki_subject, wiki_object FROM " + tableName;
 
     try (PreparedStatement stmt = this.getConnection().prepareStatement(query)) {
       try (ResultSet rs = stmt.executeQuery()) {
@@ -547,11 +550,16 @@ public class DBModel extends DBLector {
           String phrase_placeholder = rs.getString(1);
           String type_subject = rs.getString(2);
           String type_object = rs.getString(3);
+          String wiki_subject = rs.getString(4);
+          String wiki_object = rs.getString(5);
           String relation = "NONE";
 
           // create the key
-          String entry =
-              phrase_placeholder + "|||" + type_subject + "|||" + type_object + "|||" + relation;
+          String entry = phrase_placeholder + "|||" +
+              type_subject + "|||" + type_object + "|||" +
+                  wiki_subject + "|||" + wiki_object +
+                  "|||" + relation;
+          
           allEntries.add(entry);
         }
       }

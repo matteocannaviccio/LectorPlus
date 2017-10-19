@@ -1,17 +1,14 @@
 package it.uniroma3.main.kg.resolver;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import it.uniroma3.config.Configuration;
-import it.uniroma3.main.kg.DBPedia;
 import it.uniroma3.main.kg.normalizer.CleanDBPediaRelations;
 import it.uniroma3.main.kg.normalizer.Normalizer;
 import it.uniroma3.main.util.KeyValueIndex;
@@ -92,13 +89,27 @@ public class RelationsResolver {
    * @param relation
    * @return
    */
-  public void getInstances(String relation) {
+  public String getInstances(String relation, int max) {
+    StringBuffer sb = new StringBuffer();
     int tot = 0;
     for (String instance : indexKG.retrieveKeys(relation))
-      if (tot < 200) {
-        System.out.printf("\t%-50s %s\n", instance.split("###")[0], instance.split("###")[1]);
+      if (tot < max) {
+        sb.append(instance.split("###")[0] + "\t" + instance.split("###")[1] + "\n");
         tot += 1;
       }
+    return sb.toString();
+  }
+
+  /**
+   * 
+   * @param relation
+   * @return
+   */
+  public List<Pair<String, String>> getInstances(String relation) {
+    List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
+    for (String instance : indexKG.retrieveKeys(relation))
+      list.add(Pair.make(instance.split("###")[0], instance.split("###")[1]));
+    return list;
   }
 
   /**
@@ -134,7 +145,7 @@ public class RelationsResolver {
     Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
 
     RelationsResolver res = new RelationsResolver();
-
+    /*
     try {
       BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
           new FileOutputStream("/Users/matteo/Desktop/dbpedia_mapping-based-objects.tsv"),
@@ -152,15 +163,16 @@ public class RelationsResolver {
     } catch (IOException e) {
 
     }
+     */
 
     String subject = "Michelle_Obama";
     String object = "Barack_Obama";
 
-    res.findRelations(object, subject);
+    //res.findRelations(object, subject);
 
     // res.getAllRelations();
-    String relation = "birthPlace";
-    res.getInstances(relation);
+    String relation = "manufacturer";
+    System.out.println(res.getInstances(relation, 200));
 
 
 

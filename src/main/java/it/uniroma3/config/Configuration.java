@@ -141,11 +141,11 @@ public class Configuration {
       e.printStackTrace();
     }
   }
-  
+
   public static String getTask() {
     return keyValue.get("task");
   }
-  
+
   /***********************************************************************/
   /************************* LANGUAGE *******************************/
   /***********************************************************************/
@@ -542,7 +542,11 @@ public class Configuration {
   }
 
   public static String getModelCode() {
-    return getLectorModelName() + "-" + getMinF() + "-" + getPercUnl() + "-" + getMajThr();
+    String model = getLectorModelName();
+    if (model.contains("TextExt"))
+      return getLectorModelName();
+    else
+      return getLectorModelName() + "-" + getMinF() + "-" + getPercUnl() + "-" + getMajThr();
   }
 
   private static String getModelFolder(String modelName) {

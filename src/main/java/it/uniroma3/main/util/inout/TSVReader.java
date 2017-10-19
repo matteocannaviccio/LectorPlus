@@ -59,6 +59,34 @@ public class TSVReader {
     }
     return entities;
   }
+  
+  /**
+   * Reads first K lines of an N-columns COMPRESSED (e.g. bz2) TSV file and put the whole lines in a set.
+   *
+   * @param path
+   * @return
+   */
+  public static Set<String> getFirstKLines2Set(String path, int k) {
+    int cont = 0;
+    if (k == -1)
+      k = Integer.MAX_VALUE;
+    Set<String> entities = new HashSet<String>();
+    try {
+      BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
+      String line;
+      while ((line = br.readLine()) != null) {
+        cont ++;
+        if (cont > k)
+          break;
+        entities.add(line);
+      }
+      br.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return entities;
+  }
 
   /**
    * Reads a two-columns TSV file and put it in a map.

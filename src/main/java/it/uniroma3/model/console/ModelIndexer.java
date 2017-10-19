@@ -95,7 +95,7 @@ public class ModelIndexer {
       Lector.init("FE");
       System.out.println("\t-> Init Model Indexer...");
       CounterMap<String> filtered_triples =
-          Lector.getDbmodel(false).retrieveEvidence("model_triples", 5, PERCENTAGE);
+          Lector.getDbmodel(false).retrieveEvidence("model_triples", 1, PERCENTAGE);
       Lector.close();
 
       this.createIndexes(filtered_triples, phrasesIndexPath, relationsIndexPath,

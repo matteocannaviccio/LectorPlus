@@ -89,8 +89,7 @@ public class Evaluator {
   private void runEvaluation(String table_name, int max) {
     int cont = 0;
     String all =
-        "SELECT phrase_placeholder, wiki_subject, wiki_object, type_subject, type_object FROM "
-            + table_name;
+        "SELECT phrase_placeholder, wiki_subject, wiki_object, type_subject, type_object FROM "+ table_name;
     try (Statement stmt = this.dbcrossvaliadation.getConnection().createStatement()) {
       try (ResultSet rs = stmt.executeQuery(all)) {
         while (rs.next() && cont < max) {
@@ -123,7 +122,7 @@ public class Evaluator {
       String wikiSubject, String wikiObject) {
     Pair<String, Double> pred = processRecord(subjectType, phrase, objectType);
     String prediction = pred.key;
-    double prob = pred.value;
+    //double prob = pred.value;
     totalCounts += 1;
 
     // controlla se abbiamo recuperato qualcosa
@@ -214,8 +213,7 @@ public class Evaluator {
       String labeled_table = "CV_evidence_" + it;
       String evaluation_table = "CV_evaluation_triples_" + it;
       initializeCounts();
-      this.current_model =
-          Model.getNewModel(this.dbcrossvaliadation, labeled_table, minF, percUnl, type, 0.4);
+      this.current_model = Model.getNewModel(this.dbcrossvaliadation, labeled_table, minF, percUnl, type, 0.4);
       this.runEvaluation(evaluation_table, limit);
       Pair<Double, Double> avg_measures = calcAccuracyRecallGlobal(relation2counts);
       avg_acc += avg_measures.key;
@@ -246,29 +244,42 @@ public class Evaluator {
    * @throws IOException
    */
   private void run(int limit)  {
-    int nParts = 1;
+    int nParts = 5;
 
     List<ModelType> models = new ArrayList<ModelType>();
-    models.add(ModelType.NaiveBayes);
+    models.add(ModelType.ModelNaiveBayes);
+    models.add(ModelType.ModelTextExt);
 
     Integer[] mF = new Integer[] {1};
     Integer[] tH = new Integer[] {0, 100, 25};
 
     for (ModelType type : models) {
       for (int m : mF) {
-        for (int t : tH) {
-          runCrossValidation(type, limit, m, t, nParts);
+        if (type.equals(ModelType.ModelTextExt)){
+          runCrossValidation(type, limit, m, 0, nParts);
           double precision = evals.key;
           double recall = evals.value;
-          String nameModel = type + " (" + limit + ") - " + tH;
-          System.out.printf("\t%-20s %-20s %-20s %s\n", nameModel, String.format("%.2f", precision),
+          String nameModel = type + " (" + limit + ")";
+          System.out.printf("\t%-60s %-20s %-20s %s\n", nameModel, 
+              String.format("%.2f", precision),
               String.format("%.2f", recall),
               String.format("%.2f", (2 * recall * precision) / (precision + recall)));
+        }else{
+          for (int t : tH) {
+            runCrossValidation(type, limit, m, t, nParts);
+            double precision = evals.key;
+            double recall = evals.value;
+            String nameModel = type + " (" + limit + ")-" + t;
+            System.out.printf("\t%-60s %-20s %-20s %s\n", nameModel, 
+                String.format("%.2f", precision),
+                String.format("%.2f", recall),
+                String.format("%.2f", (2 * recall * precision) / (precision + recall)));
+          }
         }
       }
     }
   }
-  
+
   public static void evaluate() {
     for (String lang : Configuration.getLanguages()) {
       Configuration.updateParameter("language", lang);
@@ -282,7 +293,7 @@ public class Evaluator {
       System.out.println("-------------------------");
       Evaluator evaluator =
           new Evaluator(Configuration.getDBCrossValidation(), Lector.getDbmodel(false));
-      evaluator.run(500);
+      evaluator.run(Integer.MAX_VALUE);
       Lector.close();
     }
   }
@@ -294,7 +305,7 @@ public class Evaluator {
    */
   public static void main(String[] args) throws IOException {
     Configuration.init(args);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
     evaluate();
   }
 

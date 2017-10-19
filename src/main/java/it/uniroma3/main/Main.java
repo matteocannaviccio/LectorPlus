@@ -6,7 +6,7 @@ import it.uniroma3.config.WikiLanguage;
 import it.uniroma3.main.pipeline.Pipeline;
 import it.uniroma3.model.evaluation.Evaluator;
 import it.uniroma3.model.evaluation.Extractor;
-import it.uniroma3.model.evaluation.Paper;
+import it.uniroma3.model.paper.Paper;
 
 /**
  * Welcome. This is the entry point of the LectorPlus tool.
@@ -30,7 +30,7 @@ public class Main {
    */
   public static void main(String[] args) {
     Configuration.init(args);
-    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
     Task t = Task.valueOf(Configuration.getTask());
     switch(t){
       case fullpipeline:

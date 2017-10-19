@@ -143,6 +143,20 @@ public class CounterMap<K extends Comparable<K>> implements Map<K, Integer> {
     }
     return sum;
   }
+  
+  /**
+   * 
+   * @param marks
+   * @return
+   */
+  public static int calculateSumAvoidEntriesWith(CounterMap<String> map, String avoidConsider) {
+    int sum = 0;
+    for (String entry : map.keySet()) {
+      if (!entry.contains(avoidConsider))
+        sum += map.get(entry);
+    }
+    return sum;
+  }
 
   /**
    * Retrieve a random sub-map from the input CounterMap considering the frequency of each entry.

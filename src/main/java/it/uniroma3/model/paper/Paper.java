@@ -1,4 +1,4 @@
-package it.uniroma3.model.evaluation;
+package it.uniroma3.model.paper;
 
 import java.io.BufferedReader;
 import java.io.IOException;

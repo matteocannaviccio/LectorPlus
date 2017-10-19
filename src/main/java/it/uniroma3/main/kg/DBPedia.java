@@ -77,6 +77,36 @@ public class DBPedia {
   }
 
   /**
+   * This method queries the Types Resolver to find the type for the entities. It assigns [none] in
+   * case of no type.
+   * 
+   * @return
+   */
+  public String getTypeCategory(String entity) {
+    String type = typesResolver.assignTypesSimple(entity);
+    if (!type.equals("[none]")){
+      String cat = "Person";
+      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+        return cat;
+      }
+      cat = "Place";
+      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+        return cat;
+      }
+      cat = "Organisation";
+      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+        return cat;
+      }
+      cat = "Work";
+      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+        return cat;
+      }
+    }
+    return "-";
+
+  }
+
+  /**
    * 
    * @param uri
    * @return
@@ -168,23 +198,23 @@ public class DBPedia {
 
     String entity = "Stanford_University";
 
-    // System.out.println(t.isChildOf("Person", "[Writer]"));
+    //System.out.println(t.isChildOf("Person", "[Writer]"));
 
     System.out.println("\nTypes in orginal mapping: ");
     t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexOriginal())
-        .forEach(System.out::println);
+    .forEach(System.out::println);
 
     System.out.println("\nTypes in DBTax: ");
     t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexDBTax())
-        .forEach(System.out::println);
+    .forEach(System.out::println);
 
     System.out.println("\nTypes in LHD: ");
     t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexLHD())
-        .forEach(System.out::println);
+    .forEach(System.out::println);
 
     System.out.println("\nTypes in SDTyped: ");
     t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexSDTyped())
-        .forEach(System.out::println);
+    .forEach(System.out::println);
   }
 
 

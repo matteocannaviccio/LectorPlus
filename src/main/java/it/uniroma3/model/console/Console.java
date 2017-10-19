@@ -55,7 +55,7 @@ public class Console {
     Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
     Configuration.updateParameter("language", "en");
 
-    final int PERCENTAGE_UNL = 25;
+    final int PERCENTAGE_UNL = 100;
     ModelIndexer model_indexes = new ModelIndexer(
         Configuration.getLectorFolder() + "/model_indexer_" + PERCENTAGE_UNL + "/", PERCENTAGE_UNL);
 
@@ -291,15 +291,15 @@ public class Console {
 
             System.out.println("\t-> Init OnlyPositive Model ...");
             modelOnlyPositive = Model.getNewModel(new DBModel(Configuration.getDBModel()),
-                "model_triples", 1, 0, ModelType.NaiveBayes, 0.4);
+                "model_triples", 1, 0, ModelType.ModelNaiveBayes, 0.4);
 
             System.out.println("\t-> Init WithNone Model ...");
             modelWithNone = Model.getNewModel(new DBModel(Configuration.getDBModel()),
-                "model_triples", 1, 100, ModelType.NaiveBayes, 0.4);
+                "model_triples", 1, 100, ModelType.ModelNaiveBayes, 0.4);
 
             System.out.println("\t-> Init Middle Model ...");
             modelMiddle = Model.getNewModel(new DBModel(Configuration.getDBModel()),
-                "model_triples", 1, 25, ModelType.NaiveBayes, 0.4);
+                "model_triples", 1, 25, ModelType.ModelNaiveBayes, 0.4);
             break;
 
           case model: // TYPED PHRASE -> RELATION COUNT

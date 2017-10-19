@@ -120,7 +120,7 @@ public class ModelNaiveBayes extends Model {
    * @return
    */
   public String getName() {
-    return this.model.name() + "-" + this.percentageUnlabeled + "-" + this.majorityThreshold;
+    return this.model.name() + "-" + this.getMinF() + "-" + this.percentageUnlabeled + "-" + this.majorityThreshold;
   }
 
 

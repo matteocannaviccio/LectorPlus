@@ -26,18 +26,18 @@ public class Extractor {
   private static void run(int limit) {
 
     List<ModelType> models = new ArrayList<ModelType>();
-    models.add(ModelType.NaiveBayes);
-    models.add(ModelType.ModelTextExt);
+    models.add(ModelType.ModelNaiveBayes);
+    //models.add(ModelType.ModelTextExt);
 
     List<Double> majorities = new ArrayList<Double>();
     majorities.add(0.0);
-    majorities.add(0.4);
-    majorities.add(0.5);
+    //majorities.add(0.4);
+    //majorities.add(0.5);
 
     List<Integer> percentages = new ArrayList<Integer>();
-    percentages.add(0);
+    //percentages.add(0);
     percentages.add(25);
-    percentages.add(100);
+    //percentages.add(100);
 
     Model model = null;
     for (ModelType type : models) {
@@ -74,8 +74,8 @@ public class Extractor {
       System.out.println("\nRunning Extraction in: " + Configuration.getLanguageCode());
       System.out.println("-------------------------");
 
-      Extractor.run(Integer.MAX_VALUE);
-      //Extractor.run(100000);
+      //Extractor.run(Integer.MAX_VALUE);
+      Extractor.run(10000);
       Lector.close();
     }
   }

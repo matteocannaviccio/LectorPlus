@@ -114,7 +114,7 @@ public class Estimator {
         String evaluation_table = "CV_evaluation_triples_" + fold;
         this.current_model = null;
         this.current_model = (ModelNaiveBayes) Model.getNewModel(dbcrossvaliadation, model_triples,
-            1, 0, ModelType.NaiveBayes, 0.4);
+            1, 0, ModelType.ModelNaiveBayes, 0.4);
         folds.add(this.runEstimation(evaluation_table, limit));
       }
 

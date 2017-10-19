@@ -34,7 +34,7 @@ public abstract class Model {
 
   /* Those are the parameters */
   public enum ModelType {
-    NaiveBayes, NaiveBayesFilterSpy, ModelTextExt
+    ModelNaiveBayes, ModelNaiveBayesFilterSpy, ModelTextExt
   };
 
   protected ModelType model;
@@ -151,12 +151,12 @@ public abstract class Model {
     Model model = null;
 
     switch (modelType) {
-      case NaiveBayesFilterSpy:
+      case ModelNaiveBayesFilterSpy:
         model = new ModelNaiveBayesFilterSpy(db_model, evidenceTable, minF, modelType,
             majorityThreshold);
         break;
 
-      case NaiveBayes:
+      case ModelNaiveBayes:
         model = new ModelNaiveBayes(db_model, evidenceTable, minF, percUnl, modelType,
             majorityThreshold);
         break;
