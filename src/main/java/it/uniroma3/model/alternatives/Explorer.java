@@ -1,4 +1,4 @@
-package it.uniroma3.model.evaluation;
+package it.uniroma3.model.alternatives;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +13,12 @@ import java.util.Map;
 import java.util.Set;
 import it.uniroma3.main.util.CounterMap;
 import it.uniroma3.model.db.DB;
-
+/**
+ * This class has been used for the exploratory experiment performed in July 2017 with Paolo.
+ * 
+ * @author matteo
+ *
+ */
 public class Explorer {
 
   private DB model;

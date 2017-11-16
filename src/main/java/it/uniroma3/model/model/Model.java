@@ -250,19 +250,6 @@ public abstract class Model {
 
   /**
    * 
-   * @param typedPhrase
-   * @return
-   */
-  /*
-   * public double getLabeledPercentage(String typedPhrase){ int totLab = 0;
-   * if(this.typedPhrasesLabeled.containsKey(typedPhrase)) totLab =
-   * this.typedPhrasesLabeled.get(typedPhrase); int totUnl = 0;
-   * if(this.typedPhrasesUnlabeled.containsKey(typedPhrase)) totUnl =
-   * this.typedPhrasesUnlabeled.get(typedPhrase); return (double) totLab/(totLab+totUnl); }
-   */
-
-  /**
-   * 
    * @param subject_type
    * @param phrase_placeholder
    * @param object_type

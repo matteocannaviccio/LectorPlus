@@ -52,7 +52,7 @@ public class Console {
    */
   public static void main(String[] args) {
     Configuration.init(new String[0]);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
     Configuration.updateParameter("language", "en");
 
     final int PERCENTAGE_UNL = 100;
@@ -109,7 +109,7 @@ public class Console {
           case dbp: // RELATION EXAMPLES
             input = token[2]; // relation
             Lector.init("FE");
-            Lector.getDBPedia().getRelationResolver().getInstances(input);
+            Lector.getDBPedia().getSomeFacts(input, 25);
             Lector.close();
             break;
 

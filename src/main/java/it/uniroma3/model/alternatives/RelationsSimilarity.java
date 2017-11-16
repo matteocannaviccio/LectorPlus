@@ -1,4 +1,4 @@
-package it.uniroma3.model.evaluation;
+package it.uniroma3.model.alternatives;
 
 import java.util.HashMap;
 import java.util.HashSet;

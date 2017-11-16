@@ -15,7 +15,7 @@ public class DBPediaStats {
     int totalPairs = 0;
     int totalPairsWithTypes = 0;
     int totalPairsWithTypesAndCategory = 0;
-    List<Pair<String, String>> listFacts = db.getRelationResolver().getInstances(relation);
+    List<Pair<String, String>> listFacts = db.getAllFacts(relation);
     for (Pair<String, String> entry : listFacts){
       String categorySubject = db.getTypeCategory(entry.key);
       String categoryObject = db.getTypeCategory(entry.value);

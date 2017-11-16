@@ -29,7 +29,7 @@ public class FactsChecker {
 
   private static Pattern WIKILINK = Pattern.compile(MarkupParser.WIKID_REGEX);
 
-  private static  Map<String, List<String>> facts_content = new HashMap<String, List<String>>();
+  private static Map<String, List<String>> facts_content = new HashMap<String, List<String>>();
   private static Map<String, Integer> facts_sizes = new HashMap<String, Integer>();
 
   /**

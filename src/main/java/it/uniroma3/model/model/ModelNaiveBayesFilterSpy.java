@@ -2,8 +2,8 @@ package it.uniroma3.model.model;
 
 import java.util.Map;
 import it.uniroma3.main.util.Pair;
+import it.uniroma3.model.alternatives.SpyThresholds;
 import it.uniroma3.model.db.DBLector;
-import it.uniroma3.model.spy.SpyThresholds;
 
 public class ModelNaiveBayesFilterSpy extends ModelNaiveBayes {
 

@@ -76,17 +76,19 @@ public class Pipeline {
       // article parser
       long start_pars_time = System.currentTimeMillis();
       List<WikiArticle> chunk =
-          lines.parallelStream().map(s -> Lector.getWikiParser().createArticleFromXml(s))
-              .map(s -> stats.addArticleToStats(s)).filter(s -> s.getType() == ArticleType.ARTICLE)
-              .collect(Collectors.toList());
+          lines.parallelStream()
+          .map(s -> Lector.getWikiParser().createArticleFromXml(s))
+          .map(s -> stats.addArticleToStats(s)).filter(s -> s.getType() == ArticleType.ARTICLE)
+          .collect(Collectors.toList());
       long end_pars_time = System.currentTimeMillis();
       long pars_time = TimeUnit.MILLISECONDS.toSeconds(end_pars_time - start_pars_time);
       System.out.print("\tParsed in: " + pars_time + " sec.");
 
       // detect entities in articles
       long start_aug_time = System.currentTimeMillis();
-      chunk.parallelStream().map(s -> Lector.getEntitiesFinder().increaseEvidence(s))
-          .map(s -> Lector.getEntitiesTagger().augmentEvidence(s)).collect(Collectors.toList());
+      chunk.parallelStream()
+      .map(s -> Lector.getEntitiesFinder().increaseEvidence(s))
+      .map(s -> Lector.getEntitiesTagger().augmentEvidence(s)).collect(Collectors.toList());
       long end_aug_time = System.currentTimeMillis();
       long aug_time = TimeUnit.MILLISECONDS.toSeconds(end_aug_time - start_aug_time);
       System.out.print("\tAugmented in: " + aug_time + " sec.");

@@ -1,8 +1,7 @@
-package it.uniroma3.model.spy;
+package it.uniroma3.model.evaluation;
 
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
-import it.uniroma3.model.evaluation.Evaluator;
 
 public class CreateCrossValidation {
 
@@ -14,6 +13,7 @@ public class CreateCrossValidation {
     String dbname = Configuration.getLectorFolder() + "/" + "cross.db";
     System.out.println(dbname);
     Evaluator evaluator = new Evaluator(dbname, Lector.getDbmodel(false));
+    evaluator.getClass();
 
     System.out.println("Done");
     Lector.close();

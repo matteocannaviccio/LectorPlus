@@ -14,8 +14,8 @@ import it.uniroma3.model.db.DBLector;
  */
 public class ModelNaiveBayes extends Model {
 
-  // a prediction is valid only if the most probable relation has a probability greather than this
-  protected double majorityThreshold = 0.0;
+  // a prediction is valid only if the most probable relation has a probability greater than this
+  protected double majorityThreshold;
 
   /**
    * 
@@ -35,23 +35,17 @@ public class ModelNaiveBayes extends Model {
   /**
    * Pick the best relation from the Naive Bayes ranking.
    */
-  protected Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder,
-      String object_type) {
+  protected Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type) {
     // pick first from the ranking ...
-    Map<String, Double> ranking =
-        predictRelationsRanking(subject_type, phrase_placeholder, object_type);
+    Map<String, Double> ranking = predictRelationsRanking(subject_type, phrase_placeholder, object_type);
     Pair<String, Double> finalPrediction = Pair.make(ranking.entrySet().iterator().next());
     String prediction = finalPrediction.key;
     double probability = finalPrediction.value;
 
-    // if we are using ruleOfMajority, checks the constraint
-    if (!prediction.equals("NONE") && probability < majorityThreshold) {
-      // String typedPhrase = subject_type + " " + phrase_placeholder + " " + object_type;
-      // System.out.printf("%s\t%s\t%s\t%s\t%s\n", typedPhrase, finalPrediction.key, probability,
-      // NegativePredictions.MAJRULE.name(), ranking.toString());
+    // if we are using ruleOfMajority, intercept the prediction and change the result
+    if (!prediction.equals(NegativePredictions.NONE.name()) && !prediction.equals(NegativePredictions.UNKNOWN.name()) && probability < majorityThreshold) {
       finalPrediction = Pair.make(NegativePredictions.MAJRULE.name(), probability);
     }
-
     return finalPrediction;
   }
 
@@ -63,8 +57,8 @@ public class ModelNaiveBayes extends Model {
    * @param object_type
    * @return
    */
-  private Map<String, Double> predictRelationsRanking(String subject_type,
-      String phrase_placeholder, String object_type) {
+  private Map<String, Double> predictRelationsRanking(String subject_type, String phrase_placeholder, String object_type) {
+    
     // input ...
     String typedPhrase = subject_type + "\t" + phrase_placeholder + "\t" + object_type;
     Map<String, Double> relations2prob = new HashMap<String, Double>();
@@ -77,7 +71,7 @@ public class ModelNaiveBayes extends Model {
 
     // if we have never labeled any typed phrase...
     if (relations2prob.isEmpty())
-      relations2prob.put("UNKNOWN", 1.0);
+      relations2prob.put(NegativePredictions.NONE.name(), 1.0);
 
     return Ranking.getRanking(relations2prob);
   }

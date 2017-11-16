@@ -114,7 +114,7 @@ public class Triplifier {
       String[] nat = new String[4];
       nat[0] = article.getWikid();
       nat[1] = article.getFirstSentence();
-      nat[2] = Lector.getDBPedia().getType(article.getWikid());
+      nat[2] = Lector.getDBPedia().getTypeDeep(article.getWikid());
       nat[3] = article.getNationality();
       nationalities.add(nat);
     }

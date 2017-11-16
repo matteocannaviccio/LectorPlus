@@ -35,7 +35,7 @@ public class Evaluator {
   private Map<String, int[]> relation2counts = new HashMap<String, int[]>();
   private int totalCounts;
   private Map<String, Double> relation2accuracy;
-  private Map<String, Integer> relation2hits;
+  //private Map<String, Integer> relation2hits;
   private Pair<Double, Double> evals;
 
   /**
@@ -136,18 +136,15 @@ public class Evaluator {
       relation2counts.get(prediction)[2] += 1;
 
       if (expected.contains(prediction)) {
-        // System.out.println("TRUE POSITIVE\t" + "expected: " + expected + " - predicted: " +
-        // prediction +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
+        //System.out.println("TRUE POSITIVE\t" + "expected: " + expected + " - predicted: " + prediction +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
         relation2counts.get(prediction)[0] += 1;
       } else {
-        // System.out.println("FALSE POSITIVE\t" + "expected: " + expected + " - predicted: " +
-        // prediction +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
+        //System.out.println("FALSE POSITIVE WRONG REL \t" + "expected: " + expected + " - predicted: " + prediction +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
         relation2counts.get(prediction)[1] += 1;
       }
     }
-    // else
-    // System.out.println("FALSE POSITIVE\t" + "expected: " + "-" + " - predicted: " + prediction
-    // +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
+    //else
+    //System.out.println("FALSE POSITIVE ABSTAIN\t" + "expected: " + "-" + " - predicted: " + prediction +"("+prob+") ---> " + subjectType + " " + phrase+ " " + objectType);
 
   }
 
@@ -175,6 +172,7 @@ public class Evaluator {
    * 
    * @return
    */
+  /*
   private Map<String, Integer> calcHitsPerRelation() {
     Map<String, Integer> relation2hits = new HashMap<String, Integer>();
     for (Map.Entry<String, int[]> perRelationCount : relation2counts.entrySet()) {
@@ -183,7 +181,8 @@ public class Evaluator {
     }
     return relation2hits;
   }
-
+   */
+  
   /**
    * 
    * @param relation2counts
@@ -221,7 +220,7 @@ public class Evaluator {
     }
 
     relation2accuracy = calcAccuracyPerRelation();
-    relation2hits = calcHitsPerRelation();
+    //relation2hits = calcHitsPerRelation();
     evals = Pair.make(avg_acc / nParts, avg_rec / nParts);
   }
 
@@ -280,6 +279,9 @@ public class Evaluator {
     }
   }
 
+  /**
+   * 
+   */
   public static void evaluate() {
     for (String lang : Configuration.getLanguages()) {
       Configuration.updateParameter("language", lang);

@@ -157,8 +157,7 @@ public class ModelTextExt extends Model {
    * @param phrase
    * @return
    */
-  private Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder,
-      String object_type) {
+  private Pair<String, Double> predictRelation(String subject_type, String phrase_placeholder, String object_type) {
     String typed_phrase = subject_type + "\t" + phrase_placeholder + "\t" + object_type;
     String relation = NegativePredictions.NONE.name();
     if (patterns.containsKey(typed_phrase)) {
