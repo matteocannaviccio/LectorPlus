@@ -56,9 +56,9 @@ public class WikiMVL {
    * @return
    */
   public String mineType() {
-    String type = Lector.getDBPedia().getType(getWikipediaName(this.listWikid.get(0)));
+    String type = Lector.getDBPedia().getTypeDeep(getWikipediaName(this.listWikid.get(0)));
     for (String entity : this.listWikid) {
-      if (!Lector.getDBPedia().getType(entity).equals(type)) {
+      if (!Lector.getDBPedia().getTypeDeep(entity).equals(type)) {
         type = "[none]";
         break;
       }

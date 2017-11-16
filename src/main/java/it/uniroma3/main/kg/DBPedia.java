@@ -1,5 +1,7 @@
 package it.uniroma3.main.kg;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.config.Lector;
@@ -7,6 +9,7 @@ import it.uniroma3.config.WikiLanguage.Lang;
 import it.uniroma3.main.kg.resolver.RedirectResolver;
 import it.uniroma3.main.kg.resolver.RelationsResolver;
 import it.uniroma3.main.kg.resolver.TypesResolver;
+import it.uniroma3.main.util.Pair;
 
 /**
  * 
@@ -37,6 +40,32 @@ public class DBPedia {
   }
 
   /**
+   * Return some facts in DBpedia for the given relation.
+   * 
+   * @param relation
+   * @param max
+   * @return
+   */
+  public String getSomeFacts(String relation, int max) {
+    return relationResolver.getInstances(relation, max);
+  }
+  
+  /**
+   * Return all the facts in DBpedia for the given relation.
+   * It goes through the string method, orrible, but not extremely necessary.
+   * 
+   * @param relation
+   * @return
+   */
+  public List<Pair<String, String>> getAllFacts(String relation) {
+    List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
+    String pairs = relationResolver.getInstances(relation, -1);
+    for (String line : pairs.split("\n"))
+      list.add(Pair.make(line.split("\t")[0], line.split("\t")[1]));
+    return list;
+  }
+  
+  /**
    * 
    * @param possibleRedirect
    * @return
@@ -46,59 +75,79 @@ public class DBPedia {
   }
 
   /**
-   * @return the redirectResolver
-   */
-  public RedirectResolver getRedirectResolver() {
-    return redirectResolver;
-  }
-
-  /**
-   * @return the typesResolver
-   */
-  public TypesResolver getTypesResolver() {
-    return typesResolver;
-  }
-
-  /**
-   * @return the relationResolver
-   */
-  public RelationsResolver getRelationResolver() {
-    return relationResolver;
-  }
-
-  /**
-   * This method queries the Types Resolver to find the type for the entities. It assigns [none] in
-   * case of no type.
+   * This method queries the Types Resolver to find the type for the entities.
+   * In this case, it uses all the indexes that we have for types. 
+   * It assigns [none] in case of no type.
    * 
    * @return
    */
-  public String getType(String entity) {
-    return typesResolver.assignTypes(entity);
+  public String getTypeDeep(String entity) {
+    return typesResolver.assignTypesDeep(entity);
+  }
+  
+  /**
+   * This method queries the Types Resolver to find the type for the entities. 
+   * In this case, it uses only one or two indexes for types. 
+   * It assigns [none] in case of no type.
+   * 
+   * @return
+   */
+  public String getTypeSimple(String entity) {
+    return typesResolver.assignTypesSimple(entity);
   }
 
   /**
-   * This method queries the Types Resolver to find the type for the entities. It assigns [none] in
-   * case of no type.
+   * This method queries the Types Resolver to find the type and extract its category.
    * 
+   * @param entity
    * @return
    */
   public String getTypeCategory(String entity) {
-    String type = typesResolver.assignTypesSimple(entity);
+    String type = getTypeSimple(entity);
     if (!type.equals("[none]")){
       String cat = "Person";
-      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+      if (this.isChildOf(cat, getTypeSimple(entity))){
         return cat;
       }
       cat = "Place";
-      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+      if (this.isChildOf(cat, getTypeSimple(entity))){
         return cat;
       }
       cat = "Organisation";
-      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+      if (this.isChildOf(cat, getTypeSimple(entity))){
         return cat;
       }
       cat = "Work";
-      if (this.isChildOf(cat, typesResolver.assignTypesSimple(entity))){
+      if (this.isChildOf(cat, getTypeSimple(entity))){
+        return cat;
+      }
+    }
+    return "-";
+
+  }
+  
+  /**
+   * This method queries the ontology and return the category (more coarse grained) of the type.
+   * 
+   * @param type
+   * @return
+   */
+  public String matchTypeCategory(String type) {
+    if (!type.equals("[none]")){
+      String cat = "Person";
+      if (this.isChildOf(cat, type)){
+        return cat;
+      }
+      cat = "Place";
+      if (this.isChildOf(cat, type)){
+        return cat;
+      }
+      cat = "Organisation";
+      if (this.isChildOf(cat, type)){
+        return cat;
+      }
+      cat = "Work";
+      if (this.isChildOf(cat, type)){
         return cat;
       }
     }
@@ -189,6 +238,7 @@ public class DBPedia {
    * @param args
    */
 
+  /*
   public static void main(String[] args) {
     Configuration.init(new String[0]);
     Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
@@ -196,7 +246,7 @@ public class DBPedia {
 
     DBPedia t = new DBPedia();
 
-    String entity = "Stanford_University";
+    String entity = "Turkish_literature";
 
     //System.out.println(t.isChildOf("Person", "[Writer]"));
 
@@ -216,6 +266,8 @@ public class DBPedia {
     t.getTypesResolver().getOntPath(entity, t.getTypesResolver().getIndexSDTyped())
     .forEach(System.out::println);
   }
+  
+  */
 
 
 }

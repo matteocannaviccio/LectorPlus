@@ -188,7 +188,7 @@ public class WikiTriple {
     String type = "[none]";
     // make sure it makes sense to qyery the type
     if (isWikiEntity(entity) && !isMVLEntity(entity)) {
-      type = Lector.getDBPedia().getType(getWikipediaName(entity));
+      type = Lector.getDBPedia().getTypeDeep(getWikipediaName(entity));
     }
     return type;
   }

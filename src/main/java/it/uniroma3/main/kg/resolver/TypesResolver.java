@@ -25,7 +25,6 @@ import it.uniroma3.main.util.Pair;
  *
  */
 public class TypesResolver {
-
   /*
    * for the other languages we keep the english types dictionary as a reserve in case we can not
    * find a type in the right language dictionary. TODO: we should add the inter-languages mapping
@@ -173,6 +172,7 @@ public class TypesResolver {
    * Returns all the types that we can find for the entity in the given index.
    * 
    * @param wikid
+   * @param index
    * @return
    */
   public List<String> getTypes(String wikid, KeyValueIndex index) {
@@ -184,6 +184,7 @@ public class TypesResolver {
 
   /**
    * Returns all the OntPaths that we can find for the entity in the given index.
+   * [used for testing]
    * 
    * @param entity
    * @param specificIndex
@@ -206,7 +207,7 @@ public class TypesResolver {
    * @return
    */
   public OntPath getOntPath(String dbpediaEntity) {
-    return ontology.getOntPath(assignTypes(dbpediaEntity));
+    return ontology.getOntPath(assignTypesDeep(dbpediaEntity));
   }
 
   /**
@@ -228,12 +229,12 @@ public class TypesResolver {
    * @param wikid
    * @return
    */
-  public String assignTypes(String wikid) {
+  public String assignTypesDeep(String wikid) {
     String type = selectDeepest(getTypes(wikid, indexOriginal));
 
     if (type.equals("[none]"))
       type = selectDeepest(getTypes(wikid, indexAirpedia));
-
+    
     if (type.equals("[none]"))
       if (Lector.getWikiLang().getLang().equals("en")
           || Lector.getWikiLang().getLang().equals("de")) {
@@ -260,17 +261,8 @@ public class TypesResolver {
    */
   public String assignTypesSimple(String wikid) {
     String type = selectDeepest(getTypes(wikid, indexOriginal));
-
     if (type.equals("[none]"))
       type = selectDeepest(getTypes(wikid, indexAirpedia));
-    
-    /*
-    if (type.equals("[none]"))
-      type = selectDeepest(getTypes(wikid, indexSDTyped));
-    
-    if (type.equals("[none]"))
-      type = selectDeepest(getTypes(wikid, indexLHD));
-    */
     return type;
   }
 

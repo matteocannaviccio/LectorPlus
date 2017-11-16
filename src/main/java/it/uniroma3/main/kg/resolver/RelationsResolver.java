@@ -92,24 +92,14 @@ public class RelationsResolver {
   public String getInstances(String relation, int max) {
     StringBuffer sb = new StringBuffer();
     int tot = 0;
+    if(max==-1)
+      max = Integer.MAX_VALUE;
     for (String instance : indexKG.retrieveKeys(relation))
       if (tot < max) {
         sb.append(instance.split("###")[0] + "\t" + instance.split("###")[1] + "\n");
         tot += 1;
       }
     return sb.toString();
-  }
-
-  /**
-   * 
-   * @param relation
-   * @return
-   */
-  public List<Pair<String, String>> getInstances(String relation) {
-    List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
-    for (String instance : indexKG.retrieveKeys(relation))
-      list.add(Pair.make(instance.split("###")[0], instance.split("###")[1]));
-    return list;
   }
 
   /**
@@ -130,6 +120,14 @@ public class RelationsResolver {
     for (Map.Entry<String, Integer> relation : Ranking.getRanking(indexKG.matchAll()).entrySet()) {
       System.out.println(relation.getKey() + "\t" + relation.getValue());
     }
+  }
+  
+
+  /**
+   * @return the indexKG
+   */
+  public static KeyValueIndex getIndexKG() {
+    return indexKG;
   }
 
 
