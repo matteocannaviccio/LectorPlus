@@ -110,6 +110,28 @@ public class TSVReader {
     }
     return entities;
   }
+  
+  /**
+   * Reads a n-columns TSV file and count the lines.
+   * 
+   * @param path
+   * @return
+   */
+  public static int countLinesTSVFile(String path) {
+    int count=0;
+    try {
+      BufferedReader br = Compressed.getBufferedReaderForCompressedFile(path);
+      String line;
+      while ((line = br.readLine()) != null) {
+        count+=1;
+      }
+      br.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return count;
+  }
 
   /**
    * Reads a two-columns TSV file and put it in a list of pairs.

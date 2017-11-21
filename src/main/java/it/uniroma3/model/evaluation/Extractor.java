@@ -31,8 +31,8 @@ public class Extractor {
 
     List<Double> majorities = new ArrayList<Double>();
     majorities.add(0.0);
-    majorities.add(0.4);
-    majorities.add(0.5);
+    //majorities.add(0.4);
+    //majorities.add(0.5);
 
     List<Integer> percentages = new ArrayList<Integer>();
     percentages.add(0);

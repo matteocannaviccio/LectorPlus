@@ -1,5 +1,8 @@
 package it.uniroma3.model.paper;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,10 +14,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.main.bean.WikiArticle;
 import it.uniroma3.main.kg.DBPedia;
 import it.uniroma3.main.pipeline.articleparser.MarkupParser;
+import it.uniroma3.main.util.CounterMap;
 import it.uniroma3.main.util.Pair;
 import it.uniroma3.main.util.inout.JSONReader;
 /**
@@ -28,6 +33,11 @@ public class EntityStats {
   private static Map<String, LongAdder> locationPEmethodsCount = new ConcurrentHashMap<>();
   private static Map<String, LongAdder> organizationPEmethodsCount = new ConcurrentHashMap<>();
   private static Map<String, LongAdder> creativePEmethodsCount = new ConcurrentHashMap<>();
+
+  private static Map<String, Example> personPEmethodsExamples = new ConcurrentHashMap<>();
+  private static Map<String, Example> locationPEmethodsExamples = new ConcurrentHashMap<>();
+  private static Map<String, Example> organizationPEmethodsExamples = new ConcurrentHashMap<>();
+  private static Map<String, Example> creativePEmethodsExamples = new ConcurrentHashMap<>();
 
   private static Map<String, LongAdder> categoryPEmethodsCount = new ConcurrentHashMap<>();
 
@@ -45,7 +55,10 @@ public class EntityStats {
    * @param sentences
    * @return
    */
-  public static void countPrimaryEntities(String primary, Map<String, List<String>> sentences){
+  public static void countPrimaryEntities(WikiArticle article){
+    String primary = article.getTitle();
+    Map<String, List<String>> sentences = article.getSentences();
+
     allArticles.incrementAndGet();
     String category = db.getTypeCategory(primary);
     categoryPEmethodsCount.computeIfAbsent(category, k -> new LongAdder()).increment();
@@ -56,22 +69,64 @@ public class EntityStats {
         String sec = "#Elsewhere";
         if (sent.getKey().equals("#Abstract"))
           sec = "#Abstract";
-        for (String s : sent.getValue()){
-          Matcher m = entity.matcher(s);
-          String method;
-          while (m.find()) {
-            method = sec + "-" + m.group(1);
-            //System.out.println(category + "\t" +  primary + "\t" + method);
-            if (category.equals("Person"))
-              personPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
-            if (category.equals("Place"))
-              locationPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
-            if (category.equals("Organisation"))
-              organizationPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
-            if (category.equals("Work"))
-              creativePEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
+        String text= StringUtils.join(sent.getValue(), " ");
+        Matcher m = entity.matcher(text);
+        String method;
+        StringBuffer general = new StringBuffer(); 
+        while (m.find()) {
+          method = sec + "-" + m.group(1);
+          String mentionedText = m.group(3);
+          //System.out.println(category + "\t" +  primary + "\t" + method);
+          //System.out.println(general);
+          
+          m.appendReplacement(general, Matcher.quoteReplacement(m.group(0)));
+
+          if (category.equals("Person")){
+            StringBuffer textModified = new StringBuffer(); 
+            personPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
+            int generalSize = general.length();
+            textModified.append(general.toString().substring(0, generalSize-m.group(0).length()));
+            textModified.append("<mark>" + Matcher.quoteReplacement(mentionedText) + "</mark>");
+            m.appendTail(textModified);
+            Example e = new Example(primary, article.getFirstSentence(), sent.getKey(), textModified.toString(), m.group(0), method, mentionedText);
+            personPEmethodsExamples.put(m.group(0), e);
           }
+
+          if (category.equals("Place")){
+            StringBuffer textModified = new StringBuffer(); 
+            locationPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
+            int generalSize = general.length();
+            textModified.append(general.toString().substring(0, generalSize-m.group(0).length()));
+            textModified.append("<mark>" + Matcher.quoteReplacement(mentionedText) + "</mark>");
+            m.appendTail(textModified);
+            Example e = new Example(primary, article.getFirstSentence(), sent.getKey(), textModified.toString(), m.group(0), method, mentionedText);
+            locationPEmethodsExamples.put(m.group(0), e);
+          }
+
+          if (category.equals("Organisation")){
+            StringBuffer textModified = new StringBuffer(); 
+            organizationPEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
+            int generalSize = general.toString().length();
+            textModified.append(general.toString().substring(0, generalSize-m.group(0).length()));
+            textModified.append("<mark>" + Matcher.quoteReplacement(mentionedText) + "</mark>");
+            m.appendTail(textModified);
+            Example e = new Example(primary, article.getFirstSentence(), sent.getKey(), textModified.toString(), m.group(0), method, mentionedText);
+            organizationPEmethodsExamples.put(m.group(0), e);
+          }
+
+          if (category.equals("Work")){
+            StringBuffer textModified = new StringBuffer(); 
+            creativePEmethodsCount.computeIfAbsent(method, k -> new LongAdder()).increment();
+            int generalSize = general.length();
+            textModified.append(general.toString().substring(0, generalSize-m.group(0).length()));
+            textModified.append("<mark>" + Matcher.quoteReplacement(mentionedText) + "</mark>");
+            m.appendTail(textModified);
+            Example e = new Example(primary, article.getFirstSentence(), sent.getKey(), textModified.toString(), m.group(0), method, mentionedText);
+            creativePEmethodsExamples.put(m.group(0), e);
+          }
+          
         }
+        
       }
     }
   }
@@ -133,8 +188,8 @@ public class EntityStats {
   private static double getSEPercent(String category, Integer key) {
     return  (double) key / total.get(category + "-SE");
   }
-  
-  
+
+
   /**
    * 
    * @param category
@@ -144,8 +199,8 @@ public class EntityStats {
   private static double getPEAbstractPercent(String category, Integer key) {
     return  (double) key / total.get(category + "-PE-Abstract");
   }
-  
-  
+
+
   /**
    * 
    * @param category
@@ -164,11 +219,11 @@ public class EntityStats {
     JSONReader reader = new JSONReader(Configuration.getAugmentedArticlesFile());
     List<WikiArticle> lines;
     int contChunks = 0;
-    int totChunks = 1000;
+    int totChunks = 5;
     while (!(lines = reader.nextChunk(1000)).isEmpty() && contChunks < totChunks) {
       contChunks++;
       lines.parallelStream()
-      .forEach(s -> countPrimaryEntities(s.getTitle(), s.getSentences()));
+      .forEach(s -> countPrimaryEntities(s));
     }
   }
 
@@ -184,7 +239,7 @@ public class EntityStats {
     }
     return tot;
   }
-  
+
   /**
    * 
    * @param map
@@ -197,7 +252,7 @@ public class EntityStats {
     }
     return tot;
   }
-  
+
   /**
    * 
    * @param map
@@ -259,7 +314,7 @@ public class EntityStats {
    */
   public static void main(String[] args) throws IOException {
     Configuration.init(args);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data");
     Configuration.updateParameter("language", "en");
     db = new DBPedia();
     EntityStats.calculateStats();
@@ -299,5 +354,75 @@ public class EntityStats {
     }
 
 
+    File folderHTMLFiles = new File( "/Users/matteo/Desktop/samples");
+    folderHTMLFiles.mkdirs();
+    int cont = 0;
+    int max = 50;
+    
+    BufferedWriter bw1 = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/PERSON.html")));
+    BufferedWriter bw1b = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/PERSON.tsv")));
+    CounterMap<String> methodscount = new CounterMap<String>();
+    for (Map.Entry<String, Example> example : personPEmethodsExamples.entrySet()){
+      String met = example.getValue().getMethod();
+      methodscount.add(met);
+      Example e = example.getValue();
+      if ((!e.isAbstract() || !met.equals("SEED")) && e.isAugmented() && e.isPrimary() && (methodscount.get(met) <= 10)){
+        bw1.write(e.toString("PERSON", ""+cont) + "\n");
+        bw1b.write(cont + "\t" + e.getTitle() + "\t" + e.whereIsIt() + "\t" + e.entdetmet() + "\n");
+        cont++;
+      }
+    }
+    bw1.close();
+    bw1b.close();
+    
+    BufferedWriter bw2 = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/LOCATION.html")));
+    BufferedWriter bw2b = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/LOCATION.tsv")));
+    methodscount = new CounterMap<String>();
+    for (Map.Entry<String, Example> example : locationPEmethodsExamples.entrySet()){
+      String met = example.getValue().getMethod();
+      methodscount.add(met);
+      Example e = example.getValue();
+      if ((!e.isAbstract() || !met.equals("SEED")) && e.isAugmented() && e.isPrimary() && (methodscount.get(met) <= 10)){
+        bw2.write(e.toString("LOCATION", ""+cont) + "\n");
+        bw2b.write(cont + "\t" + e.getTitle() + "\t" + e.whereIsIt() + "\t" + e.entdetmet() + "\n");
+        cont++;
+      }
+    }
+    bw2.close();
+    bw2b.close();
+    
+    BufferedWriter bw3 = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/ORGANIZATION.html")));
+    BufferedWriter bw3b = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/ORGANIZATION.tsv")));
+    methodscount = new CounterMap<String>();
+    for (Map.Entry<String, Example> example : organizationPEmethodsExamples.entrySet()){
+      String met = example.getValue().getMethod();
+      methodscount.add(met);
+      Example e = example.getValue();
+      if ((!e.isAbstract() || !met.equals("SEED")) && e.isAugmented() && e.isPrimary() && (methodscount.get(met) <= 10)){
+        bw3.write(e.toString("ORGANIZATION", ""+cont) + "\n");
+        bw3b.write(cont + "\t" + e.getTitle() + "\t" + e.whereIsIt() + "\t" + e.entdetmet() + "\n");
+        cont++;
+      }
+    }
+    bw3.close();
+    bw3b.close();
+    
+    BufferedWriter bw4 = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/CREATIVE.html")));
+    BufferedWriter bw4b = new BufferedWriter(new FileWriter(new File(folderHTMLFiles.getAbsolutePath() + "/CREATIVE.tsv")));
+    methodscount = new CounterMap<String>();
+    for (Map.Entry<String, Example> example : creativePEmethodsExamples.entrySet()){
+      String met = example.getValue().getMethod();
+      methodscount.add(met);
+      Example e = example.getValue();
+      if ((!e.isAbstract() || !met.equals("SEED")) && e.isAugmented() && e.isPrimary() && (methodscount.get(met) <= 10)){
+        bw4.write(e.toString("CREATIVE", ""+cont) + "\n");
+        bw4b.write(cont + "\t" + e.getTitle() + "\t" + e.whereIsIt() + "\t" + e.entdetmet() + "\n");
+        cont++;
+      }
+    }
+    bw4.close();
+    bw4b.close();
   }
+
+
 }

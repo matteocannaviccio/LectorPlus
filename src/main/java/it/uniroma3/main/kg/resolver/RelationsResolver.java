@@ -3,7 +3,6 @@ package it.uniroma3.main.kg.resolver;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +29,7 @@ public class RelationsResolver {
    */
   public RelationsResolver() {
     this.cleaner = new CleanDBPediaRelations();
-    this.indexKG =
-        getIndexOrCreate(Configuration.getDBPediaIndex(), Configuration.getDBPediaDumpFile());
+    indexKG = getIndexOrCreate(Configuration.getDBPediaIndex(), Configuration.getDBPediaDumpFile());
   }
 
   /**

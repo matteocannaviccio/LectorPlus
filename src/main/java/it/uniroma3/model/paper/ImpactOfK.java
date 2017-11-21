@@ -14,9 +14,18 @@ public class ImpactOfK {
    * 
    * @param provenance
    */
-  private static void printNuberOfFacts(File provenance, double maj,  int k){
+  private static void printNuberOfFactsWithDuplicates(File provenance, double maj,  int k){
+    int lines = TSVReader.countLinesTSVFile(provenance.getAbsolutePath());
+    System.out.println(k + "\t" + maj + "\t" +lines);
+  }
+  
+  /**
+   * 
+   * @param provenance
+   */
+  private static void printNuberOfFactsAvoidDuplicates(File provenance, double maj,  int k){
     Set<String> content = TSVReader.getFirstKLines2Set(provenance.getAbsolutePath(), -1);
-    System.out.println(k + "\t" + maj + "\t" + content.size());
+    System.out.println(k + "\t" + maj + "\t" +content.size());
   }
 
 
@@ -32,7 +41,7 @@ public class ImpactOfK {
     //models.add(ModelType.ModelTextExt);
 
     List<Double> majorities = new ArrayList<Double>();
-    majorities.add(0.0);
+    //majorities.add(0.0);
     majorities.add(0.4);
     //majorities.add(0.5);
 
@@ -58,15 +67,20 @@ public class ImpactOfK {
     percentages.add(90);
     percentages.add(95);
     percentages.add(100);
+
+
     
-    System.out.println("model\tp\tfacts");
+    System.out.println("model\tcutoff\tfacts");
 
     File provenance;
     for (ModelType type : models) {
       if (type.equals(ModelType.ModelTextExt)) {
         Configuration.updateParameter("lectorModel", type.name());
         provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
-        printNuberOfFacts(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
+        //provenance = new File("/Users/matteo/Desktop/en" + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
+        printNuberOfFactsWithDuplicates(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
+        //printNuberOfFactsAvoidDuplicates(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
+        
       } else {
         for (Double majThr : majorities) {
           for (Integer k : percentages) {
@@ -74,8 +88,11 @@ public class ImpactOfK {
             Configuration.updateParameter("minF", "1");
             Configuration.updateParameter("percUnl", k.toString());
             Configuration.updateParameter("majorityThreshold", majThr.toString());
-            provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
-            printNuberOfFacts(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
+            //provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
+            provenance = new File("/Users/matteo/Desktop/extractor/en" + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
+
+            printNuberOfFactsWithDuplicates(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
+            //printNuberOfFactsAvoidDuplicates(provenance, Configuration.getMajThr(), Configuration.getPercUnl());
           }
         }
       }

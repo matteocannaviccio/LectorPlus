@@ -2,6 +2,7 @@ package it.uniroma3.model.paper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public class Questions {
 
@@ -52,10 +53,9 @@ public class Questions {
     specialQuestions.put("influenced", "influenced by");
     specialQuestions.put("influencedBy", "influenced by");
     specialQuestions.put("keyPerson", "an important person for");
-
     specialQuestions.put("isPartOf", "contained in");
     specialQuestions.put("part", "contained in");
-
+    specialQuestions.put("place", "(one of) the place(s) of");
     specialQuestions.put("industry", "working in the industry of");
     specialQuestions.put("isPartOfMilitaryConflict", "involved in the battle of");
     specialQuestions.put("knownFor", "known for");
@@ -66,6 +66,8 @@ public class Questions {
     specialQuestions.put("nationality", "the nationality of");
     specialQuestions.put("notableCommander", "a commander of");
     specialQuestions.put("occupation", "the occupation of");
+    specialQuestions.put("leftTributary", "a tributary of");
+    specialQuestions.put("rightTributary", "a tributary of");
     specialQuestions.put("location", "the location of");
     specialQuestions.put("leader", "the leader of");
     specialQuestions.put("largestSettlement", "the largest settlement of");
@@ -96,7 +98,7 @@ public class Questions {
     specialQuestions.put("routeStart", "a intersection of");
     specialQuestions.put("season", "a season played by");
     specialQuestions.put("servingRailwayLine", "a rail line for");
-    specialQuestions.put("spokenIn", "spoken in");
+    specialQuestions.put("spokenIn", "a (family of) language(s) spoken in");
     specialQuestions.put("significantProject", "a project of");
     specialQuestions.put("child", "a child of");
     specialQuestions.put("owner", "the owner of");
@@ -113,7 +115,7 @@ public class Questions {
     specialQuestions.put("school", "the school of");
     specialQuestions.put("similar", "similar to");
     specialQuestions.put("splitFromParty", "splited from");
-    specialQuestions.put("similar", "similar to");
+    specialQuestions.put("similar", "similar to");    
     specialQuestions.put("state", "the state of");
     specialQuestions.put("sourceCountry", "the source place of");
     specialQuestions.put("subsequentWork", "the subsequent work of");
@@ -139,8 +141,10 @@ public class Questions {
       text = specialQuestions.get(raw);
 
     String question;
-
-    if (relation.equals("isPartOf") || relation.equals("part"))
+    subject = "<mark>" + subject + "</mark>";
+    object = "<mark>" + object + "</mark>";
+    
+    if (relation.equals("isPartOf") || relation.equals("part") || relation.equals("spokenIn"))
       question = "is " + subject + " " + text + " " + object + "?";
     else{
       if (relation.contains("(-1)"))

@@ -6,14 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
 import it.uniroma3.config.Configuration;
 import it.uniroma3.main.pipeline.articleparser.MarkupParser;
 import it.uniroma3.main.util.CounterMap;
@@ -28,121 +26,101 @@ import it.uniroma3.main.util.inout.TSVReader;
 public class FactsChecker {
 
   private static Pattern WIKILINK = Pattern.compile(MarkupParser.WIKID_REGEX);
-
-  private static Map<String, List<String>> facts_content = new HashMap<String, List<String>>();
-  private static Map<String, Integer> facts_sizes = new HashMap<String, Integer>();
+  //private static Map<String, Set<String>> facts_deltas = new HashMap<String, Set<String>>();
+  private final static int SIZE_SAMPLE = 30;
 
   /**
    * 
    * @param args
    */
   public static void main(String[] args) {
-    final int SIZE_SAMPLE = 1000;
-
     Configuration.init(args);
-    for (String lang : Configuration.getLanguages()) {
-      Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_complete");
-      Configuration.updateParameter("language", lang);
+    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    Configuration.updateParameter("language", "en");
+    Configuration.updateParameter("majorityThreshold", "0.0");
 
-      Configuration.updateParameter("minF", "1");
-      Configuration.updateParameter("majorityThreshold", "0.4");
+    List<Integer> percentages = new ArrayList<Integer>();
+    percentages.add(100);
+    percentages.add(95);
+    percentages.add(90);
+    percentages.add(85);
+    percentages.add(80);
+    percentages.add(75);
+    percentages.add(70);
+    percentages.add(65);
+    percentages.add(60);
+    percentages.add(55);
+    percentages.add(50);
+    percentages.add(45);
+    percentages.add(40);
+    percentages.add(35);
+    percentages.add(30);
+    percentages.add(25);
+    percentages.add(20);
+    percentages.add(15);
+    percentages.add(10);
+    percentages.add(5);
+    percentages.add(0);
 
-      System.out.println("---------");
-      System.out.println("Language: " + lang);
-      System.out.println("---------");
 
-      Map<String, Set<String>> facts_content = new HashMap<String, Set<String>>();
-      Map<String, Integer> facts_sizes = new HashMap<String, Integer>();
+    // calculate the first bucket
+    Configuration.updateParameter("percUnl", percentages.get(0).toString());
+    System.out.print(Configuration.getPercUnl());
+    //File provenance = new File("/Users/matteo/Desktop/extractor/en" + "/" + Configuration.getModelCode() + "/en_provenance.bz2");
+    File provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/en_provenance.bz2");
+    Set<String> small = TSVReader.getFirstKLines2Set(provenance.getAbsolutePath(), -1);
+    System.out.print("\t" + small.size());
+    List<String> sample = getSampleFromSet(small, SIZE_SAMPLE);
+    int code = printFolderAndValidationSample(sample, 1);
 
-      // read all the provenance files
-      System.out.print("Reading external set ... ");
-      Configuration.updateParameter("percUnl", "0");
-      File provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
+    // calculate the bucket for each delta...
+    percentages = percentages.subList(1, percentages.size());
+    for (Integer k : percentages) {
+      Configuration.updateParameter("percUnl", k.toString());
+      System.out.print(Configuration.getPercUnl());
+      //provenance = new File("/Users/matteo/Desktop/extractor/en" + "/" + Configuration.getModelCode() + "/en_provenance.bz2");
+      provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/en_provenance.bz2");
       Set<String> content = TSVReader.getFirstKLines2Set(provenance.getAbsolutePath(), -1);
-      facts_content.put(Configuration.getModelCode(), content);
-      facts_sizes.put(Configuration.getModelCode(), content.size());
-      System.out.println("Done");
 
-      System.out.print("Reading medium set ...");
-      Configuration.updateParameter("percUnl", "25");
-      provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
-      content = TSVReader.getFirstKLines2Set(provenance.getAbsolutePath(), -1);
-      facts_content.put(Configuration.getModelCode(), content);
-      facts_sizes.put(Configuration.getModelCode(), content.size());
-      System.out.println("Done");
-
-      System.out.print("Reading internal set ... ");
-      Configuration.updateParameter("percUnl", "100");
-      provenance = new File(Configuration.getOutputFolder() + "/" + Configuration.getModelCode() + "/" + lang + "_provenance.bz2");
-      content = TSVReader.getFirstKLines2Set(provenance.getAbsolutePath(), -1);
-      facts_content.put(Configuration.getModelCode(), content);
-      facts_sizes.put(Configuration.getModelCode(), content.size());
-      System.out.println("Done");
-
-      System.out.print("Ordering and adjusting ...");
-      // order and pick the three sets
-      Iterator<Entry<String, Integer>> iterator =
-          Ranking.getRanking(facts_sizes).entrySet().iterator();
-      Set<String> externalSet = facts_content.get(iterator.next().getKey());
-      Set<String> mediumSet = facts_content.get(iterator.next().getKey());
-      Set<String> smallSet = facts_content.get(iterator.next().getKey());
-      externalSet.removeAll(mediumSet);
-      mediumSet.removeAll(smallSet);
-      System.out.println("Done");
-
-
-      // System.out.println(externalSet.size() + "\t" + externalSet.stream().map(s ->
-      // s.split("\t")[7]).collect(Collectors.toList()));
-      // System.out.println(mediumSet.size() + "\t" + mediumSet.stream().map(s ->
-      // s.split("\t")[7]).collect(Collectors.toList()));
-      // System.out.println(smallSet.size() + "\t" + smallSet.stream().map(s ->
-      // s.split("\t")[7]).collect(Collectors.toList()));
-
-      /*
-       * pick the size of each random samples from them based on the whole size of the section
-       */
-      int total_size = externalSet.size() + mediumSet.size() + smallSet.size();
-      double external_part = (double) externalSet.size() / total_size;
-      double medium_part = (double) mediumSet.size() / total_size;
-      double small_part = (double) smallSet.size() / total_size;
-      int fraction_external = (int) Math.floor(SIZE_SAMPLE * external_part);
-      int fraction_medium = (int) Math.floor(SIZE_SAMPLE * medium_part);
-      int fraction_small = (int) Math.floor(SIZE_SAMPLE * small_part);
-      int total = fraction_external + fraction_medium + fraction_small;
-      while ((SIZE_SAMPLE - total) > 0) {
-        fraction_small += 1;
-        total = fraction_external + fraction_medium + fraction_small;
-      }
-
-      System.out.println(fraction_external);
-      System.out.println(fraction_medium);
-      System.out.println(fraction_small);
-
-      List<String> sample_external = getSampleFromSet(externalSet, fraction_external);
-      List<String> sample_medium = getSampleFromSet(mediumSet, fraction_medium);
-      List<String> sample_small = getSampleFromSet(smallSet, fraction_small);
-
-      File folder_external = new File(getValidationFolder("external"));
-      printFactsFile(folder_external, sample_external);
-      printRelationsFile(folder_external, sample_external);
-      printQuestionsFile(folder_external, sample_external);
-      int count = printFinalFile(new File(getValidationFolder("general")), sample_external, "external", 1);
-
-      File folder_medium = new File(getValidationFolder("medium"));
-      printFactsFile(folder_medium, sample_medium);
-      printRelationsFile(folder_medium, sample_medium);
-      printQuestionsFile(folder_medium, sample_medium);
-      count = printFinalFile(new File(getValidationFolder("general")), sample_medium, "model", count);
-
-      File folder_strict = new File(getValidationFolder("strict"));
-      printFactsFile(folder_strict, sample_small);
-      printRelationsFile(folder_strict, sample_small);
-      printQuestionsFile(folder_strict, sample_small);
-      count = printFinalFile(new File(getValidationFolder("general")), sample_small, "internal", count);
-
-      System.out.println(total);
-
+      Set<String> diff = Sets.difference(content, small);
+      small = content;
+      sample = getSampleFromSet(diff, SIZE_SAMPLE);
+      System.out.print("\t" +diff.size());
+      code = printFolderAndValidationSample(sample, code);
     }
+    System.out.println("  Done");
+
+    /*
+     * pick the size of each random samples from them based on the whole size of the section
+     */
+    /*
+    int total_size = externalSet.size() + mediumSet.size() + smallSet.size();
+    double external_part = (double) externalSet.size() / total_size;
+    double medium_part = (double) mediumSet.size() / total_size;
+    double small_part = (double) smallSet.size() / total_size;
+    int fraction_external = (int) Math.floor(SIZE_SAMPLE * external_part);
+    int fraction_medium = (int) Math.floor(SIZE_SAMPLE * medium_part);
+    int fraction_small = (int) Math.floor(SIZE_SAMPLE * small_part);
+    int total = fraction_external + fraction_medium + fraction_small;
+    while ((SIZE_SAMPLE - total) > 0) {
+      fraction_small += 1;
+      total = fraction_external + fraction_medium + fraction_small;
+    }
+     */
+  }
+
+  /**
+   * 
+   * @param sample
+   */
+  private static int printFolderAndValidationSample(List<String> sample, int start){
+    System.out.println("\t" + sample.size() + "\t" + sample.stream().map(s -> s.split("\t")[7]).collect(Collectors.toList()));
+    File folder = new File(getValidationFolder("" +Configuration.getPercUnl()));
+    printFactsFile(folder, sample);
+    printRelationsFile(folder, sample);
+    printQuestionsFile(folder, sample);
+    int count = printFinalFile(new File(getValidationFolder("general")), sample, "" +Configuration.getPercUnl(), start); 
+    return count;
   }
 
   /**
@@ -200,7 +178,7 @@ public class FactsChecker {
       String wikid = m.group(2);
       String renderedName = m.group(3);
       if (whole.equals(ann_sub) || whole.equals(ann_obj))
-        m.appendReplacement(cleanText, Matcher.quoteReplacement(wikid));
+        m.appendReplacement(cleanText, "<mark>" + Matcher.quoteReplacement(wikid) + "</mark>");
       else
         m.appendReplacement(cleanText, Matcher.quoteReplacement(renderedName));
     }
@@ -304,8 +282,7 @@ public class FactsChecker {
    * @return
    */
   private static String getValidationFolder(String folderName) {
-    String folderPath = Configuration.getDataFolder() + "/" + "validation" + "/"
-        + Configuration.getLanguageCode() + "/" + folderName;
+    String folderPath = Configuration.getDataFolder() + "/" + "validation" + "/" + Configuration.getLanguageCode() + "/" + folderName;
     File folder = new File(folderPath);
     if (!folder.exists())
       folder.mkdirs();
