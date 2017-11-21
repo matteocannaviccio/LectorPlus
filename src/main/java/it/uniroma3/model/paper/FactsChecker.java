@@ -35,7 +35,7 @@ public class FactsChecker {
    */
   public static void main(String[] args) {
     Configuration.init(args);
-    Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
+    //Configuration.updateParameter("dataFile", "/Users/matteo/Desktop/data_small");
     Configuration.updateParameter("language", "en");
     Configuration.updateParameter("majorityThreshold", "0.0");
 
