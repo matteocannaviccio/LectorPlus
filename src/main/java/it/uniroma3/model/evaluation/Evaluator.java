@@ -39,9 +39,9 @@ public class Evaluator {
   private Pair<Double, Double> evals;
 
   /**
-   * 
-   * @param model
-   * @param db_read
+   *
+   * @param dbcrossvalidationName
+   * @param dbmodel
    */
   public Evaluator(String dbcrossvalidationName, DBModel dbmodel) {
     this.dbcrossvaliadation = loadOrCreateCrossValidationDB(dbcrossvalidationName, dbmodel, 5);
@@ -74,8 +74,10 @@ public class Evaluator {
   /**
    * Process the triple to label. It can not have the same entities as subject and object. Return a
    * true value if we can extract a new facts, false otherwise.
-   * 
-   * @param t
+   *
+   * @param subjectType
+   * @param phrase
+   * @param objectType
    * @return
    */
   private Pair<String, Double> processRecord(String subjectType, String phrase, String objectType) {
@@ -113,10 +115,13 @@ public class Evaluator {
   }
 
 
-
   /**
    * 
-   * @param t
+   * @param subjectType
+   * @param phrase
+   * @param objectType
+   * @param wikiSubject
+   * @param wikiObject
    */
   private void updateCounts(String subjectType, String phrase, String objectType,
       String wikiSubject, String wikiObject) {

@@ -20,6 +20,7 @@ public class Compressed {
   public static BufferedReader getBufferedReaderForCompressedFile(String path) {
     BufferedReader br = null;
     try {
+      System.out.println(path);
       FileInputStream fin = new FileInputStream(path);
       BufferedInputStream bis = new BufferedInputStream(fin);
       CompressorInputStream input = new CompressorStreamFactory().createCompressorInputStream(bis);
