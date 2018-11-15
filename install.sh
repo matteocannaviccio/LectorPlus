@@ -1,5 +1,6 @@
 #!/bin/bash
 #export LANGUAGES=(fr de en es it)
+#export LANGUAGES=(en it)
 export LANGUAGES=(it)
 
 # read the wikipedia dump path each language
