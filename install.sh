@@ -1,5 +1,6 @@
 #!/bin/bash
-export LANGUAGES=(fr de en es it)
+#export LANGUAGES=(fr de en es it)
+export LANGUAGES=(en it)
 
 # read the wikipedia dump path each language
 source ./dump.properties
@@ -48,59 +49,11 @@ LANGUAGE=${LANGUAGES[i]}
 	mkdir -p data/sources/${LANGUAGE}
 	mkdir -p data/sources/${LANGUAGE}/types
 	mkdir -p data/sources/${LANGUAGE}/redirect
-	mkdir -p data/lists/${LANGUAGE}
 	mkdir -p data/models/${LANGUAGE}
-	mkdir -p data/languages
-
-	###############    Download lang properties  ###############
-	echo "2) Download language properties"
-	final="data/languages/${LANGUAGE}.properties"
-	tmp=$final"_temp"
-
-	if [ ${LANGUAGE} = "en" ]; then
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/y3yqakdcwhizkx2/en.properties?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-	if [ ${LANGUAGE} = "es" ]; then
-		if [ ! -e $final ] ; then
-			wget -q -O $tmp "https://www.dropbox.com/s/ijviti49l6udmcu/es.properties?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-	if [ ${LANGUAGE} = "it" ]; then
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/q02dxaf5hzq7tmd/it.properties?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-	if [ ${LANGUAGE} = "de" ]; then
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/r3mebdhz62r57wu/de.properties?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-	if [ ${LANGUAGE} = "fr" ]; then
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/lc83zvfozwzu2bp/fr.properties?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
 
 	###############    Download Wikipedia   #####################
 	if [ ${LANGUAGE} = "en" ]; then
-		echo "3a) Download Wikipedia dump (~14G)"
+		echo "2) Download Wikipedia dump (170MB fragment, 14G whole dump)"
 		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
@@ -111,7 +64,7 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
-		echo "3a) Download Wikipedia dump (~2.5G)"
+		echo "2) Download Wikipedia dump (~2.5G)"
 		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
@@ -122,7 +75,7 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
-		echo "3a) Download Wikipedia dump (~4.2G)"
+		echo "2) Download Wikipedia dump (~4.2G)"
 		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
@@ -133,7 +86,7 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "it" ]; then
-		echo "3a) Download Wikipedia dump (~2.2G)"
+		echo "2) Download Wikipedia dump (170MB fragment, 2.2G whole dump)"
 		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
@@ -144,7 +97,7 @@ LANGUAGE=${LANGUAGES[i]}
 		fi
 	fi
 	if [ ${LANGUAGE} = "fr" ]; then
-		echo "3a) Download Wikipedia dump (~3.5G)"
+		echo "2) Download Wikipedia dump (~3.5G)"
 		final="data/input/wikipedia/${LANGUAGE}/dump.xml.bz2"
 		tmp=$final"_temp"
 		if [ ! -e $final ]; then
@@ -156,7 +109,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 
 	###############     Download DBPedia    ###############
-	echo "3b) Download DBPedia dump"
+	echo "3) Download DBPedia dump (160MB or less)"
 	final="data/input/dbpedia/${LANGUAGE}/mappingbased_objects.ttl.bz2"
 	tmp=$final"_temp"
 
@@ -169,7 +122,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 
 	###############      Download types     ###############
-	echo "3c) Download types mappings"
+	echo "3b) Download types mappings"
 
 	if [ ${LANGUAGE} = "en" ] || [ ${LANGUAGE} = "de" ] || [ ${LANGUAGE} = "es" ] || [ ${LANGUAGE} = "it" ] || [ ${LANGUAGE} = "fr" ] ; then
 
@@ -238,7 +191,7 @@ LANGUAGE=${LANGUAGES[i]}
 
 	if [ ${LANGUAGE} = "en" ]; then
 		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/upou8x1mutrypm4/redirects.tsv.bz2?dl=0"
+			wget -q -O $tmp "https://drive.google.com/uc?export=download&id=1VO6PqWGWMr__SD09Ji8yyNWmMPMd0El4"
 			mv $tmp $final
 		else
 			echo "       -> already present."
@@ -246,7 +199,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 	if [ ${LANGUAGE} = "es" ]; then
 		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/u8agpsnwtg3yhlp/redirects.tsv.bz2?dl=0"
+			wget -q -O $tmp "https://drive.google.com/uc?export=download&id=1cbWfHh3xG8UZOf99wj_TUuKJ6xSL-zId"
 			mv $tmp $final
 		else
 			echo "       -> already present."
@@ -254,7 +207,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 	if [ ${LANGUAGE} = "it" ]; then
 		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/4ea7z5g2h9s31rd/redirects.tsv.bz2?dl=0"
+			wget -q -O $tmp "https://drive.google.com/uc?export=download&id=1CPccl_V4CLe5hFNjSYfWa8yOTRuiV-M7"
 			mv $tmp $final
 		else
 			echo "       -> already present."
@@ -262,7 +215,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 	if [ ${LANGUAGE} = "de" ]; then
 		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/o2jso5r917jspld/redirects.tsv.bz2?dl=0"
+			wget -q -O $tmp "https://drive.google.com/uc?export=download&id=1zaiSK-gwUxQXmC9tIaMRa_TeAH9cjW_7"
 			mv $tmp $final
 		else
 			echo "       -> already present."
@@ -270,182 +223,7 @@ LANGUAGE=${LANGUAGES[i]}
 	fi
 	if [ ${LANGUAGE} = "fr" ]; then
 		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/hj9psr9i5maeu43/redirects.tsv.bz2?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-
-	###############          Download lists      ###############
-	echo "3e) Download source lists:"
-
-	if [ ${LANGUAGE} = "en" ]; then
-
-		echo "     -> currencies.tsv"
-		final="data/lists/${LANGUAGE}/currencies.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/agdx57liefhxoig/currencies.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> nationalities.tsv"
-		final="data/lists/${LANGUAGE}/nationalities.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/xoz08shuuet2h3s/nationalities.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> professions.tsv"
-		final="data/lists/${LANGUAGE}/professions.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/4ul4z9rra71tqj4/professions.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> stopwords.tsv"
-		final="data/lists/${LANGUAGE}/stopwords.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/03ferhbc1tp15c7/stopwords.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-
-	if [ ${LANGUAGE} = "es" ]; then
-		echo "     -> currencies.tsv"
-		final="data/lists/${LANGUAGE}/currencies.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/ph9xngzhmobsvtc/currencies.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> nationalities.tsv"
-		final="data/lists/${LANGUAGE}/nationalities.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/pu7b67fk2llirpd/nationalities.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> professions.tsv"
-		final="data/lists/${LANGUAGE}/professions.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/ddffrwopa2q4afr/professions.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-
-	if [ ${LANGUAGE} = "it" ]; then
-		echo "     -> currencies.tsv"
-		final="data/lists/${LANGUAGE}/currencies.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/awzydkuubc0pctc/currencies.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> nationalities.tsv"
-		final="data/lists/${LANGUAGE}/nationalities.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/5bi5kkevpfga0g7/nationalities.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> professions.tsv"
-		final="data/lists/${LANGUAGE}/professions.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/xsan6dr0nxippd0/professions.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-	fi
-
-	if [ ${LANGUAGE} = "fr" ]; then
-		echo "     -> currencies.tsv"
-		final="data/lists/${LANGUAGE}/currencies.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/cfsqyotj34e4bhq/currencies.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> nationalities.tsv"
-		final="data/lists/${LANGUAGE}/nationalities.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/brdk81sox778nt6/nationalities.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> professions.tsv"
-		final="data/lists/${LANGUAGE}/professions.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/ibocfyhrlo607e1/professions.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-	fi
-
-	if [ ${LANGUAGE} = "de" ]; then
-		echo "     -> currencies.tsv"
-		final="data/lists/${LANGUAGE}/currencies.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/4k550pqii8ox69j/currencies.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> nationalities.tsv"
-		final="data/lists/${LANGUAGE}/nationalities.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/1qf74es81b3c245/nationalities.tsv?dl=0"
-			mv $tmp $final
-		else
-			echo "       -> already present."
-		fi
-
-		echo "     -> professions.tsv"
-		final="data/lists/${LANGUAGE}/professions.tsv"
-		tmp=$final"_temp"
-		if [ ! -e $final ]; then
-			wget -q -O $tmp "https://www.dropbox.com/s/sob8376r0mab3aa/professions.tsv?dl=0"
+			wget -q -O $tmp "https://drive.google.com/uc?export=download&id=1xyaa-iFlWqQXR-BpDbvV9EpEwzvb_73W"
 			mv $tmp $final
 		else
 			echo "       -> already present."
