@@ -28,7 +28,7 @@ echo "1b) Download DBpedia Spotlight Jar (language independent)"
 final="data/spotlight/dbpedia-spotlight-latest.jar"
 tmp=$final"_temp"
 if [ ! -e $final ]; then
-	wget -q -O $tmp "http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar"
+	wget -q -O $tmp "http://downloads.dbpedia-spotlight.org/spotlight/dbpedia-spotlight-1.0.0.jar"
 	mv $tmp $final
 else
 	echo "       -> already present."
@@ -491,7 +491,7 @@ LANGUAGE=${LANGUAGES[i]}
 	echo "3b) Download DBPedia Spotlight model"
 	final="data/spotlight/${LANGUAGE}"
 	if [ ! -e $final ]; then
-		wget -q "http://spotlight.sztaki.hu/downloads/archive/models_20160113/${LANGUAGE}.tar.gz"
+		wget -q "http://downloads.dbpedia-spotlight.org/2016-04/en/model/raw/${LANGUAGE}.tar.gz"
 		tar -xzf ${LANGUAGE}.tar.gz
 		rm ${LANGUAGE}.tar.gz
 		mv ${LANGUAGE} data/spotlight
