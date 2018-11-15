@@ -80,9 +80,9 @@ public class Configuration {
   }
 
   /**
-   * Effectively reads the config file.
-   * 
-   * @param configFile
+   * Reads the config file.
+   *
+   * @param args
    */
   public static void init(String[] args) {
     Map<String, String> optionsCommmandLine = new HashMap<String, String>();

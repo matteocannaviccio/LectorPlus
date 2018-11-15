@@ -31,8 +31,10 @@ public class Pipeline {
 
 
   /**
-   * 
-   * @param configFile
+   *
+   * @param dumpFile
+   * @param parsedDump
+   * @param augmentedDump
    */
   public Pipeline(String dumpFile, String parsedDump, String augmentedDump) {
     System.out.println("\nComplete Pipeline (it takes many hours on whole dump)");

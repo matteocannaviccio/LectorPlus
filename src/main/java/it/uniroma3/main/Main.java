@@ -73,7 +73,7 @@ public class Main {
    * This is the complete pipeline. We first initialize Lector with the components that are needed
    * (i.e. from the pipeline)
    * 
-   * @param inputPath
+   * @param lang
    */
   private static void processComplete(WikiLanguage lang) {
     Pipeline cp = new Pipeline(Configuration.getOriginalArticlesFile(),

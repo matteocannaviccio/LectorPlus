@@ -65,8 +65,8 @@ public class Lector {
   /**
    * Here we initialize all the components of the tool. Lector is a global class that initializes
    * and keep a reference to all the components.
-   * 
-   * @param config
+   *
+   * @param pipeline
    */
   public static void init(String pipeline) {
     System.out.println("\nInitializing");
